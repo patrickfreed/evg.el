@@ -9,4 +9,16 @@
       (if (not id) (message (format "patch failed: %s" output)))
       id)))
 
-(evergreen-patch "mongo-rust-driver" "test from elisp function")
+(defun evergreen-status (project-name)
+  "Open the evergreen status page for the given project"
+  (let (status-buffer)
+    (setq status-buffer (get-buffer-create (format "evergreen-status: %s" project-name)))
+    (switch-to-buffer status-buffer)
+    (erase-buffer)
+    (insert (format "evergreen project: %s" project-name))
+    (read-only-mode)))
+
+(defun evergreen-status-debug ()
+  (interactive)
+  (evergreen-status "foo"))
+
