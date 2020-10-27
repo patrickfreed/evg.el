@@ -1,9 +1,10 @@
 * DONE submit patch function
   CLOSED: [2020-10-27 Tue 14:19]
 
-* TODO evg status page [1/2]
+* DONE evg status page [2/2]
+  CLOSED: [2020-10-27 Tue 19:51]
   - [X] show status page (project name)
-  - [ ] define keymap for submitting patch
+  - [X] define keymap for submitting patch
 
 * TODO configure patch
   - [ ] display variants
