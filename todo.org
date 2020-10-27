@@ -1,4 +1,5 @@
-* TODO submit patch
+* DONE submit patch function
+  CLOSED: [2020-10-27 Tue 14:19]
 
 * TODO evg status page
   - [ ] show status page (project name)
