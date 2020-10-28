@@ -6,22 +6,22 @@
   - [X] show status page (project name)
   - [X] define keymap for submitting patch
 
-* TODO configure patch
-  - [ ] display variants
+* TODO configure patch [1/4]
+  - [X] list patches
+  - [ ] view patch / display variants
   - [ ] select variants
   - [ ] initiate patch
 
-* TODO patch results
-  - [ ] list patches
+* TODO patch results [0/3]
   - [ ] view individual patch details
   - [ ] list tasks (text based)
   - [ ] group tasks into variants
 
-* TODO task results
+* TODO task results [0/2]
   - [ ] view individual task details
   - [ ] view task logs
 
-* TODO graphical results
+* TODO graphical results [0/2]
   - [ ] patch graphical interface a la waterfall
   - [ ] navigate graphical interface to select task
 

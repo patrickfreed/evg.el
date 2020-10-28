@@ -29,14 +29,19 @@
     (switch-to-buffer status-buffer)
     (read-only-mode -1)
     (erase-buffer)
-    (insert (format "evergreen project: %s" project-name))
+    (insert (format "Project: %s" project-name))
     (evergreen-mode)
-    (read-only-mode)
     )
   (make-local-variable 'evergreen-project-name)
+  (make-local-variable 'evergreen-recent-patches)
   (setq evergreen-project-name project-name)
-  (message evergreen-project-name)
-  )
+  (setq evergreen-recent-patches (evergreen-list-patches))
+  (newline 2)
+  (insert (format "Ongoing Patches (%d):" (length evergreen-recent-patches)))
+  (newline)
+  (seq-do (lambda (patch) (insert (format "  %s\n" (alist-get 'description patch)))) evergreen-recent-patches)
+  (read-only-mode)
+  (message evergreen-project-name))
 
 (defun evergreen-status-debug ()
   (interactive)
@@ -63,3 +68,25 @@
   "Major mode for evergreen-status page")
   
 (evil-set-initial-state 'evergreen-mode 'emacs)
+
+(require 'request)
+(require 'seq)
+
+(defun evergreen-list-patches ()
+  "Fetch list of incomplete patches recently submitted by the user."
+  (interactive)
+  (message "listing patches for %s" evergreen-project-name)
+  (let ((user (getenv "EVG_API_USER")) response)
+    (setq response
+          (request
+            (format "https://evergreen.mongodb.com/api/rest/v2/projects/%s/patches" evergreen-project-name)
+            :headers (list (cons "Api-User" user) (cons "Api-Key" (getenv "EVG_API_KEY")))
+            :params '(("limit" . 5))
+            :sync t
+            :parser 'json-read))
+    (seq-filter
+     (lambda (patch)
+       (and
+        (string= user (alist-get 'author patch))
+        (not (alist-get 'finish_time patch))))
+     (request-response-data response))))
