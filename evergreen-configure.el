@@ -4,17 +4,50 @@
 
 (require 'cl-lib)
 
-(cl-defstruct evergreen-configure-variant display-name tasks collapsed)
-(cl-defstruct evergreen-configure-task name selected location)
+(cl-defstruct evergreen-configure-variant display-name tasks collapsed location)
+
+(defun evergreen-configure-variant-nselected-tasks (variant)
+  (seq-reduce (lambda (count task)
+                (if (evergreen-configure-task-selected task)
+                    (1+ count)
+                  count))
+              (evergreen-configure-variant-tasks variant)
+              0)
+  )
+
+(cl-defstruct evergreen-configure-task name selected location parent)
 
 (defun evergreen-configure-variant-parse (data)
-  (make-evergreen-configure-variant
-   :display-name (gethash "displayName" data)
-   :tasks (seq-map (lambda (task-name)
-                     (make-evergreen-configure-task :name task-name :selected nil :location nil))
-                   (gethash "tasks" data))
-   :collapsed t
-   ))
+  (let
+      ((variant
+        (make-evergreen-configure-variant
+         :display-name (gethash "displayName" data)
+         :tasks (seq-map (lambda (task-name)
+                           (make-evergreen-configure-task :name task-name :selected nil :location nil :parent nil))
+                         (gethash "tasks" data))
+         :collapsed t
+         :location nil
+         )))
+    (seq-do
+     (lambda (task)
+       (setf (evergreen-configure-task-parent task) variant))
+     (evergreen-configure-variant-tasks variant))
+    variant))
+
+(defun evergreen-configure-variant-update-nselected (variant)
+  (let ((initial-point (point)))
+    (read-only-mode -1)
+    (goto-char (marker-position (evergreen-configure-variant-location variant)))
+    (if (search-forward-regexp "([0-9]+/[0-9]+)$")
+        (replace-match
+         (format
+          "(%d/%d)"
+          (evergreen-configure-variant-nselected-tasks variant)
+          (length (evergreen-configure-variant-tasks variant)))
+         ))
+    (read-only-mode)
+    (goto-char initial-point))
+  )
 
 (defun evergreen-configure-patch (patch)
   (switch-to-buffer (get-buffer-create (format "evergreen-configure: %S" (alist-get 'description patch))))
@@ -30,9 +63,16 @@
               (seq-map
                (lambda (variant-data)
                  (let ((variant (evergreen-configure-variant-parse variant-data)))
+                   (setf (evergreen-configure-variant-location variant) (point-marker))
                    (insert-text-button
-                    (format "%s\n" (evergreen-configure-variant-display-name variant))
-                    'evergreen-configure-variant variant)))
+                    (evergreen-configure-variant-display-name variant)
+                    'evergreen-configure-variant variant)
+                   (insert-and-inherit
+                    (format
+                     " (%d/%d)"
+                     (evergreen-configure-variant-nselected-tasks variant)
+                     (length (evergreen-configure-variant-tasks variant))))
+                   (newline)))
                (evergreen-get-patch-variants (alist-get 'patch_id patch)))
               )
   (read-only-mode)
@@ -59,7 +99,7 @@
           (forward-line)
           (seq-do
            (lambda (task)
-             (setf (evergreen-configure-task-location task) (point))
+             (setf (evergreen-configure-task-location task) (point-marker))
              (insert (with-temp-buffer
                        (if (evergreen-configure-task-selected task)
                            (insert "[x] ")
@@ -95,17 +135,18 @@
     (if-let ((location (evergreen-configure-task-visible task)))
         (progn
           (read-only-mode -1)
-          (goto-char location)
+          (goto-char (marker-position location))
           (forward-char)
           (delete-char 1)
           (if is-selected
               (progn
-                (insert " "))
-            (insert "x"))
+                (insert-and-inherit " "))
+            (insert-and-inherit "x"))
           (goto-char initial-point)
           (next-line)
           (read-only-mode))
       )
+    (evergreen-configure-variant-update-nselected (evergreen-configure-task-parent task))
     )
   )
 
