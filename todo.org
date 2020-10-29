@@ -6,10 +6,12 @@
   - [X] show status page (project name)
   - [X] define keymap for submitting patch
 
-* TODO configure patch [2/4]
+* TODO configure patch [3/6]
   - [X] list patches
   - [X] view patch / display variants
-  - [ ] select variants
+  - [X] select individual tasks in variants
+  - [ ] select all tasks in variant
+  - [ ] select all tasks in all variants
   - [ ] initiate patch
 
 * TODO patch results [0/3]
