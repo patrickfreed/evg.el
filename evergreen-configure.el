@@ -5,13 +5,13 @@
 (require 'cl-lib)
 
 (cl-defstruct evergreen-configure-variant display-name tasks collapsed)
-(cl-defstruct evergreen-configure-task name selected)
+(cl-defstruct evergreen-configure-task name selected location)
 
 (defun evergreen-configure-variant-parse (data)
   (make-evergreen-configure-variant
    :display-name (gethash "displayName" data)
    :tasks (seq-map (lambda (task-name)
-                     (make-evergreen-configure-task :name task-name :selected nil))
+                     (make-evergreen-configure-task :name task-name :selected nil :location nil))
                    (gethash "tasks" data))
    :collapsed t
    ))
@@ -21,7 +21,7 @@
   (read-only-mode -1)
   (evergreen-configure-mode)
   (erase-buffer)
-  (setq-local evergreen-configure-patch patch)
+  (setq-local evergreen-patch patch)
   (insert "Configure Patch")
   (newline)
   (insert (format "Description: %s" (alist-get 'description patch)))
@@ -32,7 +32,7 @@
                  (let ((variant (evergreen-configure-variant-parse variant-data)))
                    (insert-text-button
                     (format "%s\n" (evergreen-configure-variant-display-name variant))
-                    'variant variant)))
+                    'evergreen-configure-variant variant)))
                (evergreen-get-patch-variants (alist-get 'patch_id patch)))
               )
   (read-only-mode)
@@ -40,7 +40,11 @@
   )
 
 (defun evergreen-configure-current-variant ()
-  (get-text-property (point) 'variant)
+  (get-text-property (point) 'evergreen-configure-variant)
+  )
+
+(defun evergreen-configure-current-task ()
+  (get-text-property (point) 'evergreen-configure-task)
   )
 
 (defun evergreen-configure-toggle-current-variant ()
@@ -55,12 +59,13 @@
           (forward-line)
           (seq-do
            (lambda (task)
+             (setf (evergreen-configure-task-location task) (point))
              (insert (with-temp-buffer
                        (if (evergreen-configure-task-selected task)
                            (insert "[x] ")
                          (insert "[ ] "))
                        (insert (format "%s" (evergreen-configure-task-name task)))
-                       (put-text-property (point-min) (point-max) 'task task)
+                       (put-text-property (point-min) (point-max) 'evergreen-configure-task task)
                        (buffer-string)
                        ))
              (newline))
@@ -71,7 +76,9 @@
       (setf (evergreen-configure-variant-collapsed variant) t)
       (next-line)
       (seq-do
-       (lambda (task) (kill-whole-line))
+       (lambda (task)
+         (setf (evergreen-configure-task-location task) nil)
+         (kill-whole-line))
        (evergreen-configure-variant-tasks variant)
        )
       )
@@ -80,31 +87,39 @@
     )
   )
 
-(defun evergreen-configure-select-current-task ()
+(defun evergreen-configure-select-task (task)
+  "Toggles whether the provided task is selcted or not. This must be called when the point is on
+   the same line as the task."
+  (let ((initial-point (point)) (is-selected (evergreen-configure-task-selected task)))
+    (setf (evergreen-configure-task-selected task) (not is-selected))
+    (if-let ((location (evergreen-configure-task-visible task)))
+        (progn
+          (read-only-mode -1)
+          (goto-char location)
+          (forward-char)
+          (delete-char 1)
+          (if is-selected
+              (progn
+                (insert " "))
+            (insert "x"))
+          (goto-char initial-point)
+          (next-line)
+          (read-only-mode))
+      )
+    )
+  )
+
+(defun evergreen-configure-select-at-point ()
   "Toggles the section at point"
   (interactive)
   (read-only-mode -1)
-  (let ((task (get-text-property (point) 'task)) (initial-point (point)))
-    (if (evergreen-configure-task-selected task)
+  (if-let ((task (evergreen-configure-current-task)))
+      (evergreen-configure-select-task task)
+    (if-let ((variant (evergreen-configure-current-variant)))
         (progn
-          (message "previously selected, unselecting")
-          (setf (evergreen-configure-task-selected task) nil)
-          (beginning-of-line)
-          (forward-char)
-          (delete-char 1)
-          (insert " ")
-          (goto-char initial-point)
-          )
-      (message "previously not selected, selecting")
-      (setf (evergreen-configure-task-selected task) t)
-      (beginning-of-line)
-      (forward-char)
-      (delete-char 1)
-      (insert "x")
-      (goto-char initial-point)
-      (next-line)
+          (seq-do 'evergreen-configure-select-task (evergreen-configure-variant-tasks variant))
+          (next-line))
       )
-    (read-only-mode)
     )
   )
 
@@ -114,7 +129,7 @@
   (setq evergreen-configure-mode-map (make-sparse-keymap))
 
   (define-key evergreen-configure-mode-map (kbd "<tab>") 'evergreen-configure-toggle-current-variant)
-  (define-key evergreen-configure-mode-map (kbd "m") 'evergreen-configure-select-current-task)
+  (define-key evergreen-configure-mode-map (kbd "m") 'evergreen-configure-select-at-point)
 
   (define-key evergreen-configure-mode-map (kbd "r") (lambda ()
                                                              (interactive)
