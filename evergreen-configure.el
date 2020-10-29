@@ -19,7 +19,7 @@
 (defun evergreen-configure-patch (patch)
   (switch-to-buffer (get-buffer-create (format "evergreen-configure: %S" (alist-get 'description patch))))
   (read-only-mode -1)
-  (evergreen-configure-patch-mode)
+  (evergreen-configure-mode)
   (erase-buffer)
   (setq-local evergreen-configure-patch patch)
   (insert "Configure Patch")
@@ -108,22 +108,22 @@
     )
   )
 
-(defvar evergreen-configure-mode-map nil "Keymap for evergreen-configure-patch page")
+(defvar evergreen-configure-mode-map nil "Keymap for evergreen-configure buffers")
 
 (progn
   (setq evergreen-configure-mode-map (make-sparse-keymap))
 
-  (define-key evergreen-configure-patch-mode-map (kbd "<tab>") 'evergreen-configure-toggle-current-variant)
-  (define-key evergreen-configure-patch-mode-map (kbd "m") 'evergreen-configure-select-current-task)
+  (define-key evergreen-configure-mode-map (kbd "<tab>") 'evergreen-configure-toggle-current-variant)
+  (define-key evergreen-configure-mode-map (kbd "m") 'evergreen-configure-select-current-task)
 
-  (define-key evergreen-configure-patch-mode-map (kbd "r") (lambda ()
+  (define-key evergreen-configure-mode-map (kbd "r") (lambda ()
                                                              (interactive)
                                                              (evergreen-configure-patch evergreen-patch)))
 
-  (define-key evergreen-configure-patch-mode-map (kbd "h") 'backward-char)
-  (define-key evergreen-configure-patch-mode-map (kbd "j") 'next-line)
-  (define-key evergreen-configure-patch-mode-map (kbd "k") 'previous-line)
-  (define-key evergreen-configure-patch-mode-map (kbd "l") 'forward-char)
+  (define-key evergreen-configure-mode-map (kbd "h") 'backward-char)
+  (define-key evergreen-configure-mode-map (kbd "j") 'next-line)
+  (define-key evergreen-configure-mode-map (kbd "k") 'previous-line)
+  (define-key evergreen-configure-mode-map (kbd "l") 'forward-char)
   )
 
 (define-derived-mode
