@@ -6,13 +6,14 @@
   - [X] show status page (project name)
   - [X] define keymap for submitting patch
 
-* TODO configure patch [5/6]
+* DONE configure patch [6/6]
+  CLOSED: [2020-10-29 Thu 18:39]
   - [X] list patches
   - [X] view patch / display variants
   - [X] select individual tasks in variants
   - [X] select all tasks in variant
   - [X] display number of selected tasks per variant
-  - [ ] initiate patch
+  - [X] initiate patch
 
 * TODO patch results [0/3]
   - [ ] view individual patch buffer

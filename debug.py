@@ -11,7 +11,7 @@ headers = {
 }
 
 graphql_url = "https://evergreen.mongodb.com/graphql/query"
-url = "https://evergreen.mongodb.com/api/rest/v2/patches/{}".format("5f98b24fd6d80a586d0d1288")
+url = "http://evergreen.mongodb.com/api/rest/v2/patches/{}/configure".format("5f98b24fd6d80a586d0d1288")
 # data = {
 #     'limit': 10
 # }
@@ -22,7 +22,10 @@ url = "https://evergreen.mongodb.com/api/rest/v2/patches/{}".format("5f98b24fd6d
 # }
 # print(json.dumps(sample, indent=4))
 
-data = { 'query': 'query { patch(id: "5f98b24fd6d80a586d0d1288") { project { variants { displayName,tasks }}}}'}
-result = requests.post(graphql_url, headers=headers, data=json.dumps(data))
+# data = { 'query': 'query { patch(id: "5f98b24fd6d80a586d0d1288") { project { variants { displayName,tasks }}}}'}
+# result = requests.post(graphql_url, headers=headers, data=json.dumps(data))
+
+data = { 'variants': [ { 'name': 'lint', 'tasks': [ 'check-clippy' ] } ] }
+result = requests.post(url, headers=headers, data=json.dumps(data))
 print(result.status_code)
 print(json.dumps(result.json(), indent=4))

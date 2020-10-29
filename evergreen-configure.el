@@ -4,16 +4,15 @@
 
 (require 'cl-lib)
 
-(cl-defstruct evergreen-configure-variant display-name tasks collapsed location)
+(cl-defstruct evergreen-configure-variant display-name name tasks collapsed location)
 
 (defun evergreen-configure-variant-nselected-tasks (variant)
-  (seq-reduce (lambda (count task)
-                (if (evergreen-configure-task-selected task)
-                    (1+ count)
-                  count))
-              (evergreen-configure-variant-tasks variant)
-              0)
-  )
+  (length (evergreen-configure-variant-selected-tasks variant)))
+
+(defun evergreen-configure-variant-selected-tasks (variant)
+  (seq-filter
+   'evergreen-configure-task-selected
+   (evergreen-configure-variant-tasks variant)))
 
 (cl-defstruct evergreen-configure-task name selected location parent)
 
@@ -22,6 +21,7 @@
       ((variant
         (make-evergreen-configure-variant
          :display-name (gethash "displayName" data)
+         :name (gethash "name" data)
          :tasks (seq-map (lambda (task-name)
                            (make-evergreen-configure-task :name task-name :selected nil :location nil :parent nil))
                          (gethash "tasks" data))
@@ -72,7 +72,8 @@
                      " (%d/%d)"
                      (evergreen-configure-variant-nselected-tasks variant)
                      (length (evergreen-configure-variant-tasks variant))))
-                   (newline)))
+                   (newline)
+                   variant))
                (evergreen-get-patch-variants (alist-get 'patch_id patch)))
               )
   (read-only-mode)
@@ -94,7 +95,6 @@
   (let ((variant (evergreen-configure-current-variant)) (initial-point (point)))
     (if (evergreen-configure-variant-collapsed variant)
         (progn
-          (message "previously collapsed, expanding")
           (setf (evergreen-configure-variant-collapsed variant) nil)
           (forward-line)
           (seq-do
@@ -112,7 +112,6 @@
            (evergreen-configure-variant-tasks variant)
            )
           )
-      (message "previously not collapsed, collapsing")
       (setf (evergreen-configure-variant-collapsed variant) t)
       (next-line)
       (seq-do
@@ -164,6 +163,27 @@
     )
   )
 
+(defun evergreen-configure-schedule ()
+  (interactive)
+  (if-let ((selected-variants
+            (seq-filter
+             (lambda (variant) (> (evergreen-configure-variant-nselected-tasks variant) 0))
+             evergreen-variants)))
+      (evergreen-post
+       (format "https://evergreen.mongodb.com/api/rest/v2/patches/%s/configure" (alist-get 'patch_id evergreen-patch))
+       (json-encode
+        (list
+         (cons
+          "variants"
+          (seq-map
+           (lambda (variant)
+             (list
+              (cons "id" (evergreen-configure-variant-name variant))
+              (cons "tasks"
+                    (seq-map 'evergreen-configure-task-name (evergreen-configure-variant-selected-tasks variant)))))
+           selected-variants))))))
+  )
+
 (defvar evergreen-configure-mode-map nil "Keymap for evergreen-configure buffers")
 
 (progn
@@ -171,6 +191,7 @@
 
   (define-key evergreen-configure-mode-map (kbd "<tab>") 'evergreen-configure-toggle-current-variant)
   (define-key evergreen-configure-mode-map (kbd "m") 'evergreen-configure-select-at-point)
+  (define-key evergreen-configure-mode-map (kbd "x") 'evergreen-configure-schedule)
 
   (define-key evergreen-configure-mode-map (kbd "r") (lambda ()
                                                              (interactive)

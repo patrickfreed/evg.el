@@ -126,6 +126,19 @@
     :parser 'json-read))
   )
 
+(defun evergreen-post (url &optional data)
+  "Perform a blocking POST request against the given URL"
+  (request-response-data (request
+    url
+    :headers (list
+              (cons "Api-User" evergreen-user)
+              (cons "Api-Key" evergreen-api-key)
+              (cons "Content-Type"  "application/json"))
+    :data data
+    :sync t
+    :parser 'json-read))
+  )
+
 (defun evergreen-list-patches ()
   "Fetch list of incomplete patches recently submitted by the user."
   (interactive)
@@ -150,8 +163,9 @@
 
 (defun evergreen-get-patch-variants (patch-id)
   "Get list of variants and their associated tasks for the given patch"
-  (let ((data (graphql-request "https://evergreen.mongodb.com/graphql/query"
-                              (format "{ patch(id: \"%s\") { project { variants { displayName,tasks }}}}" patch-id))))
+  (let ((data
+         (graphql-request "https://evergreen.mongodb.com/graphql/query"
+                          (format "{ patch(id: \"%s\") { project { variants { displayName,name,tasks }}}}" patch-id))))
     (gethash "variants" (gethash "project" (gethash "patch" (gethash "data" data))))
     )
   )
