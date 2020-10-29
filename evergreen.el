@@ -1,3 +1,9 @@
+;;; -*- lexical-binding: t; -*-
+
+(add-to-list 'load-path "~/evergreen-mode/")
+
+(require 'evergreen-configure)
+
 (defun evergreen-submit-patch (project-name description)
   "Submit a patch to the given project with the given description. Returns the patch's ID."
   (let (output command)
@@ -22,8 +28,8 @@
     )
   )
 
-(define-button-type 'evergreen-patch-button
-  'action (lambda (b) (message "button pressed")))
+(define-button-type 'evergreen-view-patch-button
+  'action (lambda (b) (evergreen-view-patch (button-get b 'patch))))
 
 (defun evergreen-status (project-name)
   "Open the evergreen status page for the given project"
@@ -35,26 +41,27 @@
     (insert (format "Project: %s" project-name))
     (evergreen-mode)
     )
-  (set (make-local-variable 'evergreen-project-name) project-name)
-  (set (make-local-variable 'evergreen-interface-index) 0)
-  (set (make-local-variable 'evergreen-user) (getenv "EVG_API_USER"))
-  (set (make-local-variable 'evergreen-api-key) (getenv "EVG_API_KEY"))
-  (set (make-local-variable 'evergreen-recent-patches) (evergreen-list-patches))
+  (setq evergreen-project-name project-name)
+  (setq evergreen-user (getenv "EVG_API_USER"))
+  (setq evergreen-api-key (getenv "EVG_API_KEY"))
+  (setq-local evergreen-interface-index 0)
+  (setq-local evergreen-recent-patches (evergreen-list-patches))
 
   (newline 2)
   (insert (format "Ongoing Patches (%d):" (length evergreen-recent-patches)))
   (newline)
-  (set (make-local-variable 'evergreen-interface)
-        (seq-map (lambda (patch)
-                  (insert "  ")
-                  (let ((button
-                         (insert-text-button
-                          (format "%s" (alist-get 'description patch)) :type 'evergreen-patch-button)
-                         ))
-                    (newline)
-                    button)
-                  )
-                evergreen-recent-patches))
+  (setq-local
+   evergreen-interface
+   (seq-map (lambda (patch)
+              (insert "  ")
+              (let ((button
+                     (insert-text-button
+                      (format "%s" (alist-get 'description patch)) 'patch patch :type 'evergreen-view-patch-button)
+                     ))
+                (newline)
+                button)
+              )
+            evergreen-recent-patches))
   (read-only-mode)
   (evergreen-modify-interface-index 0)
   (message evergreen-project-name))
@@ -69,12 +76,8 @@
     )
   )
 
-(defun evergreen-configure-patch (patch)
-  (message "%S" (evergreen-get-patch-variants (alist-get "patch_id" patch)))
-  )
-
 (defun evergreen-view-patch (patch)
-  (if (string= "created" (alist-get ("status" patch)))
+  (if (string= "created" (alist-get 'status patch))
       (evergreen-configure-patch patch))
   )
 
@@ -146,8 +149,11 @@
   )
 
 (defun evergreen-get-patch-variants (patch-id)
-  (graphql-request "https://evergreen.mongodb.com/graphql/query"
-                   (format "{ patch(id: \"%s\") { project { variants { displayName,tasks }}}}" patch-id))
+  "Get list of variants and their associated tasks for the given patch"
+  (let ((data (graphql-request "https://evergreen.mongodb.com/graphql/query"
+                              (format "{ patch(id: \"%s\") { project { variants { displayName,tasks }}}}" patch-id))))
+    (gethash "variants" (gethash "project" (gethash "patch" (gethash "data" data))))
+    )
   )
 
 ;; From: https://github.com/rcy/graphql-elisp/blob/master/graphql.el

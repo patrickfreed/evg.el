@@ -6,9 +6,9 @@
   - [X] show status page (project name)
   - [X] define keymap for submitting patch
 
-* TODO configure patch [1/4]
+* TODO configure patch [2/4]
   - [X] list patches
-  - [ ] view patch / display variants
+  - [X] view patch / display variants
   - [ ] select variants
   - [ ] initiate patch
 
