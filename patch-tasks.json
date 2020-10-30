@@ -1,0 +1,52 @@
+{
+    "patch_id": "5f985f99e3c33102b2fd526a",
+    "description": "test from elisp function",
+    "project_id": "mongo-rust-driver",
+    "branch": "mongo-rust-driver",
+    "git_hash": "4eb171cd412a4d4227bd3c6690838a3a84b5158c",
+    "patch_number": 726,
+    "author": "patrick.freed",
+    "version": "5f985f99e3c33102b2fd526a",
+    "status": "succeeded",
+    "create_time": "2020-10-27T17:57:45.975Z",
+    "start_time": "2020-10-29T23:32:49.65Z",
+    "finish_time": "2020-10-29T23:38:41.354Z",
+    "builds": [
+        "lint"
+    ],
+    "tasks": [
+        "check-clippy",
+        "check-rustfmt"
+    ],
+    "variants_tasks": [
+        {
+            "name": "lint",
+            "tasks": [
+                "check-clippy",
+                "check-rustfmt"
+            ]
+        }
+    ],
+    "activated": true,
+    "alias": "",
+    "github_patch_data": {
+        "pr_number": 0,
+        "base_owner": "",
+        "base_repo": "",
+        "head_owner": "",
+        "head_repo": "",
+        "head_hash": "",
+        "author": ""
+    },
+    "module_code_changes": [
+        {
+            "branch_name": "mongo-rust-driver",
+            "html_link": "https://evergreen.mongodb.com/filediff/5f985f99e3c33102b2fd526a?patch_number=0",
+            "raw_link": "https://evergreen.mongodb.com/rawdiff/5f985f99e3c33102b2fd526a?patch_number=0",
+            "file_diffs": []
+        }
+    ],
+    "parameters": [],
+    "project": "mongo-rust-driver",
+    "can_enqueue_to_commit_queue": true
+}

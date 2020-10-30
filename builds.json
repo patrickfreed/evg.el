@@ -1,0 +1,35 @@
+[
+    {
+        "_id": "mongo_rust_driver_lint_patch_4eb171cd412a4d4227bd3c6690838a3a84b5158c_5f985f99e3c33102b2fd526a_20_10_29_23_23_36",
+        "project_id": "mongo-rust-driver",
+        "create_time": "2020-10-29T23:23:36.899Z",
+        "start_time": "2020-10-29T23:32:49.65Z",
+        "finish_time": "2020-10-29T23:38:41.354Z",
+        "version": "5f985f99e3c33102b2fd526a",
+        "git_hash": "4eb171cd412a4d4227bd3c6690838a3a84b5158c",
+        "build_variant": "lint",
+        "status": "success",
+        "activated": true,
+        "activated_by": "",
+        "activated_time": "2020-10-29T23:23:36.901Z",
+        "order": 726,
+        "tasks": [
+            "mongo_rust_driver_lint_check_clippy_patch_4eb171cd412a4d4227bd3c6690838a3a84b5158c_5f985f99e3c33102b2fd526a_20_10_29_23_23_36",
+            "mongo_rust_driver_lint_check_rustfmt_patch_4eb171cd412a4d4227bd3c6690838a3a84b5158c_5f985f99e3c33102b2fd526a_20_10_29_23_23_36"
+        ],
+        "time_taken_ms": 351704,
+        "display_name": "Lint",
+        "predicted_makespan_ms": 351652,
+        "actual_makespan_ms": 351652,
+        "origin": "patch",
+        "status_counts": {
+            "succeeded": 0,
+            "failed": 0,
+            "started": 0,
+            "undispatched": 0,
+            "inactive": 0,
+            "dispatched": 0,
+            "timed_out": 0
+        }
+    }
+]

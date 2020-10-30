@@ -1,0 +1,24 @@
+{
+    "version_id": "5f985f99e3c33102b2fd526a",
+    "create_time": "2020-10-29T23:23:36.899Z",
+    "start_time": "2020-10-29T23:32:49.65Z",
+    "finish_time": "2020-10-29T23:38:41.354Z",
+    "revision": "4eb171cd412a4d4227bd3c6690838a3a84b5158c",
+    "order": 726,
+    "project": "mongo-rust-driver",
+    "author": "patrick.freed",
+    "author_email": "",
+    "message": "test from elisp function",
+    "status": "success",
+    "repo": "",
+    "branch": "master",
+    "parameters": [],
+    "build_variants_status": [
+        {
+            "build_variant": "lint",
+            "build_id": "mongo_rust_driver_lint_patch_4eb171cd412a4d4227bd3c6690838a3a84b5158c_5f985f99e3c33102b2fd526a_20_10_29_23_23_36"
+        }
+    ],
+    "requester": "patch_request",
+    "errors": []
+}
