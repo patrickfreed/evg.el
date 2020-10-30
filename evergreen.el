@@ -5,6 +5,8 @@
 (require 'evergreen-configure)
 (require 'evergreen-view-patch)
 
+(require 'json)
+
 (defun evergreen-submit-patch (project-name description)
   "Submit a patch to the given project with the given description. Returns the patch's ID."
   (let (output command)
@@ -81,7 +83,7 @@
 
 (defun evergreen-inspect-patch (patch)
   (if (alist-get 'tasks patch)
-      (evergreen-view-patch patch)
+      (evergreen-view-patch-data patch)
     (evergreen-configure-patch patch))
   )
 
@@ -130,6 +132,9 @@
     :parser 'json-read))
   )
 
+(defun evergreen-get-p (url &optional params)
+  (evergreen-get (concat "https://evergreen.mongodb.com/api/rest/v2/" url) params))
+
 (defun evergreen-post (url &optional data)
   "Perform a blocking POST request against the given URL"
   (request-response-data (request
@@ -154,7 +159,7 @@
       t))
    (evergreen-get
     (format "https://evergreen.mongodb.com/api/rest/v2/projects/%s/patches" evergreen-project-name)
-    '(("limit" . 5))
+    '(("limit" . 15))
     )
    )
   )
