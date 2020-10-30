@@ -3,6 +3,7 @@
 (add-to-list 'load-path "~/evergreen-mode/")
 
 (require 'evergreen-configure)
+(require 'evergreen-view-patch)
 
 (defun evergreen-submit-patch (project-name description)
   "Submit a patch to the given project with the given description. Returns the patch's ID."
@@ -28,8 +29,8 @@
     )
   )
 
-(define-button-type 'evergreen-view-patch-button
-  'action (lambda (b) (evergreen-view-patch (button-get b 'patch))))
+(define-button-type 'evergreen-inspect-patch-button
+  'action (lambda (b) (evergreen-inspect-patch (button-get b 'patch))))
 
 (defun evergreen-status (project-name)
   "Open the evergreen status page for the given project"
@@ -56,7 +57,9 @@
               (insert "  ")
               (let ((button
                      (insert-text-button
-                      (format "%s" (alist-get 'description patch)) 'patch patch :type 'evergreen-view-patch-button)
+                      (format "desc: %s" (alist-get 'description patch))
+                      'patch patch
+                      :type 'evergreen-inspect-patch-button)
                      ))
                 (newline)
                 button)
@@ -76,9 +79,10 @@
     )
   )
 
-(defun evergreen-view-patch (patch)
-  (if (string= "created" (alist-get 'status patch))
-      (evergreen-configure-patch patch))
+(defun evergreen-inspect-patch (patch)
+  (if (alist-get 'tasks patch)
+      (evergreen-view-patch patch)
+    (evergreen-configure-patch patch))
   )
 
 (defun evergreen-status-debug ()
@@ -147,7 +151,7 @@
    (lambda (patch)
      (and
       (string= evergreen-user (alist-get 'author patch))
-      (not (alist-get 'finish_time patch))))
+      t))
    (evergreen-get
     (format "https://evergreen.mongodb.com/api/rest/v2/projects/%s/patches" evergreen-project-name)
     '(("limit" . 5))

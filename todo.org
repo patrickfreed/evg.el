@@ -15,8 +15,8 @@
   - [X] display number of selected tasks per variant
   - [X] initiate patch
 
-* TODO patch results [0/3]
-  - [ ] view individual patch buffer
+* TODO patch results [1/2]
+  - [X] view individual patch buffer
   - [ ] list tasks (text based)
 
 * TODO task results [0/2]

@@ -11,7 +11,7 @@ headers = {
 }
 
 graphql_url = "https://evergreen.mongodb.com/graphql/query"
-url = "http://evergreen.mongodb.com/api/rest/v2/patches/{}/configure".format("5f98b24fd6d80a586d0d1288")
+url = "https://evergreen.mongodb.com/api/rest/v2/patches/{}/configure".format("5f98b24fd6d80a586d0d1288")
 # data = {
 #     'limit': 10
 # }

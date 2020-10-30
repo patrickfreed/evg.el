@@ -173,6 +173,7 @@
        (format "https://evergreen.mongodb.com/api/rest/v2/patches/%s/configure" (alist-get 'patch_id evergreen-patch))
        (json-encode
         (list
+         (cons "description" (alist-get 'description evergreen-patch))
          (cons
           "variants"
           (seq-map
