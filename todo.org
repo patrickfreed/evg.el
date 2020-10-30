@@ -15,10 +15,11 @@
   - [X] display number of selected tasks per variant
   - [X] initiate patch
 
-* TODO patch results [2/3]
+* DONE patch results [3/3]
+  CLOSED: [2020-10-30 Fri 16:02]
   - [X] view individual patch buffer
   - [X] list tasks (text based)
-  - [ ] improve perf
+  - [X] improve perf
 
 * TODO task results [0/2]
   - [ ] view individual task buffer

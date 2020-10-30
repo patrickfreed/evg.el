@@ -16,28 +16,42 @@
    :start-time (alist-get 'start_time data)
    :finish-time (alist-get 'finish_time data)
    :task-names (alist-get 'variants_tasks data)
-  ))
+   ))
 
 (defun evergreen-get-current-patch-tasks ()
   "Fetches full list of task results broken down by variant."
-  (let ((version-data (evergreen-get-p (format "versions/%s/builds" (evergreen-patch-id evergreen-current-patch)))))
+  (let ((buildvariants-data
+         (graphql-request
+          (format
+           "{
+              patchBuildVariants(patchId: %S) {
+                variant
+                displayName
+                tasks {
+                  id
+                  name
+                  status
+                }
+              }
+            }"
+           (evergreen-patch-id evergreen-current-patch))
+          )))
     (seq-map
-     (lambda (build-data)
-       (cons (alist-get 'display_name build-data)
-             (seq-map
-              'evergreen-task-parse
-              (evergreen-get-p (format "builds/%s/tasks" (alist-get '_id build-data))))))
-     version-data)))
+     (lambda (variant-data)
+       (cons (gethash "displayName" variant-data)
+             (seq-map 'evergreen-task-parse (gethash "tasks" variant-data))))
+     (gethash "patchBuildVariants" buildvariants-data))
+    ))
 
 (cl-defstruct evergreen-task id display-name start-time finish-time status)
 
 (defun evergreen-task-parse (data)
   (make-evergreen-task
-   :id (alist-get 'task_id data)
-   :display-name (alist-get 'display_name data)
-   :start-time (alist-get 'start_time data)
-   :finish-time (alist-get 'finish_time data)
-   :status (alist-get 'status data)
+   :id (gethash "id" data)
+   :display-name (gethash "name" data)
+   :start-time nil
+   :finish-time nil
+   :status (gethash "status" data)
   ))
 
 (defun evergreen-view-patch-data (data)

@@ -1,0 +1,34 @@
+query { patchBuildVariants(patchId: "5f985f99e3c33102b2fd526a") {
+    variant
+    displayName
+    tasks {
+      id
+      name
+      status
+    }
+}
+}
+
+{
+  "data": {
+    "patchBuildVariants": [
+      {
+        "variant": "lint",
+        "displayName": "Lint",
+        "tasks": [
+          {
+            "id": "mongo_rust_driver_lint_check_clippy_patch_4eb171cd412a4d4227bd3c6690838a3a84b5158c_5f985f99e3c33102b2fd526a_20_10_29_23_23_36",
+            "name": "check-clippy",
+            "status": "success"
+          },
+          {
+            "id": "mongo_rust_driver_lint_check_rustfmt_patch_4eb171cd412a4d4227bd3c6690838a3a84b5158c_5f985f99e3c33102b2fd526a_20_10_29_23_23_36",
+            "name": "check-rustfmt",
+            "status": "success"
+          }
+        ]
+      }
+    ]
+  }
+}
+ 

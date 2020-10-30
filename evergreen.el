@@ -173,21 +173,20 @@
 (defun evergreen-get-patch-variants (patch-id)
   "Get list of variants and their associated tasks for the given patch"
   (let ((data
-         (graphql-request "https://evergreen.mongodb.com/graphql/query"
-                          (format "{ patch(id: \"%s\") { project { variants { displayName,name,tasks }}}}" patch-id))))
-    (gethash "variants" (gethash "project" (gethash "patch" (gethash "data" data))))
+         (graphql-request (format "{ patch(id: \"%s\") { project { variants { displayName,name,tasks }}}}" patch-id))))
+    (gethash "variants" (gethash "project" (gethash "patch" data)))
     )
   )
 
 ;; From: https://github.com/rcy/graphql-elisp/blob/master/graphql.el
-(defun graphql-request (endpoint query &optional variables)
+(defun graphql-request (query &optional variables)
   (let* ((url-request-method "POST")
          (url-request-extra-headers (list (cons "Content-Type"  "application/json") (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key)))
          (url-request-data
           (json-encode (list (cons "query" query)
                              (cons "variables" (and variables (json-encode variables))))))
-         (buffer (url-retrieve-synchronously endpoint)))
+         (buffer (url-retrieve-synchronously "https://evergreen.mongodb.com/graphql/query")))
     (with-current-buffer buffer
       (goto-char url-http-end-of-headers)
-      (let ((json-object-type 'hash-table))
-        (json-read)))))
+      (gethash "data" (let ((json-object-type 'hash-table))
+        (json-read))))))
