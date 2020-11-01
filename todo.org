@@ -20,8 +20,6 @@
   - [X] view individual patch buffer
   - [X] list tasks (text based)
   - [X] improve perf
-    
-* TODO build results
 
 * TODO task results [0/2]
   - [ ] view individual task buffer

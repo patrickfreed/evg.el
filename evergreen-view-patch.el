@@ -4,8 +4,6 @@
 
 (require 'cl-lib)
 
-(require 'evergreen-view-build)
-
 (cl-defstruct evergreen-patch id description number status create-time start-time finish-time task-names)
 
 (defun evergreen-patch-parse (data)
@@ -76,11 +74,7 @@
   (newline 2)
   (seq-do
    (lambda (variant-tasks)
-     (with-temp-buffer
-       (insert (format "%s" (car variant-tasks)))
-       (put-text-property (point-min) (point-max) 'evergreen-build task)
-       (buffer-string)
-       )
+     (insert (format "%s" (car variant-tasks)))
      (newline)
      (seq-do
       (lambda (task)
