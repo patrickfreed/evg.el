@@ -12,7 +12,7 @@ headers = {
 
 graphql_url = "https://evergreen.mongodb.com/graphql/query"
 # url = "https://evergreen.mongodb.com/api/rest/v2/versions/{}/builds".format("5f985f99e3c33102b2fd526a")
-url = "https://evergreen.mongodb.com/api/rest/v2/builds/{}/tasks".format("mongo_rust_driver_lint_patch_4eb171cd412a4d4227bd3c6690838a3a84b5158c_5f985f99e3c33102b2fd526a_20_10_29_23_23_36")
+url = "https://evergreen.mongodb.com/api/rest/v2/tasks/{}".format("mongo_rust_driver_atlas_connect__async_runtime~async_std_os~macos_10.14_test_atlas_connectivity_patch_4eb171cd412a4d4227bd3c6690838a3a84b5158c_5fa0933732f4170e18899053_20_11_02_23_16_08")
 # data = {
 #     'limit': 10
 # }

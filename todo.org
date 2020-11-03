@@ -21,14 +21,18 @@
   - [X] list tasks (text based)
   - [X] improve perf
 
-* TODO task results [0/2]
-  - [ ] view individual task buffer
-  - [ ] view task logs
+* DONE task results [2/2]
+  CLOSED: [2020-11-03 Tue 01:42]
+  - [X] view individual task buffer
+  - [X] view task logs
 
-* TODO graphical results [0/3]
-  - [ ] patch graphical interface (old ui)
-  - [ ] navigate graphical interface to select task
+* TODO UI improvements [0/5]
+  - [ ] evergreen status page touch up
+  - [ ] patch results grid interface (old ui)
+  - [ ] navigate grid interface to select task
   - [ ] waterfall
+  - [ ] task results page touch up
+  - [ ] use task display name in view-task buffer name
 
 * TODO logistics [0/4]
   - [ ] ensure in git-repo when evergreen-status is invoked (projectile integration?)
@@ -45,5 +49,5 @@
 
 * TODO diffs
 
-* TODO improved patch configuration
+* TODO misc improvements
   - [ ] select shared tasks for multiple variants

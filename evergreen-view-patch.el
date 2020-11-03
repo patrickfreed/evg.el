@@ -2,6 +2,8 @@
 
 (provide 'evergreen-view-patch)
 
+(require 'evergreen-view-task)
+
 (require 'cl-lib)
 
 (cl-defstruct evergreen-patch id description number status create-time start-time finish-time task-names)
@@ -39,20 +41,25 @@
     (seq-map
      (lambda (variant-data)
        (cons (gethash "displayName" variant-data)
-             (seq-map 'evergreen-task-parse (gethash "tasks" variant-data))))
+             (seq-map 'evergreen-task-info-parse (gethash "tasks" variant-data))))
      (gethash "patchBuildVariants" buildvariants-data))
     ))
 
-(cl-defstruct evergreen-task id display-name start-time finish-time status)
+(cl-defstruct evergreen-task-info id display-name status)
 
-(defun evergreen-task-parse (data)
-  (make-evergreen-task
+(defun evergreen-task-info-parse (data)
+  (make-evergreen-task-info
    :id (gethash "id" data)
    :display-name (gethash "name" data)
-   :start-time nil
-   :finish-time nil
    :status (gethash "status" data)
   ))
+
+(defun evergreen-view-task-at-point ()
+  (interactive)
+  (if-let ((task (get-text-property (point) 'evergreen-task-info))
+           (build-variant (get-text-property (point) 'evergreen-build-variant)))
+      (evergreen-view-task (evergreen-task-info-id task) build-variant))
+  )
 
 (defun evergreen-view-patch-data (data)
   (evergreen-view-patch (evergreen-patch-parse data)))
@@ -78,7 +85,14 @@
      (newline)
      (seq-do
       (lambda (task)
-        (insert (format "[%s] %s" (evergreen-task-status task) (evergreen-task-display-name task)))
+        (insert
+         (with-temp-buffer
+           (insert (format "[%s] %s"
+                   (evergreen-task-info-status task)
+                   (evergreen-task-info-display-name task)))
+           (put-text-property (point-min) (point-max) 'evergreen-task-info task)
+           (put-text-property (point-min) (point-max) 'evergreen-build-variant (car variant-tasks))
+           (buffer-string)))
         (newline))
       (cdr variant-tasks))
      (newline))
@@ -95,6 +109,7 @@
   (define-key evergreen-view-patch-mode-map (kbd "r") (lambda ()
                                                              (interactive)
                                                              (evergreen-view-patch evergreen-current-patch)))
+  (define-key evergreen-view-patch-mode-map (kbd "<RET>") 'evergreen-view-task-at-point)
 
   (define-key evergreen-view-patch-mode-map (kbd "h") 'backward-char)
   (define-key evergreen-view-patch-mode-map (kbd "j") 'next-line)
