@@ -8,6 +8,19 @@
 
 (require 'json)
 
+(defun evergreen-status-text (status)
+  (with-temp-buffer
+    (insert (format "%9s" status))
+    (let ((status-face
+           (cond
+            ((string-match-p "succ" status) 'success)
+            ((string-match-p "fail" status) 'error)
+            ((string-match-p "start" status) 'warning)
+            (t 'shadow))))
+      (add-text-properties (point-min) (point-max) (list 'face status-face)))
+    (buffer-string)
+  ))
+
 (defun evergreen-submit-patch (project-name description)
   "Submit a patch to the given project with the given description. Returns the patch's ID."
   (let (output command)
@@ -37,56 +50,43 @@
 
 (defun evergreen-status (project-name)
   "Open the evergreen status page for the given project"
-  (let (status-buffer)
-    (setq status-buffer (get-buffer-create (format "evergreen-status: %s" project-name)))
-    (switch-to-buffer status-buffer)
-    (read-only-mode -1)
-    (erase-buffer)
-    (insert (format "Project: %s" project-name))
-    (evergreen-mode)
-    )
+  (switch-to-buffer (get-buffer-create (format "evergreen-status: %s" project-name)))
+  (read-only-mode -1)
+  (erase-buffer)
+  (insert (format "Project: %s" project-name))
+  (evergreen-mode)
   (setq evergreen-project-name project-name)
   (setq evergreen-user (getenv "EVG_API_USER"))
   (setq evergreen-api-key (getenv "EVG_API_KEY"))
-  (setq-local evergreen-interface-index 0)
   (setq-local evergreen-recent-patches (evergreen-list-patches))
 
   (newline 2)
-  (insert (format "Ongoing Patches (%d):" (length evergreen-recent-patches)))
+  (insert (format "Recent Patches:"))
   (newline)
-  (setq-local
-   evergreen-interface
-   (seq-map (lambda (patch)
-              (insert "  ")
-              (let ((button
-                     (insert-text-button
-                      (format "desc: %s" (alist-get 'description patch))
-                      'patch patch
-                      :type 'evergreen-inspect-patch-button)
-                     ))
-                (newline)
-                button)
-              )
-            evergreen-recent-patches))
+  (seq-do
+   (lambda (patch)
+     (insert
+      (with-temp-buffer
+        (insert (evergreen-status-text (alist-get 'status patch)))
+        (insert " ")
+        (insert
+         (let ((description (alist-get 'description patch)))
+           (if (> (length description) 0)
+               description
+             "no description")
+           ))
+        (add-text-properties (point-min) (point-max) (list 'evergreen-patch patch))
+        (truncate-string-to-width (buffer-string) (- (window-width) 10) nil nil t)))
+     (newline))
+   evergreen-recent-patches)
   (read-only-mode)
-  (evergreen-modify-interface-index 0)
+  (goto-line 0)
   (message evergreen-project-name))
 
-(defun evergreen-modify-interface-index (count)
+(defun evergreen-inspect-patch-at-point ()
   (interactive)
-  (let ((newcount (+ count evergreen-interface-index)))
-    (unless (or (>= newcount (length evergreen-interface)) (< newcount 0))
-      (setq evergreen-interface-index newcount)
-      (goto-char (button-start (nth evergreen-interface-index evergreen-interface)))
-      )
-    )
-  )
-
-(defun evergreen-inspect-patch (patch)
-  (if (alist-get 'tasks patch)
-      (evergreen-view-patch-data patch)
-    (evergreen-configure-patch patch))
-  )
+  (if-let ((patch (get-text-property (point) 'evergreen-patch)))
+      (evergreen-view-patch-data patch)))
 
 (defun evergreen-status-debug ()
   (interactive)
@@ -102,13 +102,14 @@
 (progn
   (setq evergreen-mode-map (make-sparse-keymap))
 
+  (define-key evergreen-mode-map (kbd "<RET>") 'evergreen-inspect-patch-at-point)
   (define-key evergreen-mode-map (kbd "p") 'evergreen-patch)
   (define-key evergreen-mode-map (kbd "d") 'evergreen-debug)
   (define-key evergreen-mode-map (kbd "r") 'evergreen-status-debug)
 
   (define-key evergreen-mode-map (kbd "h") 'backward-char)
-  (define-key evergreen-mode-map (kbd "j") (lambda () (interactive) (evergreen-modify-interface-index 1)))
-  (define-key evergreen-mode-map (kbd "k") (lambda () (interactive) (evergreen-modify-interface-index -1)))
+  (define-key evergreen-mode-map (kbd "j") 'forward-line)
+  (define-key evergreen-mode-map (kbd "k") 'previous-line)
   (define-key evergreen-mode-map (kbd "l") 'forward-char)
   )
 
