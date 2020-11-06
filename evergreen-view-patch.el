@@ -64,31 +64,54 @@
 (defun evergreen-view-patch-data (data)
   (evergreen-view-patch (evergreen-patch-parse data)))
 
+(defun evergreen-view-patch-header-line (property value)
+  (format
+   "%-16s%s"
+   (with-temp-buffer
+     (insert (format "%s:" property))
+     (add-text-properties (point-min) (point-max) (list 'face 'bold))
+     (buffer-string))
+   (with-temp-buffer
+     (setq fill-column (- (window-width) 26))
+     (setq fill-prefix (make-string 16 ? ))
+     (insert value)
+     (fill-paragraph)
+     (buffer-string))))
+
 (defun evergreen-view-patch (patch)
-  (switch-to-buffer (get-buffer-create (format "evergreen-view-patch: %S" (evergreen-patch-description patch))))
+  (switch-to-buffer (get-buffer-create (format "evergreen-view-patch: %S" (truncate-string-to-width (evergreen-patch-description patch) 50 nil nil t))))
   (read-only-mode -1)
   (evergreen-view-patch-mode)
+  (setq display-line-numbers nil)
   (erase-buffer)
   (setq-local evergreen-current-patch patch)
-  (insert (format "Patch %d: %s"
-                  (evergreen-patch-number evergreen-current-patch)
-                  (evergreen-patch-description evergreen-current-patch)))
+  (insert (evergreen-view-patch-header-line "Patch Number" (format "%d" (evergreen-patch-number evergreen-current-patch))))
   (newline)
-  (insert (format "Status: %s" (evergreen-patch-status evergreen-current-patch)))
+  (let ((description (evergreen-patch-description evergreen-current-patch)))
+    (insert
+     (evergreen-view-patch-header-line
+      "Description"
+      description)))
   (newline)
-  (insert (format "Created at: %s" (evergreen-patch-create-time evergreen-current-patch)))
+  (insert (evergreen-view-patch-header-line "Status" (evergreen-status-text (evergreen-patch-status evergreen-current-patch))))
+  (newline)
+  (insert (evergreen-view-patch-header-line "Created at" (evergreen-patch-create-time evergreen-current-patch)))
   (newline)
   (newline 2)
   (seq-do
    (lambda (variant-tasks)
-     (insert (format "%s" (car variant-tasks)))
+     (insert
+      (with-temp-buffer
+        (insert (format "%s" (car variant-tasks)))
+        (add-text-properties (point-min) (point-max) (list 'face 'bold-italic))
+        (buffer-string)))
      (newline)
      (seq-do
       (lambda (task)
         (insert
          (with-temp-buffer
-           (insert (format "[%s] %s"
-                   (evergreen-task-info-status task)
+           (insert (format "%9s %s"
+                   (evergreen-status-text (evergreen-task-info-status task))
                    (evergreen-task-info-display-name task)))
            (put-text-property (point-min) (point-max) 'evergreen-task-info task)
            (put-text-property (point-min) (point-max) 'evergreen-build-variant (car variant-tasks))

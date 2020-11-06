@@ -26,8 +26,9 @@
   - [X] view individual task buffer
   - [X] view task logs
 
-* TODO UI improvements [1/6]
+* TODO UI improvements [2/7]
   - [X] evergreen status page touch up
+  - [X] patch list view
   - [ ] patch results grid interface (old ui)
   - [ ] navigate grid interface to select task
   - [ ] waterfall

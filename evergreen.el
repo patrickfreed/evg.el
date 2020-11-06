@@ -10,7 +10,7 @@
 
 (defun evergreen-status-text (status)
   (with-temp-buffer
-    (insert (format "%9s" status))
+    (insert status)
     (let ((status-face
            (cond
             ((string-match-p "succ" status) 'success)
@@ -45,9 +45,6 @@
     )
   )
 
-(define-button-type 'evergreen-inspect-patch-button
-  'action (lambda (b) (evergreen-inspect-patch (button-get b 'patch))))
-
 (defun evergreen-status (project-name)
   "Open the evergreen status page for the given project"
   (switch-to-buffer (get-buffer-create (format "evergreen-status: %s" project-name)))
@@ -67,7 +64,7 @@
    (lambda (patch)
      (insert
       (with-temp-buffer
-        (insert (evergreen-status-text (alist-get 'status patch)))
+        (insert (format "%9s" (evergreen-status-text (alist-get 'status patch))))
         (insert " ")
         (insert
          (let ((description (alist-get 'description patch)))
