@@ -40,24 +40,30 @@
           )))
     (seq-map
      (lambda (variant-data)
-       (cons (gethash "displayName" variant-data)
-             (seq-map 'evergreen-task-info-parse (gethash "tasks" variant-data))))
+       (let ((variant-display-name (gethash "displayName" variant-data)))
+        (cons variant-display-name
+              (seq-map
+               (lambda (data) (evergreen-task-info-parse data variant-display-name))
+               (gethash "tasks" variant-data)))))
      (gethash "patchBuildVariants" buildvariants-data))
     ))
 
-(cl-defstruct evergreen-task-info id display-name status)
+(cl-defstruct evergreen-task-info id display-name status variant-display-name)
 
-(defun evergreen-task-info-parse (data)
+(defun evergreen-task-info-parse (data variant)
   (make-evergreen-task-info
    :id (gethash "id" data)
    :display-name (gethash "name" data)
    :status (gethash "status" data)
+   :variant-display-name variant
   ))
 
 (defun evergreen-view-task-at-point ()
   (interactive)
-  (if-let ((task (get-text-property (point) 'evergreen-task-info))
-           (build-variant (get-text-property (point) 'evergreen-build-variant)))
+  (if-let ((task (or
+                  (get-text-property (point) 'evergreen-task-info)
+                  (get-text-property (point) 'evergreen-element-data)))
+           (build-variant (evergreen-task-info-variant-display-name task)))
       (evergreen-view-task (evergreen-task-info-id task) build-variant))
   )
 
@@ -78,14 +84,52 @@
      (fill-paragraph)
      (buffer-string))))
 
-(defun evergreen-view-patch (patch)
-  (switch-to-buffer (get-buffer-create (format "evergreen-view-patch: %S" (truncate-string-to-width (evergreen-patch-description patch) 50 nil nil t))))
+(defun evergreen-switch-task-format ()
+  (interactive)
+  (evergreen-view-patch evergreen-current-patch
+                        (if (eq evergreen-task-format 'text) 'grid 'text)
+                        evergreen-current-patch-tasks))
+
+(defun evergreen-insert-variant-tasks (tasks task-format)
+  (if (eq task-format 'text)
+      (seq-do
+       (lambda (task)
+         (insert
+          (with-temp-buffer
+            (insert (format "%9s %s"
+                            (evergreen-status-text (evergreen-task-info-status task))
+                            (evergreen-task-info-display-name task)))
+            (put-text-property (point-min) (point-max) 'evergreen-task-info task)
+            (buffer-string)))
+         (newline))
+       tasks)
+    (insert
+     (evergreen-grid-create
+      ""
+      (seq-map
+       (lambda (task) (make-evergreen-grid-element
+                       :description (evergreen-task-info-display-name task)
+                       :status (evergreen-task-info-status task)
+                       :data task))
+       tasks)))))
+
+(defun evergreen-view-patch (patch &optional task-format patch-tasks)
+  (switch-to-buffer
+   (get-buffer-create
+    (format "evergreen-view-patch: %S" (truncate-string-to-width (evergreen-patch-description patch) 50 nil nil t))))
   (read-only-mode -1)
   (evergreen-view-patch-mode)
   (setq display-line-numbers nil)
   (erase-buffer)
   (setq-local evergreen-current-patch patch)
-  (insert (evergreen-view-patch-header-line "Patch Number" (format "%d" (evergreen-patch-number evergreen-current-patch))))
+  (setq-local evergreen-current-patch-tasks (or patch-tasks (evergreen-get-current-patch-tasks)))
+  (setq-local evergreen-task-format (or task-format 'grid))
+  (setq-local global-hl-line-mode nil)
+  (setq-local cursor-type "box")
+  (cursor-intangible-mode)
+  (cursor-sensor-mode)
+  (insert
+   (evergreen-view-patch-header-line "Patch Number" (format "%d" (evergreen-patch-number evergreen-current-patch))))
   (newline)
   (let ((description (evergreen-patch-description evergreen-current-patch)))
     (insert
@@ -93,7 +137,8 @@
       "Description"
       description)))
   (newline)
-  (insert (evergreen-view-patch-header-line "Status" (evergreen-status-text (evergreen-patch-status evergreen-current-patch))))
+  (insert
+   (evergreen-view-patch-header-line "Status" (evergreen-status-text (evergreen-patch-status evergreen-current-patch))))
   (newline)
   (insert (evergreen-view-patch-header-line "Created at" (evergreen-patch-create-time evergreen-current-patch)))
   (newline)
@@ -106,20 +151,9 @@
         (add-text-properties (point-min) (point-max) (list 'face 'bold-italic))
         (buffer-string)))
      (newline)
-     (seq-do
-      (lambda (task)
-        (insert
-         (with-temp-buffer
-           (insert (format "%9s %s"
-                   (evergreen-status-text (evergreen-task-info-status task))
-                   (evergreen-task-info-display-name task)))
-           (put-text-property (point-min) (point-max) 'evergreen-task-info task)
-           (put-text-property (point-min) (point-max) 'evergreen-build-variant (car variant-tasks))
-           (buffer-string)))
-        (newline))
-      (cdr variant-tasks))
+     (evergreen-insert-variant-tasks (cdr variant-tasks) task-format)
      (newline))
-   (evergreen-get-current-patch-tasks))
+   evergreen-current-patch-tasks)
   (read-only-mode)
   (goto-line 0)
   )
@@ -131,8 +165,9 @@
 
   (define-key evergreen-view-patch-mode-map (kbd "r") (lambda ()
                                                              (interactive)
-                                                             (evergreen-view-patch evergreen-current-patch)))
+                                                             (evergreen-view-patch evergreen-current-patch 'grid)))
   (define-key evergreen-view-patch-mode-map (kbd "<RET>") 'evergreen-view-task-at-point)
+  (define-key evergreen-view-patch-mode-map (kbd "f") 'evergreen-switch-task-format)
 
   (define-key evergreen-view-patch-mode-map (kbd "h") 'backward-char)
   (define-key evergreen-view-patch-mode-map (kbd "j") 'next-line)
