@@ -26,11 +26,11 @@
   - [X] view individual task buffer
   - [X] view task logs
 
-* TODO UI improvements [2/7]
+* TODO UI improvements [4/7]
   - [X] evergreen status page touch up
   - [X] patch list view
-  - [ ] patch results grid interface (old ui)
-  - [ ] navigate grid interface to select task
+  - [X] patch results grid interface (old ui)
+  - [X] navigate grid interface to select task
   - [ ] waterfall
   - [ ] task results page touch up
   - [ ] use task display name in view-task buffer name
@@ -52,3 +52,4 @@
 
 * TODO misc improvements
   - [ ] select shared tasks for multiple variants
+  - [ ] keybind for goto next failed task

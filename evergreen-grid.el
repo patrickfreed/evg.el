@@ -4,52 +4,52 @@
 
 (require 'cl-lib)
 
-(cl-defstruct evergreen-grid-element description status)
+(cl-defstruct evergreen-grid-element description status data)
 
 (defface evergreen-grid-success
   '((t
-     :background "forest green"
+     :background "#5cb85c"
      :foreground "black"
      :box t))
-  "success grid")
+  "success evergreen grid face")
 
-(defface evergreen-grid-fail
+(defface evergreen-grid-failed
   '((t
-     :background "red"
+     :background "#d9534f"
      :foreground "black"
      :box t))
-  "fail grid")
+  "fail evergreen grid face")
 
-(defface evergreen-grid-mouse
+(defface evergreen-grid-started
   '((t
-     :background "yellow"
+     :background "#ffb618"
      :foreground "black"
      :box t))
-  "fail grid")
+  "in progress evergreen grid face")
 
+(defface evergreen-grid-system-failure
+  '((t
+     :background "#800080"
+     :foreground "black"
+     :box t))
+  "system failure evergreen grid face")
 
-(defun hover-success (window prev-pos action) 
-  (message "in here %d" (point))
-  (message "%s" action)
-  (if (eq 'entered action)
-      (progn
-        (message "woooooo")
-        (set-text-properties (point) (+ (point) 1) '('face 'evergreen-grid-mouse)))
-    (set-text-properties (point) (+ (point) 1) (list 'face 'evergreen-grid-success))))
+(defface evergreen-grid-undispatched
+  '((t
+     :background "#bfbfbe"
+     :foreground "black"
+     :box t))
+  "undispatched evergreen grid face")
 
-;; (defun hover-fail () 
-;;   (lambda (window prev-pos action)
-;;     (message "in here")
-;;     (if (eq 'entered action)
-;;         (add-text-properties (point) (point) '('face 'evergreen-grid-mouse))
-;;       (add-text-properties (point) (point) (list 'face 'evergreen-grid-fail)))))
-
-;; (defun hover (face) 
-;;   (lambda (window prev-pos action)
-;;     (message "in here")
-;;     (if (eq 'entered action)
-;;         (add-text-properties (point) (point) '('face 'evergreen-grid-mouse))
-;;       (add-text-properties (point) (point) (list 'face face)))))
+(defun evergreen-grid-get-face (status)
+  (cond
+   ((string= "success" status) 'evergreen-grid-success)
+   ((string= "failed" status) 'evergreen-grid-failed)
+   ((string= "started" status) 'evergreen-grid-started)
+   ((string= "undispatched" status) 'evergreen-grid-undispatched)
+   ((string= "system-failed" status) 'evergreen-grid-system-failure)
+   (t 'evergreen-grid-undispatched)
+   ))
 
 (defun evergreen-grid-create (title elements)
   (with-temp-buffer
@@ -58,20 +58,16 @@
        (insert
         (with-temp-buffer
           (insert " ")
-          (let ((face
-                 (if (string= "success" (evergreen-grid-element-status element))
-                     'evergreen-grid-success
-                   'evergreen-grid-fail)))
-            (add-text-properties
-             (point-min)
-             (point-max)
-             (list
-              'face face
-              'mouse-face 'evergreen-grid-mouse
-              'cursor-sensor-functions (list 'hover-success)
-              )))
-          ;; (buffer-face-set 'evergreen-grid-fail)
-          ;; (buffer-face-mode)
+          (add-text-properties
+           (point-min)
+           (point-max)
+           (list 'face (evergreen-grid-get-face (evergreen-grid-element-status element))
+                 'help-echo (evergreen-grid-element-description element)
+                 'cursor-sensor-functions (list
+                                           (lambda (w p action)
+                                             (if (eq action 'entered)
+                                                 (message (evergreen-grid-element-description element)))))
+                 'evergreen-element-data (evergreen-grid-element-data element)))
           (insert
            (propertize
             " "
