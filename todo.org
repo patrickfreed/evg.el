@@ -26,12 +26,12 @@
   - [X] view individual task buffer
   - [X] view task logs
 
-* TODO UI improvements [5/10]
+* TODO UI/UX improvements [6/10]
   - [X] evergreen status page touch up
   - [X] patch list view
   - [X] patch results grid interface (old ui)
   - [X] navigate grid interface to select task
-  - [ ] task logs page touch up
+  - [X] task logs page touch up
   - [X] navigate back to patch from task
   - [ ] error detection regex
   - [ ] go to next error found
