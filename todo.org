@@ -26,14 +26,17 @@
   - [X] view individual task buffer
   - [X] view task logs
 
-* TODO UI improvements [4/7]
+* TODO UI improvements [5/10]
   - [X] evergreen status page touch up
   - [X] patch list view
   - [X] patch results grid interface (old ui)
   - [X] navigate grid interface to select task
-  - [ ] waterfall
-  - [ ] task results page touch up
+  - [ ] task logs page touch up
+  - [X] navigate back to patch from task
+  - [ ] error detection regex
+  - [ ] go to next error found
   - [ ] use task display name in view-task buffer name
+  - [ ] human readable timestamps
 
 * TODO logistics [0/4]
   - [ ] ensure in git-repo when evergreen-status is invoked (projectile integration?)
@@ -41,12 +44,22 @@
   - [ ] discover user name and api key from ~/.evergreen.yml
   - [ ] read project name from .evergreen-emacs file in repo
 
-* TODO task/patch reconfiguration [0/5]
+* TODO test results [0/3]
+  - [ ] show test results in task results buffer
+  - [ ] add button for viewing task logs
+  - [ ] view individual test result
+
+* TODO task/patch reconfiguration [0/6]
   - [ ] abort tasks
   - [ ] abort patches
   - [ ] reconfigure patches
   - [ ] restart patches
   - [ ] restart tasks
+
+* TODO waterfall [0/3]
+  - [ ] version list on status page
+  - [ ] successful/error tasks for each version
+  - [ ] view version results
 
 * TODO diffs
 

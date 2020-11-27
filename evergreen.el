@@ -5,6 +5,7 @@
 (require 'evergreen-configure)
 (require 'evergreen-view-patch)
 (require 'evergreen-view-task)
+(require 'evergreen-grid)
 
 (require 'json)
 
