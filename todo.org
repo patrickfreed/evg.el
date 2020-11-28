@@ -26,18 +26,21 @@
   - [X] view individual task buffer
   - [X] view task logs
 
-* TODO UI/UX improvements [6/10]
+* TODO UI/UX improvements [8/11]
   - [X] evergreen status page touch up
   - [X] patch list view
   - [X] patch results grid interface (old ui)
   - [X] navigate grid interface to select task
   - [X] task logs page touch up
   - [X] navigate back to patch from task
-  - [ ] error detection regex
-  - [ ] go to next error found
+  - [X] error detection regex
+  - [X] go to next error found
   - [ ] use task display name in view-task buffer name
   - [ ] human readable timestamps
+  - [ ] model log view after lobster
 
+* TODO switch from request to builtin url
+ 
 * TODO logistics [0/4]
   - [ ] ensure in git-repo when evergreen-status is invoked (projectile integration?)
   - [ ] prompt for project-name, default to GH repo name
