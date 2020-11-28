@@ -8,6 +8,7 @@
 (require 'evergreen-grid)
 
 (require 'json)
+(require 'projectile)
 
 (defun evergreen-status-text (status)
   (with-temp-buffer
@@ -50,8 +51,25 @@
     )
   )
 
+(defun evergreen-read-project-name ()
+  "Get the project name from user input, defaulting to the current projectile project.
+   This requires projectile."
+  (let*
+      ((default-project-name
+         (if-let ((name-projectile (projectile-project-name)))
+             (if (string= name-projectile "-")
+                 (error "not in a projectile-project")
+               name-projectile)))
+       (prompt
+        (cond
+         (default-project-name (format "Project name (%s): " default-project-name))
+         (t "Project name: "))))
+    (read-string prompt nil nil default-project-name)))
+
 (defun evergreen-status (project-name)
   "Open the evergreen status page for the given project"
+  (interactive (list (evergreen-read-project-name)))
+  (message "fetching %s evergreen status..." project-name)
   (switch-to-buffer (get-buffer-create (format "evergreen-status: %s" project-name)))
   (read-only-mode -1)
   (erase-buffer)
@@ -165,7 +183,6 @@
 (defun evergreen-list-patches ()
   "Fetch list of incomplete patches recently submitted by the user."
   (interactive)
-  (message "listing patches for %s" evergreen-project-name)
   (seq-filter
    (lambda (patch)
      (and
