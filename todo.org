@@ -26,7 +26,8 @@
   - [X] view individual task buffer
   - [X] view task logs
 
-* TODO UI/UX improvements [10/11]
+* DONE UI/UX improvements [11/11]
+  CLOSED: [2020-11-28 Sat 00:33]
   - [X] evergreen status page touch up
   - [X] patch list view
   - [X] patch results grid interface (old ui)
@@ -37,15 +38,16 @@
   - [X] go to next error found
   - [X] use task display name in view-task buffer name
   - [X] human readable timestamps
-  - [ ] use themed success / fail colors instead of evg website colors
+  - [X] use themed success / fail colors instead of evg website colors
 
 * TODO switch from request to builtin url
  
-* TODO logistics [0/4]
+* TODO logistics [0/5]
   - [ ] ensure in git-repo when evergreen-status is invoked (projectile integration?)
   - [ ] prompt for project-name, default to GH repo name
   - [ ] discover user name and api key from ~/.evergreen.yml
   - [ ] read project name from .evergreen-emacs file in repo
+  - [ ] distribute as package
 
 * TODO test results [0/3]
   - [ ] show test results in task results buffer
@@ -64,10 +66,16 @@
   - [ ] successful/error tasks for each version
   - [ ] view version results
 
+* TODO proper evil detection and integration [0/2]
+  - [ ] default emacs-compatible bindings
+  - [ ] detect evil and use evil-compatible bindings
+
+---------------- release ready here ---------------
+
 * TODO diffs
 
 * TODO log viewer highlighting improvements (based on lobster)
 
-* TODO misc improvements
+* TODO misc improvements [0/2]
   - [ ] select shared tasks for multiple variants
   - [ ] keybind for goto next failed task

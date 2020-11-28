@@ -7,22 +7,22 @@
 (cl-defstruct evergreen-grid-element description status data)
 
 (defface evergreen-grid-success
-  '((t
-     :background "#5cb85c"
+  `((t
+     :background ,(face-attribute 'success :foreground)
      :foreground "black"
      :box t))
   "success evergreen grid face")
 
 (defface evergreen-grid-failed
-  '((t
-     :background "#d9534f"
+  `((t
+     :background ,(face-attribute 'error :foreground)
      :foreground "black"
      :box t))
   "fail evergreen grid face")
 
 (defface evergreen-grid-started
-  '((t
-     :background "#ffb618"
+  `((t
+     :background ,(face-attribute 'warning :foreground)
      :foreground "black"
      :box t))
   "in progress evergreen grid face")
