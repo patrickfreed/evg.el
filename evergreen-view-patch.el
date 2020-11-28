@@ -64,7 +64,7 @@
                   (get-text-property (point) 'evergreen-task-info)
                   (get-text-property (point) 'evergreen-element-data)))
            (build-variant (evergreen-task-info-variant-display-name task)))
-      (evergreen-view-task (evergreen-task-info-id task) build-variant (current-buffer)))
+      (evergreen-view-task (evergreen-task-info-id task) build-variant (evergreen-patch-number evergreen-current-patch) (current-buffer)))
   )
 
 (defun evergreen-view-patch-data (data)

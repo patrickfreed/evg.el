@@ -60,7 +60,7 @@
 (defun evergreen-view-task-refresh ()
   (interactive)
   (evergreen-view-task
-   (evergreen-task-id evergreen-current-task) evergreen-build-variant evergreen-patch-buffer))
+   (evergreen-task-id evergreen-current-task) evergreen-build-variant evergreen-patch-number evergreen-patch-buffer))
 
 (defun evergreen-view-task-back-to-patch ()
   (interactive)
@@ -78,18 +78,19 @@
          (set-text-properties start end (list 'face 'diff-removed))
          )))))
 
-(defun evergreen-view-task (task-id build-variant previous-buffer)
-  (switch-to-buffer (get-buffer-create (format "evergreen-view-task: %S" task-id)))
-  (evergreen-view-task-mode)
-  (read-only-mode -1)
-  (erase-buffer)
-  (setq-local evergreen-build-variant build-variant)
-  (setq-local evergreen-current-task (evergreen-get-task task-id))
-  (setq-local evergreen-patch-buffer previous-buffer)
-  (let ((task evergreen-current-task) (build-variant evergreen-build-variant))
+(defun evergreen-view-task (task-id build-variant patch-number previous-buffer)
+  (let* ((task (evergreen-get-task task-id)) (full-display-name (format "%s on %s" (evergreen-task-display-name task) build-variant)))
+    (switch-to-buffer (get-buffer-create (format "evergreen-view-task: Patch %d %S" patch-number full-display-name)))
+    (evergreen-view-task-mode)
+    (read-only-mode -1)
+    (erase-buffer)
+    (setq-local evergreen-build-variant build-variant)
+    (setq-local evergreen-current-task (evergreen-get-task task-id))
+    (setq-local evergreen-patch-buffer previous-buffer)
+    (setq-local evergreen-patch-number patch-number)
     (insert
      (with-temp-buffer
-       (insert (format "%s on %s" (evergreen-task-display-name task) build-variant))
+       (insert full-display-name)
        (add-text-properties (point-min) (point-max) (list 'face 'evergreen-view-task-title))
        (buffer-string)))
     (newline)
@@ -100,10 +101,10 @@
     (insert
      (with-temp-buffer
        (insert (evergreen-get-string (format "%s&text=true" (evergreen-task-task-log task))))
-       (buffer-string))))
-  (read-only-mode)
-  (goto-line 0)
-  )
+       (buffer-string)))
+    (read-only-mode)
+    (goto-line 0)
+    ))
 
 (defvar evergreen-view-task-mode-map nil "Keymap for evergreen-view-task buffers")
 
