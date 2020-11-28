@@ -26,7 +26,7 @@
   - [X] view individual task buffer
   - [X] view task logs
 
-* TODO UI/UX improvements [9/11]
+* TODO UI/UX improvements [10/11]
   - [X] evergreen status page touch up
   - [X] patch list view
   - [X] patch results grid interface (old ui)
@@ -36,8 +36,8 @@
   - [X] error detection regex
   - [X] go to next error found
   - [X] use task display name in view-task buffer name
-  - [ ] human readable timestamps
-  - [ ] model log view after lobster
+  - [X] human readable timestamps
+  - [ ] use themed success / fail colors instead of evg website colors
 
 * TODO switch from request to builtin url
  
@@ -65,6 +65,8 @@
   - [ ] view version results
 
 * TODO diffs
+
+* TODO log viewer highlighting improvements (based on lobster)
 
 * TODO misc improvements
   - [ ] select shared tasks for multiple variants

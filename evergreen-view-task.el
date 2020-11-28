@@ -96,7 +96,7 @@
     (newline)
     (insert (evergreen-view-task-header-line "Status" (evergreen-status-text (evergreen-task-status task))))
     (newline)
-    (insert (evergreen-view-task-header-line "Started at" (evergreen-task-start-time task)))
+    (insert (evergreen-view-task-header-line "Started at" (evergreen-date-string (evergreen-task-start-time task))))
     (newline 2)
     (insert
      (with-temp-buffer

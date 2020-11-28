@@ -22,6 +22,10 @@
     (buffer-string)
   ))
 
+(defun evergreen-date-string (date)
+  "Get human-readable string version of the provided date string"
+  (format-time-string "%b %e, %Y, %r" (date-to-time date)))
+
 (defun evergreen-submit-patch (project-name description)
   "Submit a patch to the given project with the given description. Returns the patch's ID."
   (let (output command)

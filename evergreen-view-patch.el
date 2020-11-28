@@ -140,7 +140,7 @@
   (insert
    (evergreen-view-patch-header-line "Status" (evergreen-status-text (evergreen-patch-status evergreen-current-patch))))
   (newline)
-  (insert (evergreen-view-patch-header-line "Created at" (evergreen-patch-create-time evergreen-current-patch)))
+  (insert (evergreen-view-patch-header-line "Created at" (evergreen-date-string (evergreen-patch-create-time evergreen-current-patch))))
   (newline)
   (newline 2)
   (seq-do
