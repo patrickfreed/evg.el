@@ -40,11 +40,12 @@
   - [X] human readable timestamps
   - [X] use themed success / fail colors instead of evg website colors
 
-* TODO logistics [3/5]
+* TODO logistics [3/6]
   - [X] ensure in git-repo when evergreen-status is invoked (projectile integration?)
   - [X] prompt for project-name, default to projectile project name
   - [X] discover user name and api key from ~/.evergreen.yml
   - [ ] allow multiple evergreen projects
+  - [ ] cache evergreen project name
   - [ ] distribute as package
 
 * TODO test results [0/3]
