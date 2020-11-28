@@ -51,6 +51,23 @@
     )
   )
 
+(defun evergreen-init ()
+  "Load credentials from ~/.evergreen.yml if unset.
+   This function may be invoked repeatedly, all but the first
+   invocation are no-ops."
+  (if (not (boundp 'evergreen-api-key))
+      (with-temp-buffer
+        (insert-file-contents "~/.evergreen.yml")
+        (goto-char (point-min))
+        (if (search-forward-regexp "api_key: \"\\([a-z0-9]*\\)\"")
+            (setq evergreen-api-key (match-string 1))
+          (error "api key not included in ~/.evergreen.yml"))
+        (goto-char (point-min))
+        (if (search-forward-regexp "user: \"\\(.*\\)\"")
+            (setq evergreen-user (match-string 1))
+          (error "api user not included in ~/.evergreen.yml"))
+        )))
+
 (defun evergreen-read-project-name ()
   "Get the project name from user input, defaulting to the current projectile project.
    This requires projectile."
@@ -76,8 +93,7 @@
   (insert (format "Project: %s" project-name))
   (evergreen-mode)
   (setq evergreen-project-name project-name)
-  (setq evergreen-user (getenv "EVG_API_USER"))
-  (setq evergreen-api-key (getenv "EVG_API_KEY"))
+  (evergreen-init)
   (setq-local evergreen-recent-patches (evergreen-list-patches))
 
   (newline 2)
