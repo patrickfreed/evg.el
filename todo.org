@@ -40,8 +40,6 @@
   - [X] human readable timestamps
   - [X] use themed success / fail colors instead of evg website colors
 
-* TODO switch from request to builtin url
- 
 * TODO logistics [0/5]
   - [ ] ensure in git-repo when evergreen-status is invoked (projectile integration?)
   - [ ] prompt for project-name, default to GH repo name
@@ -69,6 +67,8 @@
 * TODO proper evil detection and integration [0/2]
   - [ ] default emacs-compatible bindings
   - [ ] detect evil and use evil-compatible bindings
+
+* TODO switch from request to builtin url
 
 ---------------- release ready here ---------------
 
