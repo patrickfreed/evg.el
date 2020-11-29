@@ -10,6 +10,12 @@
 (require 'json)
 (require 'projectile)
 
+(defcustom evergreen-always-prompt-for-project-name
+  t
+  "Whether to always ask for the project name when invoking evergreen-status. If nil, only prompt for project name if not in a 
+   projectile project. Defaults to t."
+  :type 'boolean)
+
 (defun evergreen-status-text (status)
   (with-temp-buffer
     (insert status)
@@ -81,7 +87,9 @@
         (cond
          (default-project-name (format "Project name (%s): " default-project-name))
          (t "Project name: "))))
-    (read-string prompt nil nil default-project-name)))
+    (if (or evergreen-always-prompt-for-project-name (not default-project-name))
+        (read-string prompt nil nil default-project-name)
+      default-project-name)))
 
 (defun evergreen-status (project-name)
   "Open the evergreen status page for the given project"
