@@ -40,13 +40,13 @@
   - [X] human readable timestamps
   - [X] use themed success / fail colors instead of evg website colors
 
-* TODO logistics [3/6]
+* TODO logistics [4/6]
   - [X] ensure in git-repo when evergreen-status is invoked (projectile integration?)
   - [X] prompt for project-name, default to projectile project name
   - [X] discover user name and api key from ~/.evergreen.yml
+  - [X] prepare for installation
   - [ ] allow multiple evergreen projects
   - [ ] cache evergreen project name
-  - [ ] distribute as package
 
 * TODO test results [0/3]
   - [ ] show test results in task results buffer
@@ -71,14 +71,19 @@
 
 * TODO switch from request to builtin url
 
+* TODO prepare for release
+  - [ ] installation instructions
+  - [ ] readme
+
 ---------------- release ready here ---------------
 
 * TODO diffs
 
 * TODO log viewer highlighting improvements (based on lobster)
 
-* TODO misc improvements [0/4]
+* TODO misc improvements [0/5]
   - [ ] select shared tasks for multiple variants
   - [ ] keybind for goto next failed task
   - [ ] select project name from those specified in ~/.evergreen.yml
   - [ ] drop hard requirement for projectile
+  - [ ] add backwards navigation from patch

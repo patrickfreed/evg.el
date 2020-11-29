@@ -6,49 +6,44 @@
 
 (cl-defstruct evergreen-grid-element description status data)
 
-(defface evergreen-grid-success
+(defun evergreen-grid-success ()
   `((t
      :background ,(face-attribute 'success :foreground)
      :foreground "black"
-     :box t))
-  "success evergreen grid face")
+     :box t)))
 
-(defface evergreen-grid-failed
+(defun evergreen-grid-failed ()
   `((t
      :background ,(face-attribute 'error :foreground)
      :foreground "black"
-     :box t))
-  "fail evergreen grid face")
+     :box t)))
 
-(defface evergreen-grid-started
+(defun evergreen-grid-started ()
   `((t
      :background ,(face-attribute 'warning :foreground)
      :foreground "black"
-     :box t))
-  "in progress evergreen grid face")
+     :box t)))
 
-(defface evergreen-grid-system-failure
+(defun evergreen-grid-system-failure ()
   '((t
      :background "#800080"
      :foreground "black"
-     :box t))
-  "system failure evergreen grid face")
+     :box t)))
 
-(defface evergreen-grid-undispatched
+(defun evergreen-grid-undispatched ()
   '((t
      :background "#bfbfbe"
      :foreground "black"
-     :box t))
-  "undispatched evergreen grid face")
+     :box t)))
 
 (defun evergreen-grid-get-face (status)
   (cond
-   ((string= "success" status) 'evergreen-grid-success)
-   ((string= "failed" status) 'evergreen-grid-failed)
-   ((string= "started" status) 'evergreen-grid-started)
-   ((string= "undispatched" status) 'evergreen-grid-undispatched)
-   ((string= "system-failed" status) 'evergreen-grid-system-failure)
-   (t 'evergreen-grid-undispatched)
+   ((string= "success" status) (evergreen-grid-success))
+   ((string= "failed" status) (evergreen-grid-failed))
+   ((string= "started" status) (evergreen-grid-started))
+   ((string= "undispatched" status) (evergreen-grid-undispatched))
+   ((string= "system-failed" status) (evergreen-grid-system-failure))
+   (t (evergreen-grid-undispatched))
    ))
 
 (defun evergreen-grid-create (title elements)
