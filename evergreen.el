@@ -92,9 +92,9 @@
   (erase-buffer)
   (insert (format "Project: %s" project-name))
   (evergreen-mode)
-  (setq evergreen-project-name project-name)
+  (setq-local evergreen-project-name project-name)
   (evergreen-init)
-  (setq-local evergreen-recent-patches (evergreen-list-patches))
+  (setq-local evergreen-recent-patches (evergreen-list-patches evergreen-project-name))
 
   (newline 2)
   (insert (format "Recent Patches:"))
@@ -116,22 +116,16 @@
      (newline))
    evergreen-recent-patches)
   (read-only-mode)
-  (goto-line 0)
-  (message evergreen-project-name))
+  (goto-line 0))
 
 (defun evergreen-inspect-patch-at-point ()
   (interactive)
   (if-let ((patch (get-text-property (point) 'evergreen-patch)))
       (evergreen-view-patch-data patch)))
 
-(defun evergreen-status-debug ()
+(defun evergreen-status-refresh ()
   (interactive)
-  (evergreen-status "mongo-rust-driver"))
-
-(defun evergreen-debug ()
-  (interactive)
-  (evergreen-get-patch-variants "5f98b24fd6d80a586d0d1288")
-  )
+  (evergreen-status evergreen-project-name))
 
 (defvar evergreen-mode-map nil "Keymap for evergreen-status page")
 
@@ -140,8 +134,7 @@
 
   (define-key evergreen-mode-map (kbd "<RET>") 'evergreen-inspect-patch-at-point)
   (define-key evergreen-mode-map (kbd "p") 'evergreen-patch)
-  (define-key evergreen-mode-map (kbd "d") 'evergreen-debug)
-  (define-key evergreen-mode-map (kbd "r") 'evergreen-status-debug)
+  (define-key evergreen-mode-map (kbd "g r") 'evergreen-status-refresh)
 
   (define-key evergreen-mode-map (kbd "h") 'backward-char)
   (define-key evergreen-mode-map (kbd "j") 'forward-line)
@@ -196,16 +189,15 @@
     :parser 'json-read))
   )
 
-(defun evergreen-list-patches ()
+(defun evergreen-list-patches (project-name)
   "Fetch list of incomplete patches recently submitted by the user."
-  (interactive)
   (seq-filter
    (lambda (patch)
      (and
       (string= evergreen-user (alist-get 'author patch))
       t))
    (evergreen-get
-    (format "https://evergreen.mongodb.com/api/rest/v2/projects/%s/patches" evergreen-project-name)
+    (format "https://evergreen.mongodb.com/api/rest/v2/projects/%s/patches" project-name)
     '(("limit" . 15))
     )
    )
