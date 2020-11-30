@@ -49,12 +49,15 @@
   - [X] allow configuration of project prompt
   - [X] cache evergreen project name
 
-* TODO test results [0/3]
-  - [ ] show test results in task results buffer
+* TODO test results [2/5]
+  - [X] show test results in task results buffer
   - [ ] add button for viewing task logs
-  - [ ] view individual test result
+  - [X] view individual test result
+  - [ ] define major mode for test results file
+  - [ ] add key binding for going back to task from test buffer
 
 * TODO task/patch reconfiguration [0/6]
+  - [ ] configure "created" patches
   - [ ] abort tasks
   - [ ] abort patches
   - [ ] reconfigure patches
@@ -72,7 +75,7 @@
 
 * TODO switch from request to builtin url
 
-* TODO prepare for release
+* TODO prepare repository for release
   - [ ] installation instructions
   - [ ] readme
 

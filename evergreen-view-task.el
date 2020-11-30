@@ -14,9 +14,36 @@
   task-log
   agent-log
   system-log
-  event-log)
+  event-log
+  tests)
 
-(defun evergreen-task-parse (data)
+(cl-defstruct evergreen-task-test
+  file-name
+  status
+  log-url
+  log-line
+  start-time
+  finish-time)
+
+(defun evergreen-task-test-parse (test-data)
+  (let ((logs (alist-get 'logs test-data)))
+    (make-evergreen-task-test
+     :file-name (alist-get 'test_file test-data)
+     :status (alist-get 'status test-data)
+     :start-time (alist-get 'start_time test-data)
+     :finish-time (alist-get 'end_time test-data)
+     :log-url (alist-get 'url_raw_display logs)
+     :log-line (alist-get 'line_num logs))))
+
+(defun evergreen-task-test-insert (test)
+  (insert
+   (with-temp-buffer
+     (insert (format "%7s %s" (evergreen-status-text (evergreen-task-test-status test)) (evergreen-task-test-file-name test)))
+     (put-text-property (point-min) (point-max) 'evergreen-task-test test)
+     (buffer-string)))
+  (newline))
+
+(defun evergreen-task-parse (data test-data)
   (let ((logs (alist-get 'logs data)))
     (make-evergreen-task
      :id (alist-get 'task_id data)
@@ -28,10 +55,11 @@
      :task-log (alist-get 'task_log logs)
      :agent-log (alist-get 'agent_log logs)
      :system-log (alist-get 'system_log logs)
-     :event-log (alist-get 'event_log logs))))
+     :event-log (alist-get 'event_log logs)
+     :tests (seq-map 'evergreen-task-test-parse test-data))))
 
 (defun evergreen-get-task (task-id)
-  (evergreen-task-parse (evergreen-get-p (format "tasks/%s" task-id))))
+  (evergreen-task-parse (evergreen-get-p (format "tasks/%s" task-id)) (evergreen-get-p (format "tasks/%s/tests" task-id) '(("limit" . 100000)))))
 
 (defvar evergreen-task-error-regexp-alist '(("mongo-rust-driver" "thread '.*' panicked" "run with `RUST_BACKTRACE=full` for a verbose backtrace")))
 
@@ -78,6 +106,25 @@
          (set-text-properties start end (list 'face 'diff-removed))
          )))))
 
+(defun evergreen-view-test-at-point ()
+  (interactive)
+  (if-let ((test (get-text-property (point) 'evergreen-task-test)))
+      (if (string= "" (evergreen-task-test-log-url test))
+          (message "no logs to view")
+        (switch-to-buffer
+         (get-buffer-create
+          (format "evergreen-view-test: Patch %d %s on %S"
+                  evergreen-patch-number (evergreen-task-test-file-name test) (evergreen-current-task-full-name))))
+        (fundamental-mode)
+        (read-only-mode -1)
+        (erase-buffer)
+        (insert (evergreen-get-string (format "https://evergreen.mongodb.com/%s&text=true" (evergreen-task-test-log-url test))))
+        (compilation-mode)
+        (read-only-mode))))
+
+(defun evergreen-current-task-full-name ()
+  (format "%s on %s" (evergreen-task-display-name evergreen-current-task) evergreen-build-variant))
+
 (defun evergreen-view-task (task-id build-variant patch-number previous-buffer)
   (let* ((task (evergreen-get-task task-id)) (full-display-name (format "%s on %s" (evergreen-task-display-name task) build-variant)))
     (switch-to-buffer (get-buffer-create (format "evergreen-view-task: Patch %d %S" patch-number full-display-name)))
@@ -98,10 +145,17 @@
     (newline)
     (insert (evergreen-view-task-header-line "Started at" (evergreen-date-string (evergreen-task-start-time task))))
     (newline 2)
-    (insert
-     (with-temp-buffer
-       (insert (evergreen-get-string (format "%s&text=true" (evergreen-task-task-log task))))
-       (buffer-string)))
+    (let
+        ((failed-tests (seq-filter (lambda (test) (string= "fail" (evergreen-task-test-status test))) (evergreen-task-tests task)))
+         (passed-tests (seq-filter (lambda (test) (string= "pass" (evergreen-task-test-status test))) (evergreen-task-tests task))))
+      (insert (format "Test Results (%d passed, %d failed)" (length passed-tests) (length failed-tests)))
+      (newline)
+      (seq-do 'evergreen-task-test-insert failed-tests)
+      (seq-do 'evergreen-task-test-insert passed-tests))
+    ;; (insert
+    ;;  (with-temp-buffer
+    ;;    (insert (evergreen-get-string (format "%s&text=true" (evergreen-task-task-log task))))
+    ;;    (buffer-string)))
     (read-only-mode)
     (goto-line 0)
     ))
@@ -112,6 +166,7 @@
   (setq evergreen-view-task-mode-map (make-sparse-keymap))
 
   (define-key evergreen-view-task-mode-map (kbd "~") 'evergreen-view-task-back-to-patch)
+  (define-key evergreen-view-task-mode-map (kbd "<RET>") 'evergreen-view-test-at-point)
   (define-key evergreen-view-task-mode-map (kbd "r") 'evergreen-view-task-refresh)
 
   (define-key evergreen-view-task-mode-map (kbd "h") 'backward-char)
@@ -122,6 +177,6 @@
 
 (define-derived-mode
   evergreen-view-task-mode
-  compilation-mode
+  fundamental-mode
   "Evergreen"
   "Major mode for evergreen-view-task buffer")

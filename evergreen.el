@@ -21,7 +21,7 @@
     (insert status)
     (let ((status-face
            (cond
-            ((string-match-p "succ" status) 'success)
+            ((string-match-p "\\(succ\\|pass\\)" status) 'success)
             ((string-match-p "fail" status) 'error)
             ((string-match-p "start" status) 'warning)
             (t 'shadow))))
