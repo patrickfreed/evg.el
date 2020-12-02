@@ -49,12 +49,13 @@
   - [X] allow configuration of project prompt
   - [X] cache evergreen project name
 
-* TODO test results [3/5]
+* DONE test results [5/5]
+  CLOSED: [2020-12-02 Wed 02:19]
   - [X] show test results in task results buffer
   - [X] add button for viewing task logs
   - [X] view individual test result
-  - [ ] define major mode for test results file
-  - [ ] add key binding for going back to task from test buffer
+  - [X] define major mode for test results file
+  - [X] add key binding for going back to task from test buffer
 
 * TODO task/patch reconfiguration [0/6]
   - [ ] configure "created" patches
@@ -83,11 +84,15 @@
 
 * TODO diffs
 
-* TODO log viewer highlighting improvements (based on lobster)
+* TODO log viewer highlighting improvements
+  - [ ] across the board prettifying (based on lobster)
+  - [ ] per-project log viewer hooks for custom formatting
 
-* TODO misc improvements [0/6]
+* TODO misc improvements [0/7]
   - [ ] select shared tasks for multiple variants
   - [ ] keybind for goto next failed task
   - [ ] select project name from those specified in ~/.evergreen.yml
   - [ ] drop hard requirement for projectile
   - [ ] add backwards navigation from patch
+  - [ ] indicate text is "clickable" on hover/point entry
+  - [ ] add breadcrumbs header for navigating patch > task > test

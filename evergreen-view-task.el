@@ -97,9 +97,9 @@
 (defun evergreen-view-current-task-logs ()
   "Switch to a buffer displaying the current task's logs"
   (let ((current-task evergreen-current-task))
-    (switch-to-buffer (get-buffer-create (format "evergreen-view-task-logs: Patch %d %s" evergreen-patch-number (evergreen-current-task-full-name))))
-    (insert (evergreen-get-string (format "%s&text=true" (evergreen-task-task-log current-task))))
-    (evergreen-view-task-logs-mode)))
+    (evergreen-view-logs
+     (format "Patch %d %s" evergreen-patch-number (evergreen-current-task-full-name))
+     (evergreen-get-string (format "%s&text=true" (evergreen-task-task-log current-task))))))
 
 (defun evergreen-view-task-highlight-errors ()
   "Highlight the error portions of the log output based on provided regex.
@@ -116,18 +116,12 @@
 (defun evergreen-view-test-at-point ()
   (interactive)
   (if-let ((test (get-text-property (point) 'evergreen-task-test)))
-      (if (string= "" (evergreen-task-test-log-url test))
+      (if (or (not (evergreen-task-test-log-url test)) (string= "" (evergreen-task-test-log-url test)))
           (message "no logs to view")
-        (switch-to-buffer
-         (get-buffer-create
-          (format "evergreen-view-test: Patch %d %s on %S"
-                  evergreen-patch-number (evergreen-task-test-file-name test) (evergreen-current-task-full-name))))
-        (fundamental-mode)
-        (read-only-mode -1)
-        (erase-buffer)
-        (insert (evergreen-get-string (format "https://evergreen.mongodb.com/%s&text=true" (evergreen-task-test-log-url test))))
-        (compilation-mode)
-        (read-only-mode))))
+        (evergreen-view-logs
+         (format "evergreen-view-test: Patch %d %s on %S"
+                 evergreen-patch-number (evergreen-task-test-file-name test) (evergreen-current-task-full-name))
+         (evergreen-get-string (format "https://evergreen.mongodb.com/%s&text=true" (evergreen-task-test-log-url test)))))))
 
 (defun evergreen-current-task-full-name ()
   (format "%s on %s" (evergreen-task-display-name evergreen-current-task) evergreen-build-variant))
@@ -191,7 +185,28 @@
   "Major mode for evergreen-view-task buffer")
 
 (define-derived-mode
-  evergreen-view-task-logs-mode
+  evergreen-view-logs-mode
   compilation-mode
-  "Evergreen Task Logs"
-  "Major mode for evergreen-view-task-logs buffer")
+  "Evergreen Logs"
+  "Major mode for viewing evergreen logs")
+
+(defvar evergreen-view-logs-mode-map nil "Keymap for evergreen-view-logs buffers")
+
+(progn
+  (setq evergreen-view-logs-mode-map (make-sparse-keymap))
+
+  (define-key evergreen-view-logs-mode-map (kbd "~") 'evergreen-view-logs-back))
+
+(defun evergreen-view-logs-back ()
+  (interactive)
+  (switch-to-buffer evergreen-previous-buffer))
+
+(defun evergreen-view-logs (buffer-name logs)
+  (let ((back-buffer (current-buffer)))
+    (switch-to-buffer (get-buffer-create (format "evergreen-view-logs: %s" buffer-name)))
+    (fundamental-mode)
+    (read-only-mode -1)
+    (insert logs)
+    (evergreen-view-logs-mode)
+    (setq-local evergreen-previous-buffer back-buffer)
+    (setq-local header-line-format buffer-name)))

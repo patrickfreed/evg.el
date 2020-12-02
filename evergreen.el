@@ -204,7 +204,8 @@
   (seq-filter
    (lambda (patch)
      (and
-      (string= evergreen-user (alist-get 'author patch))
+      t
+      ;; (string= evergreen-user (alist-get 'author patch))
       t))
    (evergreen-get
     (format "https://evergreen.mongodb.com/api/rest/v2/projects/%s/patches" project-name)
