@@ -94,6 +94,13 @@
   (interactive)
   (switch-to-buffer evergreen-patch-buffer))
 
+(defun evergreen-view-current-task-logs ()
+  "Switch to a buffer displaying the current task's logs"
+  (let ((current-task evergreen-current-task))
+    (switch-to-buffer (get-buffer-create (format "evergreen-view-task-logs: Patch %d %s" evergreen-patch-number (evergreen-current-task-full-name))))
+    (insert (evergreen-get-string (format "%s&text=true" (evergreen-task-task-log current-task))))
+    (evergreen-view-task-logs-mode)))
+
 (defun evergreen-view-task-highlight-errors ()
   "Highlight the error portions of the log output based on provided regex.
    This code is not used in favor of simply enabling compilation-mode. Kept here if needed
@@ -145,6 +152,8 @@
     (newline)
     (insert (evergreen-view-task-header-line "Started at" (evergreen-date-string (evergreen-task-start-time task))))
     (newline 2)
+    (insert-button "View Task Logs" 'action (lambda (b) (evergreen-view-current-task-logs)))
+    (newline 2)
     (let
         ((failed-tests (seq-filter (lambda (test) (string= "fail" (evergreen-task-test-status test))) (evergreen-task-tests task)))
          (passed-tests (seq-filter (lambda (test) (string= "pass" (evergreen-task-test-status test))) (evergreen-task-tests task))))
@@ -178,5 +187,11 @@
 (define-derived-mode
   evergreen-view-task-mode
   fundamental-mode
-  "Evergreen"
+  "Evergreen Task"
   "Major mode for evergreen-view-task buffer")
+
+(define-derived-mode
+  evergreen-view-task-logs-mode
+  compilation-mode
+  "Evergreen Task Logs"
+  "Major mode for evergreen-view-task-logs buffer")

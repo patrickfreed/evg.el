@@ -49,9 +49,9 @@
   - [X] allow configuration of project prompt
   - [X] cache evergreen project name
 
-* TODO test results [2/5]
+* TODO test results [3/5]
   - [X] show test results in task results buffer
-  - [ ] add button for viewing task logs
+  - [X] add button for viewing task logs
   - [X] view individual test result
   - [ ] define major mode for test results file
   - [ ] add key binding for going back to task from test buffer
@@ -85,7 +85,7 @@
 
 * TODO log viewer highlighting improvements (based on lobster)
 
-* TODO misc improvements [0/5]
+* TODO misc improvements [0/6]
   - [ ] select shared tasks for multiple variants
   - [ ] keybind for goto next failed task
   - [ ] select project name from those specified in ~/.evergreen.yml
