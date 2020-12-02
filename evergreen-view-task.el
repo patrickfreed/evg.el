@@ -209,4 +209,5 @@
     (insert logs)
     (evergreen-view-logs-mode)
     (setq-local evergreen-previous-buffer back-buffer)
-    (setq-local header-line-format buffer-name)))
+    (setq-local header-line-format buffer-name)
+    (goto-char (point-min))))
