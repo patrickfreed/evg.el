@@ -65,11 +65,11 @@
       (with-temp-buffer
         (insert-file-contents "~/.evergreen.yml")
         (goto-char (point-min))
-        (if (search-forward-regexp "api_key: \"\\([a-z0-9]*\\)\"")
+        (if (search-forward-regexp "api_key: \"?\\([a-z0-9]*\\)\"?$")
             (setq evergreen-api-key (match-string 1))
           (error "api key not included in ~/.evergreen.yml"))
         (goto-char (point-min))
-        (if (search-forward-regexp "user: \"\\(.*\\)\"")
+        (if (search-forward-regexp "user: \"?\\(.*\\)\"?$")
             (setq evergreen-user (match-string 1))
           (error "api user not included in ~/.evergreen.yml"))
         )))
