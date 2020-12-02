@@ -74,15 +74,13 @@
   - [ ] default emacs-compatible bindings
   - [ ] detect evil and use evil-compatible bindings
 
-* TODO switch from request to builtin url
+* TODO switch from request to builtin url or use async request
 
 * TODO prepare repository for release
   - [ ] installation instructions
   - [ ] readme
 
 ---------------- release ready here ---------------
-
-* TODO diffs
 
 * TODO log viewer highlighting improvements
   - [ ] across the board prettifying (based on lobster)
@@ -96,3 +94,6 @@
   - [ ] add backwards navigation from patch
   - [ ] indicate text is "clickable" on hover/point entry
   - [ ] add breadcrumbs header for navigating patch > task > test
+
+* TODO diffs
+
