@@ -172,22 +172,22 @@
             (seq-filter
              (lambda (variant) (> (evergreen-configure-variant-nselected-tasks variant) 0))
              evergreen-variants)))
-      (evergreen-post
-       (format "https://evergreen.mongodb.com/api/rest/v2/patches/%s/configure" (alist-get 'patch_id evergreen-patch))
-       (json-encode
-        (list
-         (cons "description" (alist-get 'description evergreen-patch))
-         (cons
-          "variants"
-          (seq-map
-           (lambda (variant)
-             (list
-              (cons "id" (evergreen-configure-variant-name variant))
-              (cons "tasks"
-                    (seq-map 'evergreen-configure-task-name (evergreen-configure-variant-selected-tasks variant)))))
-           selected-variants)))))
-    (evergreen-view-patch-data evergreen-patch))
-  )
+      (progn
+        (evergreen-post
+         (format "https://evergreen.mongodb.com/api/rest/v2/patches/%s/configure" (alist-get 'patch_id evergreen-patch))
+         (json-encode
+          (list
+           (cons "description" (alist-get 'description evergreen-patch))
+           (cons
+            "variants"
+            (seq-map
+             (lambda (variant)
+               (list
+                (cons "id" (evergreen-configure-variant-name variant))
+                (cons "tasks"
+                      (seq-map 'evergreen-configure-task-name (evergreen-configure-variant-selected-tasks variant)))))
+             selected-variants)))))
+        (evergreen-view-patch-data evergreen-patch))))
 
 (defvar evergreen-configure-mode-map nil "Keymap for evergreen-configure buffers")
 

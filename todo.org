@@ -57,8 +57,11 @@
   - [X] define major mode for test results file
   - [X] add key binding for going back to task from test buffer
 
-* TODO task/patch reconfiguration [1/6]
+* TODO task/patch configuration [2/9]
   - [X] configure "created" patches
+  - [X] view task after scheduling
+  - [ ] fix refresh of view-patch buffer
+  - [ ] improve configure ui / make consistent with other buffers
   - [ ] abort tasks
   - [ ] abort patches
   - [ ] reconfigure patches
@@ -74,9 +77,12 @@
   - [ ] default emacs-compatible bindings
   - [ ] detect evil and use evil-compatible bindings
 
-* TODO switch from request to builtin url or use async request
+* TODO switch from request to builtin url or use async request [0/3]
+  - [ ] switch to async request
+  - [ ] auto update view-patch buffers (configurable)
+  - [ ] auto update view-task buffers (configurable)
 
-* TODO prepare repository for release
+* TODO prepare repository for release [0/2]
   - [ ] installation instructions
   - [ ] readme
 
