@@ -82,6 +82,10 @@
   - [ ] auto update view-patch buffers (configurable)
   - [ ] auto update view-task buffers (configurable)
 
+* TODO bugs / tasks [0/2]
+  - [ ] bug: view test logs buffer name and header line malformatted
+  - [ ] perform code audit
+
 * TODO prepare repository for release [0/2]
   - [ ] installation instructions
   - [ ] readme
