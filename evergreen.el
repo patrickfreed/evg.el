@@ -40,11 +40,7 @@
     (setq output (shell-command-to-string command))
     (if (string-match "ID : \\([a-f0-9]+\\)" output)
         (match-string 1 output)
-      (message "failed: %s" output)
-      ()
-      )
-    )
-  )
+      (message "failed: %s" output))))
 
 (defun evergreen-patch ()
   "Interactively submit a patch to the current project, prompting for a description"
@@ -52,7 +48,9 @@
   (let ((description (read-string "Description: ")) (id))
     (setq id (evergreen-submit-patch evergreen-project-name description))
     (if id
-        (message "Submitted patch id: %s" id)
+        (progn
+          (message "Submitted patch id: %s" id)
+          (evergreen-configure-patch (evergreen-get-patch id)))
       (message "Patch failed"))
     )
   )
@@ -131,7 +129,9 @@
 (defun evergreen-inspect-patch-at-point ()
   (interactive)
   (if-let ((patch (get-text-property (point) 'evergreen-patch)))
-      (evergreen-view-patch-data patch)))
+      (cond
+       ((string= (alist-get 'status patch) "created") (evergreen-configure-patch patch))
+       (t (evergreen-view-patch-data patch)))))
 
 (defun evergreen-status-refresh ()
   (interactive)

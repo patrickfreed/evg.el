@@ -57,8 +57,8 @@
   - [X] define major mode for test results file
   - [X] add key binding for going back to task from test buffer
 
-* TODO task/patch reconfiguration [0/6]
-  - [ ] configure "created" patches
+* TODO task/patch reconfiguration [1/6]
+  - [X] configure "created" patches
   - [ ] abort tasks
   - [ ] abort patches
   - [ ] reconfigure patches

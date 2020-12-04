@@ -16,6 +16,9 @@
 
 (cl-defstruct evergreen-configure-task name selected location parent)
 
+(defun evergreen-configure-task-is-visible (task)
+  (not (evergreen-configure-variant-collapsed (evergreen-configure-task-parent task))))
+
 (defun evergreen-configure-variant-parse (data)
   (let
       ((variant
@@ -131,7 +134,7 @@
    the same line as the task."
   (let ((initial-point (point)) (is-selected (evergreen-configure-task-selected task)))
     (setf (evergreen-configure-task-selected task) (not is-selected))
-    (if-let ((location (evergreen-configure-task-visible task)))
+    (if-let ((location (evergreen-configure-task-location task)))
         (progn
           (read-only-mode -1)
           (goto-char (marker-position location))
@@ -182,7 +185,8 @@
               (cons "id" (evergreen-configure-variant-name variant))
               (cons "tasks"
                     (seq-map 'evergreen-configure-task-name (evergreen-configure-variant-selected-tasks variant)))))
-           selected-variants))))))
+           selected-variants)))))
+    (evergreen-view-patch-data evergreen-patch))
   )
 
 (defvar evergreen-configure-mode-map nil "Keymap for evergreen-configure buffers")
