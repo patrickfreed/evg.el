@@ -10,7 +10,7 @@
 
 (require 'json)
 (require 'projectile)
-(require 'cl)
+(require 'cl-lib)
 
 (defcustom evergreen-always-prompt-for-project-name
   t

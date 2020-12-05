@@ -57,11 +57,11 @@
   - [X] define major mode for test results file
   - [X] add key binding for going back to task from test buffer
 
-* TODO use async request [2/7]
+* TODO use async request [3/7]
   - [X] status async request
-  - [X] view-task async request
-  - [ ] view-test async request
-  - [ ] view-logs async request
+  - [X] view task async request
+  - [X] view test async request
+  - [ ] view task logs async request
   - [ ] evergreen-configure async request
   - [ ] auto update view-patch buffers (configurable)
   - [ ] auto update view-task buffers (configurable)
@@ -85,6 +85,8 @@
 * TODO proper evil detection and integration [0/2]
   - [ ] default emacs-compatible bindings
   - [ ] detect evil and use evil-compatible bindings
+
+* TODO UI standardization
 
 * TODO bugs / tasks [0/3]
   - [ ] bug: view test logs buffer name and header line malformatted

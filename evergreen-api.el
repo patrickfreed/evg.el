@@ -58,3 +58,12 @@
       (goto-char url-http-end-of-headers)
       (gethash "data" (let ((json-object-type 'hash-table))
         (json-read))))))
+
+(defun evergreen-get-string-async (url handler &optional params)
+  "Perform an asynchronous GET request against the given URL, passing result as string to the provided handler."
+  (request
+    url
+    :headers (list (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key))
+    :params params
+    :success (cl-function (lambda (&key data &allow-other-keys) (funcall handler data)))
+    :parser 'buffer-string))
