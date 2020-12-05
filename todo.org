@@ -57,14 +57,13 @@
   - [X] define major mode for test results file
   - [X] add key binding for going back to task from test buffer
 
-* TODO use async request [5/7]
+* DONE use async request [5/5]
+  CLOSED: [2020-12-05 Sat 03:01]
   - [X] status async request
   - [X] view task async request
   - [X] view test async request
   - [X] view task logs async request
   - [X] evergreen-configure async request
-  - [ ] auto update view-patch buffers (configurable)
-  - [ ] auto update view-task buffers (configurable)
 
 * TODO task/patch configuration [2/9]
   - [X] configure "created" patches
@@ -100,9 +99,13 @@
 
 ---------------- release ready here ---------------
 
-* TODO log viewer highlighting improvements
+* TODO log viewer highlighting improvements [0/2]
   - [ ] across the board prettifying (based on lobster)
   - [ ] per-project log viewer hooks for custom formatting
+
+* TODO auto update results buffers [0/2]
+  - [ ] auto update view-patch buffers (configurable)
+  - [ ] auto update view-task buffers (configurable)
 
 * TODO misc improvements [0/7]
   - [ ] select shared tasks for multiple variants
