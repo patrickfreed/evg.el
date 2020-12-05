@@ -149,16 +149,6 @@
 (defun evergreen-get-p (url &optional params)
   (evergreen-get (concat "https://evergreen.mongodb.com/api/rest/v2/" url) params))
 
-(defun evergreen-get-string (url &optional params)
-  "Perform a blocking GET request against the given URL, returning result as string."
-  (request-response-data (request
-    url
-    :headers (list (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key))
-    :params params
-    :sync t
-    :parser 'buffer-string))
-  )
-
 (defun evergreen-post (url &optional data)
   "Perform a blocking POST request against the given URL"
   (request-response-data (request

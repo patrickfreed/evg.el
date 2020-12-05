@@ -57,11 +57,11 @@
   - [X] define major mode for test results file
   - [X] add key binding for going back to task from test buffer
 
-* TODO use async request [3/7]
+* TODO use async request [4/7]
   - [X] status async request
   - [X] view task async request
   - [X] view test async request
-  - [ ] view task logs async request
+  - [X] view task logs async request
   - [ ] evergreen-configure async request
   - [ ] auto update view-patch buffers (configurable)
   - [ ] auto update view-task buffers (configurable)

@@ -105,10 +105,13 @@
 
 (defun evergreen-view-current-task-logs ()
   "Switch to a buffer displaying the current task's logs"
-  (let ((current-task evergreen-current-task))
-    (evergreen-view-logs
-     (format "Patch %d %s" evergreen-patch-number (evergreen-current-task-full-name))
-     (evergreen-get-string (format "%s&text=true" (evergreen-task-task-log current-task))))))
+  (message "Fetching task logs...")
+  (evergreen-get-string-async
+   (format "%s&text=true" (evergreen-task-task-log evergreen-current-task))
+   (lambda (logs)
+     (evergreen-view-logs
+      (format "Patch %d %s" evergreen-patch-number (evergreen-current-task-full-name))
+      logs))))
 
 (defun evergreen-view-task-highlight-errors ()
   "Highlight the error portions of the log output based on provided regex.
@@ -127,13 +130,15 @@
   (if-let ((test (get-text-property (point) 'evergreen-task-test)))
       (if (or (not (evergreen-task-test-log-url test)) (string= "" (evergreen-task-test-log-url test)))
           (message "no logs to view")
-        (evergreen-get-string-async
-         (format "https://evergreen.mongodb.com/%s&text=true" (evergreen-task-test-log-url test))
-         (lambda (logs)
-           (evergreen-view-logs
-            (format "evergreen-view-test: Patch %d %s on %S"
-                    evergreen-patch-number (evergreen-task-test-file-name test) (evergreen-current-task-full-name))
-            logs))))))
+        (progn
+          (message "Fetching test logs...")
+          (evergreen-get-string-async
+           (format "https://evergreen.mongodb.com/%s&text=true" (evergreen-task-test-log-url test))
+           (lambda (logs)
+             (evergreen-view-logs
+              (format "evergreen-view-test: Patch %d %s on %S"
+                      evergreen-patch-number (evergreen-task-test-file-name test) (evergreen-current-task-full-name))
+              logs)))))))
 
 (defun evergreen-current-task-full-name ()
   (format "%s on %s" (evergreen-task-display-name evergreen-current-task) evergreen-build-variant))
@@ -214,6 +219,7 @@
 (defun evergreen-view-logs (buffer-name logs)
   (let ((back-buffer (current-buffer)))
     (switch-to-buffer (get-buffer-create (format "evergreen-view-logs: %s" buffer-name)))
+    (message "Viewing logs for %s" buffer-name)
     (fundamental-mode)
     (read-only-mode -1)
     (insert logs)
