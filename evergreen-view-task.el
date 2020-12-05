@@ -58,8 +58,17 @@
      :event-log (alist-get 'event_log logs)
      :tests (seq-map 'evergreen-task-test-parse test-data))))
 
-(defun evergreen-get-task (task-id)
-  (evergreen-task-parse (evergreen-get-p (format "tasks/%s" task-id)) (evergreen-get-p (format "tasks/%s/tests" task-id) '(("limit" . 100000)))))
+(defun evergreen-get-task-async (task-id handler)
+  (evergreen-api-get-async
+   (format "tasks/%s" task-id)
+   (cl-function
+    (lambda (&key ((:data task-data)) &allow-other-keys)
+     (evergreen-api-get-async
+      (format "tasks/%s/tests" task-id)
+      (cl-function
+       (lambda (&key ((:data test-data)) &allow-other-keys)
+         (funcall handler (evergreen-task-parse task-data test-data))))
+      '(("limit" . 100000)))))))
 
 (defvar evergreen-task-error-regexp-alist '(("mongo-rust-driver" "thread '.*' panicked" "run with `RUST_BACKTRACE=full` for a verbose backtrace")))
 
@@ -127,41 +136,39 @@
   (format "%s on %s" (evergreen-task-display-name evergreen-current-task) evergreen-build-variant))
 
 (defun evergreen-view-task (task-id build-variant patch-number previous-buffer)
-  (let* ((task (evergreen-get-task task-id)) (full-display-name (format "%s on %s" (evergreen-task-display-name task) build-variant)))
-    (switch-to-buffer (get-buffer-create (format "evergreen-view-task: Patch %d %S" patch-number full-display-name)))
-    (evergreen-view-task-mode)
-    (read-only-mode -1)
-    (erase-buffer)
-    (setq-local evergreen-build-variant build-variant)
-    (setq-local evergreen-current-task (evergreen-get-task task-id))
-    (setq-local evergreen-patch-buffer previous-buffer)
-    (setq-local evergreen-patch-number patch-number)
-    (insert
-     (with-temp-buffer
-       (insert full-display-name)
-       (add-text-properties (point-min) (point-max) (list 'face 'evergreen-view-task-title))
-       (buffer-string)))
-    (newline)
-    (insert (evergreen-view-task-header-line "Status" (evergreen-status-text (evergreen-task-status task))))
-    (newline)
-    (insert (evergreen-view-task-header-line "Started at" (evergreen-date-string (evergreen-task-start-time task))))
-    (newline 2)
-    (insert-button "View Task Logs" 'action (lambda (b) (evergreen-view-current-task-logs)))
-    (newline 2)
-    (let
-        ((failed-tests (seq-filter (lambda (test) (string= "fail" (evergreen-task-test-status test))) (evergreen-task-tests task)))
-         (passed-tests (seq-filter (lambda (test) (string= "pass" (evergreen-task-test-status test))) (evergreen-task-tests task))))
-      (insert (format "Test Results (%d passed, %d failed)" (length passed-tests) (length failed-tests)))
-      (newline)
-      (seq-do 'evergreen-task-test-insert failed-tests)
-      (seq-do 'evergreen-task-test-insert passed-tests))
-    ;; (insert
-    ;;  (with-temp-buffer
-    ;;    (insert (evergreen-get-string (format "%s&text=true" (evergreen-task-task-log task))))
-    ;;    (buffer-string)))
-    (read-only-mode)
-    (goto-line 0)
-    ))
+  (evergreen-get-task-async
+   task-id
+   (lambda (task)
+     (let ((full-display-name (format "%s on %s" (evergreen-task-display-name task) build-variant)))
+       (switch-to-buffer (get-buffer-create (format "evergreen-view-task: Patch %d %S" patch-number full-display-name)))
+       (evergreen-view-task-mode)
+       (read-only-mode -1)
+       (erase-buffer)
+       (setq-local evergreen-build-variant build-variant)
+       (setq-local evergreen-current-task task)
+       (setq-local evergreen-patch-buffer previous-buffer)
+       (setq-local evergreen-patch-number patch-number)
+       (insert
+        (with-temp-buffer
+          (insert full-display-name)
+          (add-text-properties (point-min) (point-max) (list 'face 'evergreen-view-task-title))
+          (buffer-string)))
+       (newline)
+       (insert (evergreen-view-task-header-line "Status" (evergreen-status-text (evergreen-task-status task))))
+       (newline)
+       (insert (evergreen-view-task-header-line "Started at" (evergreen-date-string (evergreen-task-start-time task))))
+       (newline 2)
+       (insert-button "View Task Logs" 'action (lambda (b) (evergreen-view-current-task-logs)))
+       (newline 2)
+       (let
+           ((failed-tests (seq-filter (lambda (test) (string= "fail" (evergreen-task-test-status test))) (evergreen-task-tests task)))
+            (passed-tests (seq-filter (lambda (test) (string= "pass" (evergreen-task-test-status test))) (evergreen-task-tests task))))
+         (insert (format "Test Results (%d passed, %d failed)" (length passed-tests) (length failed-tests)))
+         (newline)
+         (seq-do 'evergreen-task-test-insert failed-tests)
+         (seq-do 'evergreen-task-test-insert passed-tests))
+       (read-only-mode)
+       (goto-line 0)))))
 
 (defvar evergreen-view-task-mode-map nil "Keymap for evergreen-view-task buffers")
 

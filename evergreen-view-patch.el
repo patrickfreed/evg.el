@@ -23,7 +23,7 @@
 (defun evergreen-get-current-patch-tasks ()
   "Fetches full list of task results broken down by variant."
   (let ((buildvariants-data
-         (graphql-request
+         (evergreen-api-graphql-request
           (format
            "{
               patchBuildVariants(patchId: %S) {

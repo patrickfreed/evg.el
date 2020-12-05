@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t; -*-
+
 (provide 'evergreen-api)
 
 (defun evergreen-api-init ()
@@ -43,3 +45,16 @@
     :params params
     :success success-callback
     :parser 'json-read))
+
+;; From: https://github.com/rcy/graphql-elisp/blob/master/graphql.el
+(defun evergreen-api-graphql-request (query &optional variables)
+  (let* ((url-request-method "POST")
+         (url-request-extra-headers (list (cons "Content-Type"  "application/json") (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key)))
+         (url-request-data
+          (json-encode (list (cons "query" query)
+                             (cons "variables" (and variables (json-encode variables))))))
+         (buffer (url-retrieve-synchronously "https://evergreen.mongodb.com/graphql/query")))
+    (with-current-buffer buffer
+      (goto-char url-http-end-of-headers)
+      (gethash "data" (let ((json-object-type 'hash-table))
+        (json-read))))))
