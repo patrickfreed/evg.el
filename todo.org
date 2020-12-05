@@ -57,6 +57,16 @@
   - [X] define major mode for test results file
   - [X] add key binding for going back to task from test buffer
 
+* TODO use async request [1/8]
+  - [X] status async request
+  - [ ] view-patch async request
+  - [ ] view-task async request
+  - [ ] view-test async request
+  - [ ] view-logs async request
+  - [ ] evergreen-configure async request
+  - [ ] auto update view-patch buffers (configurable)
+  - [ ] auto update view-task buffers (configurable)
+
 * TODO task/patch configuration [2/9]
   - [X] configure "created" patches
   - [X] view task after scheduling
@@ -77,13 +87,9 @@
   - [ ] default emacs-compatible bindings
   - [ ] detect evil and use evil-compatible bindings
 
-* TODO switch from request to builtin url or use async request [0/3]
-  - [ ] switch to async request
-  - [ ] auto update view-patch buffers (configurable)
-  - [ ] auto update view-task buffers (configurable)
-
-* TODO bugs / tasks [0/2]
+* TODO bugs / tasks [0/3]
   - [ ] bug: view test logs buffer name and header line malformatted
+  - [ ] bug: Invalid face reference: t [364 times] in evergreen-grid
   - [ ] perform code audit
 
 * TODO prepare repository for release [0/2]

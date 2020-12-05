@@ -6,9 +6,11 @@
 (require 'evergreen-view-patch)
 (require 'evergreen-view-task)
 (require 'evergreen-grid)
+(require 'evergreen-api)
 
 (require 'json)
 (require 'projectile)
+(require 'cl)
 
 (defcustom evergreen-always-prompt-for-project-name
   t
@@ -55,57 +57,15 @@
     )
   )
 
-(defun evergreen-init ()
-  "Load credentials from ~/.evergreen.yml if unset.
-   This function may be invoked repeatedly, all but the first
-   invocation are no-ops."
-  (if (not (boundp 'evergreen-api-key))
-      (with-temp-buffer
-        (insert-file-contents "~/.evergreen.yml")
-        (goto-char (point-min))
-        (if (search-forward-regexp "api_key: \"?\\([a-z0-9]*\\)\"?$")
-            (setq evergreen-api-key (match-string 1))
-          (error "api key not included in ~/.evergreen.yml"))
-        (goto-char (point-min))
-        (if (search-forward-regexp "user: \"?\\(.*\\)\"?$")
-            (setq evergreen-user (match-string 1))
-          (error "api user not included in ~/.evergreen.yml"))
-        )))
-
-(defun evergreen-read-project-name ()
-  "Get the project name from user input, defaulting to the current projectile project.
-   This requires projectile."
-  (or
-   (and (boundp 'evergreen-project-name) evergreen-project-name)
-   (let*
-       ((default-project-name
-          (if-let ((name-projectile (projectile-project-name)))
-              (if (string= name-projectile "-")
-                  (error "not in a projectile-project")
-                name-projectile)))
-        (prompt
-         (cond
-          (default-project-name (format "Project name (%s): " default-project-name))
-          (t "Project name: "))))
-     (if (or evergreen-always-prompt-for-project-name (not default-project-name))
-         (read-string prompt nil nil default-project-name)
-       default-project-name))))
-
-(defun evergreen-status (project-name)
-  "Open the evergreen status page for the given project"
-  (interactive (list (evergreen-read-project-name)))
-  (message "fetching %s evergreen status..." project-name)
-  (switch-to-buffer (get-buffer-create (format "evergreen-status: %s" project-name)))
+(defun evergreen-status-setup ()
   (read-only-mode -1)
   (erase-buffer)
-  (insert (format "Project: %s" project-name))
-  (evergreen-mode)
-  (setq-local evergreen-project-name project-name)
-  (evergreen-init)
-  (setq-local evergreen-recent-patches (evergreen-list-patches evergreen-project-name))
+  (insert (format "Project: %s" evergreen-project-name))
+  (newline 2))
 
-  (newline 2)
-  (insert (format "Recent Patches:"))
+(cl-defun evergreen-display-status (&key data &allow-other-keys)
+  (evergreen-status-setup)
+  (insert "Recent Patches:")
   (newline)
   (seq-do
    (lambda (patch)
@@ -122,8 +82,21 @@
         (add-text-properties (point-min) (point-max) (list 'evergreen-patch patch))
         (truncate-string-to-width (buffer-string) (- (window-width) 10) nil nil t)))
      (newline))
-   evergreen-recent-patches)
+   data)
+  (read-only-mode))
+
+(defun evergreen-status (project-name)
+  "Open the evergreen status page for the given project"
+  (interactive (list (evergreen-read-project-name)))
+  (evergreen-api-init)
+  (switch-to-buffer (get-buffer-create (format "evergreen-status: %s" project-name)))
+  (evergreen-mode)
+  (setq-local evergreen-project-name project-name)
+  (evergreen-status-setup)
+
+  (insert "Fetching patches...")
   (read-only-mode)
+  (evergreen-list-patches-async project-name)
   (goto-line 0))
 
 (defun evergreen-inspect-patch-at-point ()
@@ -209,6 +182,23 @@
       t))
    (evergreen-get
     (format "https://evergreen.mongodb.com/api/rest/v2/projects/%s/patches" project-name)
+    '(("limit" . 15))
+    )
+   )
+  )
+
+(defun evergreen-list-patches-async (project-name)
+  "Fetch list of incomplete patches recently submitted by the user."
+  (message "fetching %s evergreen status..." project-name)
+  (seq-filter
+   (lambda (patch)
+     (and
+      t
+      ;; (string= evergreen-user (alist-get 'author patch))
+      t))
+   (evergreen-api-get-async
+    (format "projects/%s/patches" project-name)
+    'evergreen-display-status
     '(("limit" . 15))
     )
    )
