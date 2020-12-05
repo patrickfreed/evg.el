@@ -168,13 +168,16 @@
 
 (defun evergreen-configure-schedule ()
   (interactive)
-  (if-let ((selected-variants
-            (seq-filter
-             (lambda (variant) (> (evergreen-configure-variant-nselected-tasks variant) 0))
-             evergreen-variants)))
+  (if-let
+      ((selected-variants
+        (seq-filter
+         (lambda (variant) (> (evergreen-configure-variant-nselected-tasks variant) 0))
+         evergreen-variants)))
       (progn
-        (evergreen-post
-         (format "https://evergreen.mongodb.com/api/rest/v2/patches/%s/configure" (alist-get 'patch_id evergreen-patch))
+        (message "Scheduling patch...")
+        (evergreen-api-post
+         (format "patches/%s/configure" (alist-get 'patch_id evergreen-patch))
+         (lambda (_) (evergreen-view-patch-data evergreen-patch))
          (json-encode
           (list
            (cons "description" (alist-get 'description evergreen-patch))
@@ -186,8 +189,7 @@
                 (cons "id" (evergreen-configure-variant-name variant))
                 (cons "tasks"
                       (seq-map 'evergreen-configure-task-name (evergreen-configure-variant-selected-tasks variant)))))
-             selected-variants)))))
-        (evergreen-view-patch-data evergreen-patch))))
+             selected-variants))))))))
 
 (defvar evergreen-configure-mode-map nil "Keymap for evergreen-configure buffers")
 

@@ -11,6 +11,7 @@
 (require 'json)
 (require 'projectile)
 (require 'cl-lib)
+(require 'seq)
 
 (defcustom evergreen-always-prompt-for-project-name
   t
@@ -52,7 +53,7 @@
     (if id
         (progn
           (message "Submitted patch id: %s" id)
-          (evergreen-configure-patch (evergreen-get-patch id)))
+          (evergreen-get-patch id 'evergreen-configure-patch))
       (message "Patch failed"))
     )
   )
@@ -133,50 +134,6 @@
   
 (evil-set-initial-state 'evergreen-mode 'emacs)
 
-(require 'request)
-(require 'seq)
-
-(defun evergreen-get (url &optional params)
-  "Perform a blocking GET request against the given URL"
-  (request-response-data (request
-    url
-    :headers (list (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key))
-    :params params
-    :sync t
-    :parser 'json-read))
-  )
-
-(defun evergreen-get-p (url &optional params)
-  (evergreen-get (concat "https://evergreen.mongodb.com/api/rest/v2/" url) params))
-
-(defun evergreen-post (url &optional data)
-  "Perform a blocking POST request against the given URL"
-  (request-response-data (request
-    url
-    :headers (list
-              (cons "Api-User" evergreen-user)
-              (cons "Api-Key" evergreen-api-key)
-              (cons "Content-Type"  "application/json"))
-    :data data
-    :sync t
-    :parser 'json-read))
-  )
-
-(defun evergreen-list-patches (project-name)
-  "Fetch list of incomplete patches recently submitted by the user."
-  (seq-filter
-   (lambda (patch)
-     (and
-      t
-      ;; (string= evergreen-user (alist-get 'author patch))
-      t))
-   (evergreen-get
-    (format "https://evergreen.mongodb.com/api/rest/v2/projects/%s/patches" project-name)
-    '(("limit" . 15))
-    )
-   )
-  )
-
 (defun evergreen-list-patches-async (project-name)
   "Fetch list of incomplete patches recently submitted by the user."
   (message "fetching %s evergreen status..." project-name)
@@ -189,16 +146,14 @@
    (evergreen-api-get-async
     (format "projects/%s/patches" project-name)
     'evergreen-display-status
-    '(("limit" . 15))
-    )
-   )
-  )
+    '(("limit" . 15)))))
 
-(defun evergreen-get-patch (patch-id)
+(defun evergreen-get-patch (patch-id handler)
   "Fetch the details of a single patch as a JSON object."
-  (evergreen-get
-   (format "https://evergreen.mongodb.com/api/rest/v2/patches/%s" patch-id))
-  )
+  (evergreen-api-get-async
+   (format "patches/%s" patch-id)
+   (cl-function
+    (lambda (&key data &allow-other-keys) (funcall handler data)))))
 
 (defun evergreen-get-patch-variants (patch-id)
   "Get list of variants and their associated tasks for the given patch"

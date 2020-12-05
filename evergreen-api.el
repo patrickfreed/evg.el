@@ -38,9 +38,12 @@
          (read-string prompt nil nil default-project-name)
        default-project-name))))
 
+(defun evergreen-api-url (path)
+  (concat "https://evergreen.mongodb.com/api/rest/v2/" path))
+
 (defun evergreen-api-get-async (url success-callback &optional params)
   (request
-    (concat "https://evergreen.mongodb.com/api/rest/v2/" url)
+    (evergreen-api-url url)
     :headers (list (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key))
     :params params
     :success success-callback
@@ -67,3 +70,15 @@
     :params params
     :success (cl-function (lambda (&key data &allow-other-keys) (funcall handler data)))
     :parser 'buffer-string))
+
+(defun evergreen-api-post (url handler &optional data)
+  "Perform an asynchronous POST request against the given URL. Result will be passed to handler"
+  (request
+    (evergreen-api-url url)
+    :headers (list
+              (cons "Api-User" evergreen-user)
+              (cons "Api-Key" evergreen-api-key)
+              (cons "Content-Type"  "application/json"))
+    :data data
+    :success (cl-function (lambda (&key data &allow-other-keys) (funcall handler data)))
+    :parser 'json-read))

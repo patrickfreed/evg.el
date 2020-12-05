@@ -57,12 +57,12 @@
   - [X] define major mode for test results file
   - [X] add key binding for going back to task from test buffer
 
-* TODO use async request [4/7]
+* TODO use async request [5/7]
   - [X] status async request
   - [X] view task async request
   - [X] view test async request
   - [X] view task logs async request
-  - [ ] evergreen-configure async request
+  - [X] evergreen-configure async request
   - [ ] auto update view-patch buffers (configurable)
   - [ ] auto update view-task buffers (configurable)
 
@@ -88,9 +88,10 @@
 
 * TODO UI standardization
 
-* TODO bugs / tasks [0/3]
+* TODO bugs / tasks [0/4]
   - [ ] bug: view test logs buffer name and header line malformatted
   - [ ] bug: Invalid face reference: t [364 times] in evergreen-grid
+  - [ ] bug: status page configures patches already configured
   - [ ] perform code audit
 
 * TODO prepare repository for release [0/2]
