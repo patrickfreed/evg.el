@@ -6,6 +6,11 @@
 
 (require 'cl-lib)
 
+(defconst evergreen-patch-status-created "created")
+(defconst evergreen-patch-status-started "started")
+(defconst evergreen-patch-status-failed "failed")
+(defconst evergreen-patch-status-success "succeeded")
+
 (cl-defstruct evergreen-patch id description number status create-time start-time finish-time task-names)
 
 (defun evergreen-patch-parse (data)
@@ -62,7 +67,7 @@
 
 (defun evergreen-current-patch-is-in-progress ()
   (or
-   (string= evergreen-status-started (evergreen-patch-status evergreen-current-patch))
+   (string= evergreen-patch-status-started (evergreen-patch-status evergreen-current-patch))
    (seq-some
     (lambda (variant-tasks)
       (seq-some (lambda (task) (string= evergreen-status-started (evergreen-task-info-status task))) (cdr variant-tasks)))
@@ -180,7 +185,7 @@
         (progn
           (insert-button "Abort patch" 'action (lambda (_) (evergreen-patch-abort evergreen-current-patch)))
           (newline))
-      (when (not (string= (evergreen-patch-status evergreen-current-patch) evergreen-status-undispatched))
+      (when (not (string= (evergreen-patch-status evergreen-current-patch) evergreen-patch-status-created))
         (insert-button "Restart patch" 'action (lambda (_) (evergreen-patch-restart evergreen-current-patch)))
         (newline))))
   (newline)

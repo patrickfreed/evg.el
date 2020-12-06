@@ -73,8 +73,6 @@
   - [X] restart tasks
   - [X] abort patches
   - [X] restart patches
-  - [ ] unschedule task
-  - [ ] unschedule patches (ask to abort running tasks too)
   - [ ] reconfigure patches
 
 * TODO waterfall [0/3]
@@ -118,7 +116,7 @@
   - [ ] auto update view-patch buffers (configurable)
   - [ ] auto update view-task buffers (configurable)
 
-* TODO misc improvements [0/8]
+* TODO misc improvements [0/9]
   - [ ] select shared tasks for multiple variants
   - [ ] keybind for goto next failed task
   - [ ] select project name from those specified in ~/.evergreen.yml
@@ -127,6 +125,7 @@
   - [ ] indicate text is "clickable" on hover/point entry
   - [ ] add breadcrumbs header for navigating patch > task > test
   - [ ] add finished time / time spent to tasks + patches
+  - [ ] handle multiple executions
 
 * TODO diffs
 
