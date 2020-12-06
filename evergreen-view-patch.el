@@ -113,7 +113,16 @@
                        :data task))
        tasks)))))
 
-(defun evergreen-view-patch (patch &optional task-format patch-tasks)
+(defun evergreen-view-patch-refresh ()
+  (interactive)
+  (message "Refreshing...")
+  (evergreen-get-patch
+   (evergreen-patch-id evergreen-current-patch)
+   (lambda (patch)
+     (message "Refreshing...done")
+     (evergreen-view-patch patch evergreen-task-format))))
+
+(defun evergreen-view-patch (patch &optional task-format)
   (switch-to-buffer
    (get-buffer-create
     (format "evergreen-view-patch: %S" (truncate-string-to-width (evergreen-patch-description patch) 50 nil nil t))))
@@ -122,7 +131,7 @@
   (setq display-line-numbers nil)
   (erase-buffer)
   (setq-local evergreen-current-patch patch)
-  (setq-local evergreen-current-patch-tasks (or patch-tasks (evergreen-get-current-patch-tasks)))
+  (setq-local evergreen-current-patch-tasks (evergreen-get-current-patch-tasks))
   (setq-local evergreen-task-format (or task-format 'grid))
   (setq-local global-hl-line-mode nil)
   (setq-local cursor-type "box")
@@ -163,9 +172,7 @@
 (progn
   (setq evergreen-view-patch-mode-map (make-sparse-keymap))
 
-  (define-key evergreen-view-patch-mode-map (kbd "r") (lambda ()
-                                                             (interactive)
-                                                             (evergreen-view-patch evergreen-current-patch 'grid)))
+  (define-key evergreen-view-patch-mode-map (kbd "r") 'evergreen-view-patch-refresh)
   (define-key evergreen-view-patch-mode-map (kbd "<RET>") 'evergreen-view-task-at-point)
   (define-key evergreen-view-patch-mode-map (kbd "f") 'evergreen-switch-task-format)
 

@@ -65,10 +65,10 @@
   - [X] view task logs async request
   - [X] evergreen-configure async request
 
-* TODO task/patch configuration [2/9]
+* TODO task/patch configuration [3/9]
   - [X] configure "created" patches
   - [X] view task after scheduling
-  - [ ] fix refresh of view-patch buffer
+  - [X] fix refresh of view-patch buffer
   - [ ] improve configure ui / make consistent with other buffers
   - [ ] abort tasks
   - [ ] abort patches
