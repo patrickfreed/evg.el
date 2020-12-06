@@ -27,6 +27,9 @@
 (defun evergreen-task-is-in-progress (task)
   (string= (evergreen-task-status task) evergreen-status-started))
 
+(defun evergreen-task-is-undispatched (task)
+  (string= (evergreen-task-status task) evergreen-status-undispatched))
+
 (cl-defstruct evergreen-task-test
   file-name
   status
@@ -131,6 +134,14 @@
    (lambda (_)
      (message "Task aborted"))))
 
+(defun evergreen-current-task-restart ()
+  "Restarts the current task and refreshes the view-task buffer."
+  (evergreen-api-post
+   (format "tasks/%s/restart" (evergreen-task-id evergreen-current-task))
+   (lambda (_)
+     (message "Task restarted")
+     (evergreen-view-task-refresh))))
+
 (defun evergreen-view-task-highlight-errors ()
   "Highlight the error portions of the log output based on provided regex.
    This code is not used in favor of simply enabling compilation-mode. Kept here if needed
@@ -189,6 +200,10 @@
            (progn
              (newline)
              (insert-button "Abort Task" 'action (lambda (b) (evergreen-current-task-abort)))))
+       (if (not (or (evergreen-task-is-undispatched task) (evergreen-task-is-in-progress task)))
+           (progn
+             (newline)
+             (insert-button "Restart Task" 'action (lambda (b) (evergreen-current-task-restart)))))
        (newline 2)
        (let
            ((failed-tests (seq-filter (lambda (test) (string= "fail" (evergreen-task-test-status test))) (evergreen-task-tests task)))
