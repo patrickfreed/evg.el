@@ -26,6 +26,12 @@
    (format "patches/%s/abort" (evergreen-patch-id patch))
    (lambda (patch-data) (message "Aborted patch"))))
 
+(defun evergreen-patch-restart (patch)
+  "Restart the provided patch. This does refreshes the buffer."
+  (evergreen-api-post
+   (format "patches/%s/restart" (evergreen-patch-id patch))
+   (lambda (patch-data) (message "Restarted patch"))))
+
 (defun evergreen-get-current-patch-tasks ()
   "Fetches full list of task results broken down by variant."
   (let ((buildvariants-data
@@ -53,6 +59,14 @@
                (gethash "tasks" variant-data)))))
      (gethash "patchBuildVariants" buildvariants-data))
     ))
+
+(defun evergreen-current-patch-is-in-progress ()
+  (or
+   (string= evergreen-status-started (evergreen-patch-status evergreen-current-patch))
+   (seq-some
+    (lambda (variant-tasks)
+      (seq-some (lambda (task) (string= evergreen-status-started (evergreen-task-info-status task))) (cdr variant-tasks)))
+    evergreen-current-patch-tasks)))
 
 (cl-defstruct evergreen-task-info id display-name status variant-display-name)
 
@@ -143,6 +157,8 @@
   (setq-local cursor-type "box")
   (cursor-intangible-mode)
   (cursor-sensor-mode)
+
+  ;; header
   (insert
    (evergreen-view-patch-header-line "Patch Number" (format "%d" (evergreen-patch-number evergreen-current-patch))))
   (newline)
@@ -157,9 +173,19 @@
   (newline)
   (insert (evergreen-view-patch-header-line "Created at" (evergreen-date-string (evergreen-patch-create-time evergreen-current-patch))))
   (newline 2)
-  (when (string= (evergreen-patch-status evergreen-current-patch) evergreen-status-started)
-    (insert-button "Abort patch" 'action (lambda (_) (evergreen-patch-abort evergreen-current-patch)))
-    (newline 2))
+
+  ;; restart/abort buttons
+  (let ((is-in-progress (evergreen-current-patch-is-in-progress)))
+    (if is-in-progress
+        (progn
+          (insert-button "Abort patch" 'action (lambda (_) (evergreen-patch-abort evergreen-current-patch)))
+          (newline))
+      (when (not (string= (evergreen-patch-status evergreen-current-patch) evergreen-status-undispatched))
+        (insert-button "Restart patch" 'action (lambda (_) (evergreen-patch-restart evergreen-current-patch)))
+        (newline))))
+  (newline)
+
+  ;; task results
   (seq-do
    (lambda (variant-tasks)
      (insert
