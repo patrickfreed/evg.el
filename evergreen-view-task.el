@@ -4,6 +4,13 @@
 
 (require 'cl-lib)
 
+(defconst evergreen-status-started "started")
+(defconst evergreen-status-failed "failed")
+(defconst evergreen-status-success "success")
+(defconst evergreen-status-aborted "aborted")
+(defconst evergreen-status-undispatched "undispatched")
+(defconst evergreen-status-system-failure "system-failed")
+
 (cl-defstruct evergreen-task
   id
   display-name
@@ -16,6 +23,9 @@
   system-log
   event-log
   tests)
+
+(defun evergreen-task-is-in-progress (task)
+  (string= (evergreen-task-status task) evergreen-status-started))
 
 (cl-defstruct evergreen-task-test
   file-name
@@ -50,7 +60,7 @@
      :display-name (alist-get 'display_name data)
      :start-time (alist-get 'start_time data)
      :finish-time (alist-get 'finish_time data)
-     :status (alist-get 'status data)
+     :status (alist-get 'display_status data)
      :all-log (alist-get 'all_log logs)
      :task-log (alist-get 'task_log logs)
      :agent-log (alist-get 'agent_log logs)
@@ -113,6 +123,14 @@
       (format "Patch %d %s" evergreen-patch-number (evergreen-current-task-full-name))
       logs))))
 
+(defun evergreen-current-task-abort ()
+  "Abort the current task. This does not refresh the buffer because evg takes a little while
+   to update the status to aborted anyways."
+  (evergreen-api-post
+   (format "tasks/%s/abort" (evergreen-task-id evergreen-current-task))
+   (lambda (_)
+     (message "Task aborted"))))
+
 (defun evergreen-view-task-highlight-errors ()
   "Highlight the error portions of the log output based on provided regex.
    This code is not used in favor of simply enabling compilation-mode. Kept here if needed
@@ -167,6 +185,10 @@
        (insert (evergreen-view-task-header-line "Started at" (evergreen-date-string (evergreen-task-start-time task))))
        (newline 2)
        (insert-button "View Task Logs" 'action (lambda (b) (evergreen-view-current-task-logs)))
+       (if (evergreen-task-is-in-progress task)
+           (progn
+             (newline)
+             (insert-button "Abort Task" 'action (lambda (b) (evergreen-current-task-abort)))))
        (newline 2)
        (let
            ((failed-tests (seq-filter (lambda (test) (string= "fail" (evergreen-task-test-status test))) (evergreen-task-tests task)))

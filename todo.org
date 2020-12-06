@@ -65,12 +65,11 @@
   - [X] view task logs async request
   - [X] evergreen-configure async request
 
-* TODO task/patch configuration [3/9]
+* TODO task/patch configuration [4/8]
   - [X] configure "created" patches
   - [X] view task after scheduling
   - [X] fix refresh of view-patch buffer
-  - [ ] improve configure ui / make consistent with other buffers
-  - [ ] abort tasks
+  - [X] abort tasks
   - [ ] abort patches
   - [ ] reconfigure patches
   - [ ] restart patches
@@ -85,12 +84,20 @@
   - [ ] default emacs-compatible bindings
   - [ ] detect evil and use evil-compatible bindings
 
-* TODO UI standardization
+* TODO UI standardization [0/4]
+  - [ ] configure
+  - [ ] status
+  - [ ] patch
+  - [ ] task
 
-* TODO bugs / tasks [0/4]
+* TODO bugs / tasks [0/8]
   - [ ] bug: view test logs buffer name and header line malformatted
   - [ ] bug: Invalid face reference: t [364 times] in evergreen-grid
   - [ ] bug: status page configures patches already configured
+  - [ ] bug: switch format broken
+  - [ ] bug: test logs broken on server repository
+  - [ ] bug: started time for tasks that haven't been started yet
+  - [ ] bug: vertical grid navigaiton on page with many tasks slow 
   - [ ] perform code audit
 
 * TODO prepare repository for release [0/2]
@@ -107,7 +114,7 @@
   - [ ] auto update view-patch buffers (configurable)
   - [ ] auto update view-task buffers (configurable)
 
-* TODO misc improvements [0/7]
+* TODO misc improvements [0/8]
   - [ ] select shared tasks for multiple variants
   - [ ] keybind for goto next failed task
   - [ ] select project name from those specified in ~/.evergreen.yml
@@ -115,6 +122,7 @@
   - [ ] add backwards navigation from patch
   - [ ] indicate text is "clickable" on hover/point entry
   - [ ] add breadcrumbs header for navigating patch > task > test
+  - [ ] add finished time / time spent to tasks + patches
 
 * TODO diffs
 

@@ -44,6 +44,7 @@
 (defun evergreen-api-get-async (url success-callback &optional params)
   (request
     (evergreen-api-url url)
+    :type "GET"
     :headers (list (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key))
     :params params
     :success success-callback
@@ -66,6 +67,7 @@
   "Perform an asynchronous GET request against the given URL, passing result as string to the provided handler."
   (request
     url
+    :type "GET"
     :headers (list (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key))
     :params params
     :success (cl-function (lambda (&key data &allow-other-keys) (funcall handler data)))
@@ -75,6 +77,7 @@
   "Perform an asynchronous POST request against the given URL. Result will be passed to handler"
   (request
     (evergreen-api-url url)
+    :type "POST"
     :headers (list
               (cons "Api-User" evergreen-user)
               (cons "Api-Key" evergreen-api-key)

@@ -120,7 +120,7 @@
    (evergreen-patch-id evergreen-current-patch)
    (lambda (patch)
      (message "Refreshing...done")
-     (evergreen-view-patch patch evergreen-task-format))))
+     (evergreen-view-patch-data patch))))
 
 (defun evergreen-view-patch (patch &optional task-format)
   (switch-to-buffer

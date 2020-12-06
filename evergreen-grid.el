@@ -38,12 +38,12 @@
 
 (defun evergreen-grid-get-face (status)
   (cond
-   ((string= "success" status) (evergreen-grid-success))
-   ((string= "failed" status) (evergreen-grid-failed))
-   ((string= "started" status) (evergreen-grid-started))
-   ((string= "undispatched" status) (evergreen-grid-undispatched))
-   ((string= "system-failed" status) (evergreen-grid-system-failure))
-   (t (evergreen-grid-undispatched))
+   ((string= evergreen-status-success status) (evergreen-grid-success))
+   ((or (string= evergreen-status-failed status) (string= evergreen-status-aborted status)) (evergreen-grid-failed))
+   ((string= evergreen-status-started status) (evergreen-grid-started))
+   ((string= evergreen-status-undispatched status) (evergreen-grid-undispatched))
+   ((string= evergreen-status-system-failure status) (evergreen-grid-system-failure))
+   (t (progn (message "unknown status: %s" status) (evergreen-grid-undispatched)))
    ))
 
 (defun evergreen-grid-create (title elements)

@@ -25,7 +25,7 @@
     (let ((status-face
            (cond
             ((string-match-p "\\(succ\\|pass\\)" status) 'success)
-            ((string-match-p "fail" status) 'error)
+            ((string-match-p "\\(fail\\|abort\\)" status) 'error)
             ((string-match-p "start" status) 'warning)
             (t 'shadow))))
       (add-text-properties (point-min) (point-max) (list 'face status-face)))
