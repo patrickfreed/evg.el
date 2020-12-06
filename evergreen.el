@@ -104,7 +104,7 @@
   (interactive)
   (if-let ((patch (get-text-property (point) 'evergreen-patch)))
       (cond
-       ((string= (alist-get 'status patch) "created") (evergreen-configure-patch patch))
+       ((string= (alist-get 'status patch) "created") (evergreen-configure-patch-data patch))
        (t (evergreen-view-patch-data patch)))))
 
 (defun evergreen-status-refresh ()

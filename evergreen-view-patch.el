@@ -58,10 +58,10 @@
     (seq-map
      (lambda (variant-data)
        (let ((variant-display-name (gethash "displayName" variant-data)))
-        (cons variant-display-name
-              (seq-map
-               (lambda (data) (evergreen-task-info-parse data variant-display-name))
-               (gethash "tasks" variant-data)))))
+         (cons variant-display-name
+               (seq-map
+                (lambda (data) (evergreen-task-info-parse data variant-display-name))
+                (gethash "tasks" variant-data)))))
      (gethash "patchBuildVariants" buildvariants-data))
     ))
 
@@ -180,6 +180,9 @@
   (newline 2)
 
   ;; restart/abort buttons
+  (insert-button "Reconfigure tasks/variants"
+                 'action (lambda (_) (evergreen-configure-patch evergreen-current-patch evergreen-current-patch-tasks)))
+  (newline)
   (let ((is-in-progress (evergreen-current-patch-is-in-progress)))
     (if is-in-progress
         (progn

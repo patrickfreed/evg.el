@@ -65,7 +65,8 @@
   - [X] view task logs async request
   - [X] evergreen-configure async request
 
-* TODO task/patch configuration [7/10]
+* DONE task/patch configuration [8/8]
+  CLOSED: [2020-12-06 Sun 17:25]
   - [X] configure "created" patches
   - [X] view task after scheduling
   - [X] fix refresh of view-patch buffer
@@ -73,7 +74,7 @@
   - [X] restart tasks
   - [X] abort patches
   - [X] restart patches
-  - [ ] reconfigure patches
+  - [X] reconfigure patches
 
 * TODO waterfall [0/3]
   - [ ] version list on status page

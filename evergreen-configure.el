@@ -19,14 +19,24 @@
 (defun evergreen-configure-task-is-visible (task)
   (not (evergreen-configure-variant-collapsed (evergreen-configure-task-parent task))))
 
-(defun evergreen-configure-variant-parse (data)
-  (let
-      ((variant
+(defun evergreen-configure-variant-parse (data scheduled-tasks)
+  "Parse a configure-variant from the given data, using the provided alist of display-name to evergreen-task-info
+   to determine pre-selected tasks."
+  (let*
+      ((variant-scheduled-tasks (or (cdr (assoc-string (gethash "displayName" data) scheduled-tasks)) '()))
+       (variant
         (make-evergreen-configure-variant
          :display-name (gethash "displayName" data)
          :name (gethash "name" data)
          :tasks (seq-map (lambda (task-name)
-                           (make-evergreen-configure-task :name task-name :selected nil :location nil :parent nil))
+                           (make-evergreen-configure-task
+                            :name task-name
+                            :selected (seq-some
+                                       (lambda (task)
+                                         (string= task-name (evergreen-task-info-display-name task)))
+                                       variant-scheduled-tasks)
+                            :location nil
+                            :parent nil))
                          (gethash "tasks" data))
          :collapsed t
          :location nil
@@ -52,20 +62,25 @@
     (goto-char initial-point))
   )
 
-(defun evergreen-configure-patch (patch)
-  (switch-to-buffer (get-buffer-create (format "evergreen-configure: %S" (alist-get 'description patch))))
+(defun evergreen-configure-patch-data (patch-data)
+  (evergreen-configure-patch (evergreen-patch-parse patch-data) '()))
+
+(defun evergreen-configure-patch (patch scheduled-tasks)
+  "Switch to a configuration buffer for the given evergreen-patch struct, using the provided alist of display-name
+   to evergreen-task-info to determine pre-scheduled tasks"
+  (switch-to-buffer (get-buffer-create (format "evergreen-configure: %S" (evergreen-patch-description patch))))
   (read-only-mode -1)
   (evergreen-configure-mode)
   (erase-buffer)
   (setq-local evergreen-patch patch)
   (insert "Configure Patch")
   (newline)
-  (insert (format "Description: %s" (alist-get 'description patch)))
+  (insert (format "Description: %s" (evergreen-patch-description patch)))
   (newline 2)
   (setq-local evergreen-variants
               (seq-map
                (lambda (variant-data)
-                 (let ((variant (evergreen-configure-variant-parse variant-data)))
+                 (let ((variant (evergreen-configure-variant-parse variant-data scheduled-tasks)))
                    (setf (evergreen-configure-variant-location variant) (point-marker))
                    (insert-text-button
                     (evergreen-configure-variant-display-name variant)
@@ -77,7 +92,7 @@
                      (length (evergreen-configure-variant-tasks variant))))
                    (newline)
                    variant))
-               (evergreen-get-patch-variants (alist-get 'patch_id patch)))
+               (evergreen-get-patch-variants (evergreen-patch-id patch)))
               )
   (read-only-mode)
   (goto-line 0)
@@ -176,11 +191,11 @@
       (progn
         (message "Scheduling patch...")
         (evergreen-api-post
-         (format "patches/%s/configure" (alist-get 'patch_id evergreen-patch))
-         (lambda (_) (evergreen-view-patch-data evergreen-patch))
+         (format "patches/%s/configure" (evergreen-patch-id evergreen-patch))
+         (lambda (_) (evergreen-view-patch evergreen-patch))
          (json-encode
           (list
-           (cons "description" (alist-get 'description evergreen-patch))
+           (cons "description" (evergreen-patch-description evergreen-patch))
            (cons
             "variants"
             (seq-map
@@ -202,7 +217,7 @@
 
   (define-key evergreen-configure-mode-map (kbd "r") (lambda ()
                                                              (interactive)
-                                                             (evergreen-configure-patch evergreen-patch)))
+                                                             (evergreen-configure-patch evergreen-patch '())))
 
   (define-key evergreen-configure-mode-map (kbd "h") 'backward-char)
   (define-key evergreen-configure-mode-map (kbd "j") 'next-line)
