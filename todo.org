@@ -65,13 +65,13 @@
   - [X] view task logs async request
   - [X] evergreen-configure async request
 
-* TODO task/patch configuration [5/8]
+* TODO task/patch configuration [6/8]
   - [X] configure "created" patches
   - [X] view task after scheduling
   - [X] fix refresh of view-patch buffer
   - [X] abort tasks
   - [X] restart tasks
-  - [ ] abort patches
+  - [X] abort patches
   - [ ] restart patches
   - [ ] reconfigure patches
 
@@ -105,6 +105,8 @@
   - [ ] readme
 
 ---------------- release ready here ---------------
+
+* TODO emacs terminal optimizations
 
 * TODO log viewer highlighting improvements [0/2]
   - [ ] across the board prettifying (based on lobster)

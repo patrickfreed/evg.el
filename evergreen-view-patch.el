@@ -20,6 +20,12 @@
    :task-names (alist-get 'variants_tasks data)
    ))
 
+(defun evergreen-patch-abort (patch)
+  "Abort the provided patch. This does not refresh the buffer."
+  (evergreen-api-post
+   (format "patches/%s/abort" (evergreen-patch-id patch))
+   (lambda (patch-data) (message "Aborted patch"))))
+
 (defun evergreen-get-current-patch-tasks ()
   "Fetches full list of task results broken down by variant."
   (let ((buildvariants-data
@@ -150,8 +156,10 @@
    (evergreen-view-patch-header-line "Status" (evergreen-status-text (evergreen-patch-status evergreen-current-patch))))
   (newline)
   (insert (evergreen-view-patch-header-line "Created at" (evergreen-date-string (evergreen-patch-create-time evergreen-current-patch))))
-  (newline)
   (newline 2)
+  (when (string= (evergreen-patch-status evergreen-current-patch) evergreen-status-started)
+    (insert-button "Abort patch" 'action (lambda (_) (evergreen-patch-abort evergreen-current-patch)))
+    (newline 2))
   (seq-do
    (lambda (variant-tasks)
      (insert
