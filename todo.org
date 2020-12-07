@@ -87,6 +87,8 @@
   - [ ] patch
   - [ ] task
 
+* TODO emacs terminal optimizations
+
 * TODO bugs / tasks [0/8]
   - [ ] bug: view test logs buffer name and header line malformatted
   - [ ] bug: Invalid face reference: t [364 times] in evergreen-grid
@@ -96,8 +98,6 @@
   - [ ] bug: started time for tasks that haven't been started yet
   - [ ] bug: vertical grid navigaiton on page with many tasks slow 
   - [ ] perform code audit
-
-* TODO emacs terminal optimizations
 
 * TODO prepare repository for release [0/2]
   - [ ] installation instructions
