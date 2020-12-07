@@ -1,6 +1,6 @@
 ;;; -*- lexical-binding: t; -*-
 
-(add-to-list 'load-path "~/evergreen-mode/")
+(defconst evergreen-back-key (kbd "<backtab>"))
 
 (require 'evergreen-configure)
 (require 'evergreen-view-patch)
@@ -19,7 +19,6 @@
    projectile project. Defaults to t."
   :type 'boolean)
 
-(defconst evergreen-back-key (kbd "<backtab>"))
 
 (defun evergreen-status-text (status)
   (with-temp-buffer
