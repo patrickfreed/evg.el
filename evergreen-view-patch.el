@@ -214,14 +214,14 @@
 (progn
   (setq evergreen-view-patch-mode-map (make-sparse-keymap))
 
-  (define-key evergreen-view-patch-mode-map (kbd "r") 'evergreen-view-patch-refresh)
+  (when (require 'evil nil t)
+    (evil-define-key 'normal evergreen-view-patch-mode-map
+      (kbd "<RET>") 'evergreen-view-task-at-point
+      "r" 'evergreen-view-patch-refresh
+      "d" 'evergreen-switch-task-format))
   (define-key evergreen-view-patch-mode-map (kbd "<RET>") 'evergreen-view-task-at-point)
-  (define-key evergreen-view-patch-mode-map (kbd "f") 'evergreen-switch-task-format)
-
-  (define-key evergreen-view-patch-mode-map (kbd "h") 'backward-char)
-  (define-key evergreen-view-patch-mode-map (kbd "j") 'next-line)
-  (define-key evergreen-view-patch-mode-map (kbd "k") 'previous-line)
-  (define-key evergreen-view-patch-mode-map (kbd "l") 'forward-char)
+  (define-key evergreen-view-patch-mode-map (kbd "r") 'evergreen-view-patch-refresh)
+  (define-key evergreen-view-patch-mode-map (kbd "d") 'evergreen-switch-task-format)
   )
 
 (define-derived-mode
@@ -229,5 +229,3 @@
   fundamental-mode
   "Evergreen"
   "Major mode for evergreen-view-patch buffer")
-  
-(evil-set-initial-state 'evergreen-view-patch-mode 'emacs)

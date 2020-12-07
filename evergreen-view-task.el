@@ -220,14 +220,14 @@
 (progn
   (setq evergreen-view-task-mode-map (make-sparse-keymap))
 
-  (define-key evergreen-view-task-mode-map evergreen-back-key 'evergreen-view-task-back-to-patch)
+  (when (require 'evil nil t)
+    (evil-define-key 'normal evergreen-view-task-mode-map
+      (kbd "<RET>") 'evergreen-view-test-at-point
+      "r" 'evergreen-view-task-refresh
+      evergreen-back-key 'evergreen-view-task-back-to-patch))
   (define-key evergreen-view-task-mode-map (kbd "<RET>") 'evergreen-view-test-at-point)
   (define-key evergreen-view-task-mode-map (kbd "r") 'evergreen-view-task-refresh)
-
-  (define-key evergreen-view-task-mode-map (kbd "h") 'backward-char)
-  (define-key evergreen-view-task-mode-map (kbd "j") 'next-line)
-  (define-key evergreen-view-task-mode-map (kbd "k") 'previous-line)
-  (define-key evergreen-view-task-mode-map (kbd "l") 'forward-char)
+  (define-key evergreen-view-task-mode-map evergreen-back-key 'evergreen-view-task-back-to-patch)
   )
 
 (define-derived-mode
@@ -247,6 +247,9 @@
 (progn
   (setq evergreen-view-logs-mode-map (make-sparse-keymap))
 
+  (when (require 'evil nil t)
+    (evil-define-key 'normal evergreen-view-logs-mode-map
+      evergreen-back-key 'evergreen-view-logs-back))
   (define-key evergreen-view-logs-mode-map evergreen-back-key 'evergreen-view-logs-back))
 
 (defun evergreen-view-logs-back ()

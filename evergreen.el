@@ -1,6 +1,11 @@
 ;;; -*- lexical-binding: t; -*-
 
 (defconst evergreen-back-key (kbd "<backtab>"))
+(defcustom evergreen-always-prompt-for-project-name
+  t
+  "Whether to always ask for the project name when invoking evergreen-status. If nil, only prompt for project name if not in a 
+   projectile project. Defaults to t."
+  :type 'boolean)
 
 (require 'evergreen-configure)
 (require 'evergreen-view-patch)
@@ -12,13 +17,6 @@
 (require 'projectile)
 (require 'cl-lib)
 (require 'seq)
-
-(defcustom evergreen-always-prompt-for-project-name
-  t
-  "Whether to always ask for the project name when invoking evergreen-status. If nil, only prompt for project name if not in a 
-   projectile project. Defaults to t."
-  :type 'boolean)
-
 
 (defun evergreen-status-text (status)
   (with-temp-buffer
@@ -117,14 +115,14 @@
 (progn
   (setq evergreen-mode-map (make-sparse-keymap))
 
+  (when (require 'evil nil t)
+    (evil-define-key 'normal evergreen-mode-map
+      (kbd "<RET>") 'evergreen-inspect-patch-at-point
+      "p" 'evergreen-patch
+      "r" 'evergreen-status-refresh))
   (define-key evergreen-mode-map (kbd "<RET>") 'evergreen-inspect-patch-at-point)
   (define-key evergreen-mode-map (kbd "p") 'evergreen-patch)
-  (define-key evergreen-mode-map (kbd "g r") 'evergreen-status-refresh)
-
-  (define-key evergreen-mode-map (kbd "h") 'backward-char)
-  (define-key evergreen-mode-map (kbd "j") 'forward-line)
-  (define-key evergreen-mode-map (kbd "k") 'previous-line)
-  (define-key evergreen-mode-map (kbd "l") 'forward-char)
+  (define-key evergreen-mode-map (kbd "r") 'evergreen-status-refresh)
   )
 
 (define-derived-mode
@@ -133,8 +131,6 @@
   "Evergreen"
   "Major mode for evergreen-status page")
   
-(evil-set-initial-state 'evergreen-mode 'emacs)
-
 (defun evergreen-list-patches-async (project-name)
   "Fetch list of incomplete patches recently submitted by the user."
   (message "fetching %s evergreen status..." project-name)

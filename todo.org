@@ -76,14 +76,10 @@
   - [X] restart patches
   - [X] reconfigure patches
 
-* TODO waterfall [0/3]
-  - [ ] version list on status page
-  - [ ] successful/error tasks for each version
-  - [ ] view version results
-
-* TODO proper evil detection and integration [0/2]
-  - [ ] default emacs-compatible bindings
-  - [ ] detect evil and use evil-compatible bindings
+* DONE proper evil detection and integration [2/2]
+  CLOSED: [2020-12-07 Mon 01:23]
+  - [X] default emacs-compatible bindings
+  - [X] detect evil and use evil-compatible bindings
 
 * TODO UI standardization [0/4]
   - [ ] configure
@@ -101,13 +97,18 @@
   - [ ] bug: vertical grid navigaiton on page with many tasks slow 
   - [ ] perform code audit
 
+* TODO emacs terminal optimizations
+
 * TODO prepare repository for release [0/2]
   - [ ] installation instructions
   - [ ] readme
 
----------------- release ready here ---------------
+* ---------------- release ready here ---------------
 
-* TODO emacs terminal optimizations
+* TODO waterfall [0/3]
+  - [ ] view version results
+  - [ ] size dimension options for grid
+  - [ ] evergreen-waterfall bufer separated into columns
 
 * TODO log viewer highlighting improvements [0/2]
   - [ ] across the board prettifying (based on lobster)
