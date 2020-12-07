@@ -220,7 +220,7 @@
 (progn
   (setq evergreen-view-task-mode-map (make-sparse-keymap))
 
-  (define-key evergreen-view-task-mode-map (kbd "~") 'evergreen-view-task-back-to-patch)
+  (define-key evergreen-view-task-mode-map evergreen-back-key 'evergreen-view-task-back-to-patch)
   (define-key evergreen-view-task-mode-map (kbd "<RET>") 'evergreen-view-test-at-point)
   (define-key evergreen-view-task-mode-map (kbd "r") 'evergreen-view-task-refresh)
 
@@ -247,7 +247,7 @@
 (progn
   (setq evergreen-view-logs-mode-map (make-sparse-keymap))
 
-  (define-key evergreen-view-logs-mode-map (kbd "~") 'evergreen-view-logs-back))
+  (define-key evergreen-view-logs-mode-map evergreen-back-key 'evergreen-view-logs-back))
 
 (defun evergreen-view-logs-back ()
   (interactive)

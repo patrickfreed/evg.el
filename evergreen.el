@@ -19,6 +19,8 @@
    projectile project. Defaults to t."
   :type 'boolean)
 
+(defconst evergreen-back-key (kbd "<backtab>"))
+
 (defun evergreen-status-text (status)
   (with-temp-buffer
     (insert status)
