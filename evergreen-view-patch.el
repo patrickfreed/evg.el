@@ -95,20 +95,6 @@
 (defun evergreen-view-patch-data (data)
   (evergreen-view-patch (evergreen-patch-parse data)))
 
-(defun evergreen-view-patch-header-line (property value)
-  (format
-   "%-16s%s"
-   (with-temp-buffer
-     (insert (format "%s:" property))
-     (add-text-properties (point-min) (point-max) (list 'face 'bold))
-     (buffer-string))
-   (with-temp-buffer
-     (setq fill-column (- (window-width) 26))
-     (setq fill-prefix (make-string 16 ? ))
-     (insert value)
-     (fill-paragraph)
-     (buffer-string))))
-
 (defun evergreen-switch-task-format ()
   (interactive)
   (evergreen-view-patch evergreen-current-patch
@@ -164,20 +150,13 @@
   (cursor-sensor-mode)
 
   ;; header
-  (insert
-   (evergreen-view-patch-header-line "Patch Number" (format "%d" (evergreen-patch-number evergreen-current-patch))))
+   (evergreen-ui-insert-header
+    (list
+     (cons "Description" (evergreen-patch-description evergreen-current-patch))
+     (cons "Patch Number" "12")
+     (cons "Status" (evergreen-status-text (evergreen-patch-status evergreen-current-patch)))
+     (cons "Created at" (evergreen-date-string (evergreen-patch-create-time evergreen-current-patch)))))
   (newline)
-  (let ((description (evergreen-patch-description evergreen-current-patch)))
-    (insert
-     (evergreen-view-patch-header-line
-      "Description"
-      description)))
-  (newline)
-  (insert
-   (evergreen-view-patch-header-line "Status" (evergreen-status-text (evergreen-patch-status evergreen-current-patch))))
-  (newline)
-  (insert (evergreen-view-patch-header-line "Created at" (evergreen-date-string (evergreen-patch-create-time evergreen-current-patch))))
-  (newline 2)
 
   ;; restart/abort buttons
   (insert-button "Reconfigure tasks/variants"

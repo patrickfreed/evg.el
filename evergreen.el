@@ -12,6 +12,7 @@
 (require 'evergreen-view-task)
 (require 'evergreen-grid)
 (require 'evergreen-api)
+(require 'evergreen-ui)
 
 (require 'json)
 (require 'projectile)

@@ -185,16 +185,15 @@
        (setq-local evergreen-current-task task)
        (setq-local evergreen-patch-buffer previous-buffer)
        (setq-local evergreen-patch-number patch-number)
-       (insert
-        (with-temp-buffer
-          (insert full-display-name)
-          (add-text-properties (point-min) (point-max) (list 'face 'evergreen-view-task-title))
-          (buffer-string)))
+
+       (evergreen-ui-insert-header
+        (list
+         (cons "Task Name" (evergreen-task-display-name task))
+         (cons "Build Variant" build-variant)
+         (cons "Status" (evergreen-status-text (evergreen-task-status task)))
+         (cons "Started at" (evergreen-date-string (evergreen-task-start-time task)))))
        (newline)
-       (insert (evergreen-view-task-header-line "Status" (evergreen-status-text (evergreen-task-status task))))
-       (newline)
-       (insert (evergreen-view-task-header-line "Started at" (evergreen-date-string (evergreen-task-start-time task))))
-       (newline 2)
+
        (insert-button "View Task Logs" 'action (lambda (b) (evergreen-view-current-task-logs)))
        (if (evergreen-task-is-in-progress task)
            (progn
