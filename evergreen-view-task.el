@@ -207,10 +207,16 @@
        (let
            ((failed-tests (seq-filter (lambda (test) (string= "fail" (evergreen-task-test-status test))) (evergreen-task-tests task)))
             (passed-tests (seq-filter (lambda (test) (string= "pass" (evergreen-task-test-status test))) (evergreen-task-tests task))))
-         (insert (format "Test Results (%d passed, %d failed)" (length passed-tests) (length failed-tests)))
-         (newline)
-         (seq-do 'evergreen-task-test-insert failed-tests)
-         (seq-do 'evergreen-task-test-insert passed-tests))
+         (if (or failed-tests passed-tests)
+             (progn
+               (insert
+                (format "Test Results (%s, %s):"
+                        (propertize (format "%d passed" (length passed-tests)) 'face '('success . nil))
+                        (propertize (format "%d failed" (length failed-tests)) 'face '('error . nil))))
+               (newline)
+               (seq-do 'evergreen-task-test-insert failed-tests)
+               (seq-do 'evergreen-task-test-insert passed-tests)))
+         (insert (propertize "No test results to display." 'face 'italic))))
        (read-only-mode)
        (goto-line 0)))))
 

@@ -81,9 +81,9 @@
   - [X] default emacs-compatible bindings
   - [X] detect evil and use evil-compatible bindings
 
-* TODO UI standardization [1/5]
+* TODO UI standardization [2/5]
   - [X] header
-  - [ ] task
+  - [X] task
   - [ ] configure
   - [ ] status
   - [ ] patch
