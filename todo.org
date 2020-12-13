@@ -119,8 +119,12 @@
   - [ ] auto update view-patch buffers (configurable)
   - [ ] auto update view-task buffers (configurable)
 
-* TODO misc improvements [0/9]
+* TODO configure usability improvements [0/3]
   - [ ] select shared tasks for multiple variants
+  - [ ] allow patch name change in configure
+  - [ ] support aliases in configure
+
+* TODO misc improvements [0/8]
   - [ ] keybind for goto next failed task
   - [ ] select project name from those specified in ~/.evergreen.yml
   - [ ] drop hard requirement for projectile

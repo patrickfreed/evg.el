@@ -218,7 +218,7 @@
                (seq-do 'evergreen-task-test-insert passed-tests)))
          (insert (propertize "No test results to display." 'face 'italic))))
        (read-only-mode)
-       (goto-line 0)))))
+       (goto-line 0))))
 
 (defvar evergreen-view-task-mode-map nil "Keymap for evergreen-view-task buffers")
 

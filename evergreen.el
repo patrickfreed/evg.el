@@ -53,7 +53,7 @@
     (if id
         (progn
           (message "Submitted patch id: %s" id)
-          (evergreen-get-patch id 'evergreen-configure-patch))
+          (evergreen-get-patch id 'evergreen-configure-patch-data))
       (message "Patch failed"))
     )
   )
