@@ -14,16 +14,6 @@
    'evergreen-configure-task-selected
    (evergreen-configure-variant-tasks variant)))
 
-(defun evergreen-configure-goto-thing ()
-  (interactive)
-  (if-let ((task (evergreen-configure-current-task)))
-      (goto-char (marker-position (evergreen-configure-task-location task)))
-    (if-let ((variant (evergreen-configure-current-variant)))
-      (goto-char (marker-position (evergreen-configure-variant-location variant)))
-      )
-    )
-  )
-
 (defun evergreen-configure-variant-face (variant)
   (let ((nselected (evergreen-configure-variant-nselected-tasks variant)))
     (if (> nselected 0)
@@ -47,28 +37,6 @@
     'face (evergreen-configure-variant-face variant)
     'rear-nonsticky t))
   (setf (evergreen-configure-variant-location variant) (evergreen-configure-make-marker)))
-
-(cl-defstruct evergreen-configure-task name selected location parent)
-
-(defun evergreen-configure-task-is-visible (task)
-  (not (evergreen-configure-variant-collapsed (evergreen-configure-task-parent task))))
-
-(defun evergreen-configure-task-face (task)
-  (if (evergreen-configure-task-selected task)
-      'evergreen-configure-task-selected
-    'evergreen-configure-variant-unselected))
-
-(defun evergreen-configure-task-insert (task)
-  (insert
-   (with-temp-buffer
-     (insert "  ")
-     (evergreen-configure-insert-checkbox (evergreen-configure-task-selected task))
-     (insert " ")
-     (insert (evergreen-configure-task-name task))
-     (add-text-properties (point-min) (point-max) (list 'evergreen-configure-task task))
-     (add-face-text-property (point-min) (point-max) (evergreen-configure-task-face task))
-     (buffer-string)))
-  (setf (evergreen-configure-task-location task) (evergreen-configure-make-marker)))
 
 (defun evergreen-configure-variant-parse (data scheduled-tasks)
   "Parse a configure-variant from the given data, using the provided alist of display-name to evergreen-task-info
@@ -106,6 +74,28 @@
     (evergreen-configure-variant-insert variant)
     (read-only-mode)))
 
+(cl-defstruct evergreen-configure-task name selected location parent)
+
+(defun evergreen-configure-task-is-visible (task)
+  (not (evergreen-configure-variant-collapsed (evergreen-configure-task-parent task))))
+
+(defun evergreen-configure-task-face (task)
+  (if (evergreen-configure-task-selected task)
+      'evergreen-configure-task-selected
+    'evergreen-configure-variant-unselected))
+
+(defun evergreen-configure-task-insert (task)
+  (insert
+   (with-temp-buffer
+     (insert "  ")
+     (evergreen-configure-insert-checkbox (evergreen-configure-task-selected task))
+     (insert " ")
+     (insert (evergreen-configure-task-name task))
+     (add-text-properties (point-min) (point-max) (list 'evergreen-configure-task task))
+     (add-face-text-property (point-min) (point-max) (evergreen-configure-task-face task))
+     (buffer-string)))
+  (setf (evergreen-configure-task-location task) (evergreen-configure-make-marker)))
+
 (defun evergreen-configure-make-marker ()
   (let ((marker (make-marker)))
     (set-marker marker (line-beginning-position))
@@ -129,7 +119,6 @@
   (evergreen-configure-mode)
   (erase-buffer)
   (setq-local evergreen-patch patch)
-  ;; (insert "Configure Patch")
 
   (evergreen-ui-insert-header
    (list
@@ -138,8 +127,7 @@
     (cons "Status" (evergreen-status-text (evergreen-patch-status patch)))
     (cons "Created at" (evergreen-date-string (evergreen-patch-create-time patch))))
    "Configure Patch")
-  ;; (newline)
-  ;; (insert (format "Description: %s" (evergreen-patch-description patch)))
+
   (newline)
   (setq-local evergreen-variants
               (seq-map
@@ -151,16 +139,13 @@
                (evergreen-get-patch-variants (evergreen-patch-id patch)))
               )
   (read-only-mode)
-  (goto-line 0)
-  )
+  (goto-line 0))
 
 (defun evergreen-configure-current-variant ()
-  (get-text-property (point) 'evergreen-configure-variant)
-  )
+  (get-text-property (point) 'evergreen-configure-variant))
 
 (defun evergreen-configure-current-task ()
-  (get-text-property (point) 'evergreen-configure-task)
-  )
+  (get-text-property (point) 'evergreen-configure-task))
 
 (defun evergreen-configure-toggle-current-variant ()
   "Toggles the section at point"
@@ -186,40 +171,41 @@
       (goto-char (marker-position (evergreen-configure-variant-location variant)))
       (kill-line)
       (evergreen-configure-variant-insert variant))
-    (read-only-mode)
-    )
-  )
+    (read-only-mode)))
 
-(defun evergreen-configure-select-task (task)
+(defun evergreen-configure-select-task (task selected)
   "Toggles whether the provided task is selcted or not. This must be called when the point is on
    the same line as the task."
   (let ((is-selected (evergreen-configure-task-selected task)))
-    (setf (evergreen-configure-task-selected task) (not is-selected))
-    (when-let ((location (evergreen-configure-task-location task)))
+    (when (not (eq selected is-selected))
+      (setf (evergreen-configure-task-selected task) selected)
+      (when-let ((location (evergreen-configure-task-location task)))
         (save-excursion
           (read-only-mode -1)
           (goto-char (marker-position location))
           (kill-line)
           (evergreen-configure-task-insert task)
           (read-only-mode))
-        (next-line)
-      )
-    (evergreen-configure-variant-update-nselected (evergreen-configure-task-parent task))
-    )
-  )
+        (next-line))
+      (evergreen-configure-variant-update-nselected (evergreen-configure-task-parent task)))))
 
-(defun evergreen-configure-select-at-point ()
+(defun evergreen-configure-set-select-at-point (selected)
   "Toggles the section at point"
-  (interactive)
   (if-let ((task (evergreen-configure-current-task)))
-      (evergreen-configure-select-task task)
+      (evergreen-configure-select-task task selected)
     (if-let ((variant (evergreen-configure-current-variant)))
         (progn
-          (seq-do 'evergreen-configure-select-task (evergreen-configure-variant-tasks variant))
-          (next-line))
-      )
-    )
-  )
+          (seq-do (lambda (task) (evergreen-configure-select-task task selected)) (evergreen-configure-variant-tasks variant))
+          (next-line)))))
+
+(defun evergreen-configure-select-at-point ()
+  (interactive)
+  (evergreen-configure-set-select-at-point t))
+
+(defun evergreen-configure-deselect-at-point ()
+  (interactive)
+  (message "here")
+  (evergreen-configure-set-select-at-point nil))
 
 (defun evergreen-configure-schedule ()
   (interactive)
@@ -253,8 +239,8 @@
 
   (define-key evergreen-configure-mode-map (kbd "<tab>") 'evergreen-configure-toggle-current-variant)
   (define-key evergreen-configure-mode-map (kbd "m") 'evergreen-configure-select-at-point)
+  (define-key evergreen-configure-mode-map (kbd "u") 'evergreen-configure-deselect-at-point)
   (define-key evergreen-configure-mode-map (kbd "x") 'evergreen-configure-schedule)
-  (define-key evergreen-configure-mode-map (kbd "g") 'evergreen-configure-goto-thing)
 
   (define-key evergreen-configure-mode-map (kbd "r") (lambda ()
                                                              (interactive)
