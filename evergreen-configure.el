@@ -26,6 +26,22 @@
      (buffer-string)))
   (setf (evergreen-configure-task-location task) (evergreen-configure-make-marker)))
 
+(defun evergreen-configure-task-set-selected (task selected)
+  "Toggles whether the provided task is selcted or not. This must be called when the point is on
+   the same line as the task."
+  (let ((is-selected (evergreen-configure-task-selected task)))
+    (when (not (eq selected is-selected))
+      (setf (evergreen-configure-task-selected task) selected)
+      (when-let ((location (evergreen-configure-task-location task)))
+        (save-excursion
+          (read-only-mode -1)
+          (goto-char (marker-position location))
+          (kill-line)
+          (evergreen-configure-task-insert task)
+          (read-only-mode)))
+      (evergreen-configure-variant-update-nselected (evergreen-configure-task-parent task))))
+  (when (evergreen-configure-task-location task) (next-line)))
+
 (cl-defstruct evergreen-configure-variant display-name name tasks collapsed location)
 
 (defun evergreen-configure-variant-nselected-tasks (variant)
@@ -59,6 +75,13 @@
     'face (evergreen-configure-variant-face variant)
     'rear-nonsticky t))
   (setf (evergreen-configure-variant-location variant) (evergreen-configure-make-marker)))
+
+(defun evergreen-configure-variant-set-selected (variant selected)
+  (seq-do
+   (lambda (task)
+     (evergreen-configure-select-task task selected))
+   (evergreen-configure-variant-tasks variant))
+  (next-line))
 
 (defun evergreen-configure-variant-parse (data scheduled-tasks)
   "Parse a configure-variant from the given data, using the provided alist of display-name to evergreen-task-info
@@ -173,33 +196,13 @@
       (evergreen-configure-variant-insert variant))
     (read-only-mode)))
 
-(defun evergreen-configure-select-task (task selected)
-  "Toggles whether the provided task is selcted or not. This must be called when the point is on
-   the same line as the task."
-  (let ((is-selected (evergreen-configure-task-selected task)))
-    (when (not (eq selected is-selected))
-      (setf (evergreen-configure-task-selected task) selected)
-      (when-let ((location (evergreen-configure-task-location task)))
-        (save-excursion
-          (read-only-mode -1)
-          (goto-char (marker-position location))
-          (kill-line)
-          (evergreen-configure-task-insert task)
-          (read-only-mode)))
-      (evergreen-configure-variant-update-nselected (evergreen-configure-task-parent task))))
-  (when (evergreen-configure-task-location task) (next-line)))
-
 (defun evergreen-configure-set-select-at-point (selected)
   "Toggles the section at point"
   (if-let ((task (evergreen-configure-current-task)))
       (progn
-        (evergreen-configure-select-task task selected))
+        (evergreen-configure-task-set-selected task selected))
     (when-let ((variant (evergreen-configure-current-variant)))
-        (seq-do
-         (lambda (task)
-           (evergreen-configure-select-task task selected))
-         (evergreen-configure-variant-tasks variant))
-        (next-line))))
+        (evergreen-configure-variant-set-selected variant selected))))
 
 (defun evergreen-configure-select-at-point ()
   (interactive)
