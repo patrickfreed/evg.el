@@ -61,8 +61,10 @@
 (defun evergreen-status-setup ()
   (read-only-mode -1)
   (erase-buffer)
-  (insert (format "Project: %s" evergreen-project-name))
-  (newline 2))
+  (evergreen-ui-insert-header
+   (list
+    (cons "Project" evergreen-project-name)))
+  (newline))
 
 (cl-defun evergreen-display-status (&key data &allow-other-keys)
   (evergreen-status-setup)
@@ -72,7 +74,7 @@
    (lambda (patch)
      (insert
       (with-temp-buffer
-        (insert (format "%9s" (evergreen-status-text (alist-get 'status patch))))
+        (insert (format "  %9s" (evergreen-status-text (alist-get 'status patch))))
         (insert " ")
         (insert
          (let ((description (alist-get 'description patch)))

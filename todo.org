@@ -81,16 +81,16 @@
   - [X] default emacs-compatible bindings
   - [X] detect evil and use evil-compatible bindings
 
-* TODO UI standardization [2/5]
+* TODO UI standardization [4/5]
   - [X] header
   - [X] task
-  - [ ] configure
-  - [ ] status
+  - [X] configure
+  - [X] status
   - [ ] patch
 
 * TODO emacs terminal optimizations
 
-* TODO bugs / tasks [0/8]
+* TODO bugs / tasks [0/9]
   - [ ] bug: view test logs buffer name and header line malformatted
   - [ ] bug: Invalid face reference: t [364 times] in evergreen-grid
   - [ ] bug: status page configures patches already configured
@@ -99,6 +99,7 @@
   - [ ] bug: started time for tasks that haven't been started yet
   - [ ] bug: vertical grid navigaiton on page with many tasks slow 
   - [ ] perform code audit
+  - [ ] drop hard requirement for projectile
 
 * TODO prepare repository for release [0/2]
   - [ ] installation instructions
@@ -110,6 +111,17 @@
   - [ ] view version results
   - [ ] size dimension options for grid
   - [ ] evergreen-waterfall bufer separated into columns
+
+* TODO patch log page [0/5]
+  - [ ] log patch page (similar to git-log in magit)
+  - [ ] filtering by author
+  - [ ] filtering by description
+  - [ ] filtering by status
+  - [ ] update status page to be "my patches"
+
+* TODO PR integration [0/2]
+  - [ ] list PRs in status buffer
+  - [ ] list patches by PR
 
 * TODO log viewer highlighting improvements [0/2]
   - [ ] across the board prettifying (based on lobster)
@@ -127,7 +139,6 @@
 * TODO misc improvements [0/8]
   - [ ] keybind for goto next failed task
   - [ ] select project name from those specified in ~/.evergreen.yml
-  - [ ] drop hard requirement for projectile
   - [ ] add backwards navigation from patch
   - [ ] indicate text is "clickable" on hover/point entry
   - [ ] add breadcrumbs header for navigating patch > task > test
