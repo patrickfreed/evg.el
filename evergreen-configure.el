@@ -185,18 +185,21 @@
           (goto-char (marker-position location))
           (kill-line)
           (evergreen-configure-task-insert task)
-          (read-only-mode))
-        (next-line))
-      (evergreen-configure-variant-update-nselected (evergreen-configure-task-parent task)))))
+          (read-only-mode)))
+      (evergreen-configure-variant-update-nselected (evergreen-configure-task-parent task))))
+  (when (evergreen-configure-task-location task) (next-line)))
 
 (defun evergreen-configure-set-select-at-point (selected)
   "Toggles the section at point"
   (if-let ((task (evergreen-configure-current-task)))
-      (evergreen-configure-select-task task selected)
-    (if-let ((variant (evergreen-configure-current-variant)))
-        (progn
-          (seq-do (lambda (task) (evergreen-configure-select-task task selected)) (evergreen-configure-variant-tasks variant))
-          (next-line)))))
+      (progn
+        (evergreen-configure-select-task task selected))
+    (when-let ((variant (evergreen-configure-current-variant)))
+        (seq-do
+         (lambda (task)
+           (evergreen-configure-select-task task selected))
+         (evergreen-configure-variant-tasks variant))
+        (next-line))))
 
 (defun evergreen-configure-select-at-point ()
   (interactive)
@@ -204,7 +207,6 @@
 
 (defun evergreen-configure-deselect-at-point ()
   (interactive)
-  (message "here")
   (evergreen-configure-set-select-at-point nil))
 
 (defun evergreen-configure-schedule ()
