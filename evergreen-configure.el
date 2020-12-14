@@ -36,6 +36,8 @@
   (insert
    (propertize
     (concat
+     (if (evergreen-configure-variant-collapsed variant) "⮞" "⮟")
+     " "
      (evergreen-configure-variant-display-name variant)
      (format
       " (%d/%d)"
@@ -144,7 +146,7 @@
                (lambda (variant-data)
                  (let ((variant (evergreen-configure-variant-parse variant-data scheduled-tasks)))
                    (evergreen-configure-variant-insert variant)
-                   (newline 2)
+                   (newline)
                    variant))
                (evergreen-get-patch-variants (evergreen-patch-id patch)))
               )
@@ -166,22 +168,24 @@
   (when-let ((variant (evergreen-configure-current-variant)))
     (read-only-mode -1)
     (save-excursion
+      (setf (evergreen-configure-variant-collapsed variant) (not (evergreen-configure-variant-collapsed variant)))
       (if (evergreen-configure-variant-collapsed variant)
           (progn
-            (setf (evergreen-configure-variant-collapsed variant) nil)
-            (forward-line)
+            (next-line)
             (seq-do
              (lambda (task)
-               (evergreen-configure-task-insert task)
-               (newline))
+               (setf (evergreen-configure-task-location task) nil)
+               (kill-whole-line))
              (evergreen-configure-variant-tasks variant)))
-        (setf (evergreen-configure-variant-collapsed variant) t)
-        (next-line)
+        (forward-line)
         (seq-do
          (lambda (task)
-           (setf (evergreen-configure-task-location task) nil)
-           (kill-whole-line))
-         (evergreen-configure-variant-tasks variant))))
+           (evergreen-configure-task-insert task)
+           (newline))
+         (evergreen-configure-variant-tasks variant)))
+      (goto-char (marker-position (evergreen-configure-variant-location variant)))
+      (kill-line)
+      (evergreen-configure-variant-insert variant))
     (read-only-mode)
     )
   )
@@ -212,7 +216,7 @@
     (if-let ((variant (evergreen-configure-current-variant)))
         (progn
           (seq-do 'evergreen-configure-select-task (evergreen-configure-variant-tasks variant))
-          (next-line 2))
+          (next-line))
       )
     )
   )
