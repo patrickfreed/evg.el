@@ -4,6 +4,28 @@
 
 (require 'cl-lib)
 
+(cl-defstruct evergreen-configure-task name selected location parent)
+
+(defun evergreen-configure-task-is-visible (task)
+  (not (evergreen-configure-variant-collapsed (evergreen-configure-task-parent task))))
+
+(defun evergreen-configure-task-face (task)
+  (if (evergreen-configure-task-selected task)
+      'evergreen-configure-task-selected
+    'evergreen-configure-variant-unselected))
+
+(defun evergreen-configure-task-insert (task)
+  (insert
+   (with-temp-buffer
+     (insert "  ")
+     (evergreen-configure-insert-checkbox (evergreen-configure-task-selected task))
+     (insert " ")
+     (insert (evergreen-configure-task-name task))
+     (add-text-properties (point-min) (point-max) (list 'evergreen-configure-task task))
+     (add-face-text-property (point-min) (point-max) (evergreen-configure-task-face task))
+     (buffer-string)))
+  (setf (evergreen-configure-task-location task) (evergreen-configure-make-marker)))
+
 (cl-defstruct evergreen-configure-variant display-name name tasks collapsed location)
 
 (defun evergreen-configure-variant-nselected-tasks (variant)
@@ -73,28 +95,6 @@
     (kill-line)
     (evergreen-configure-variant-insert variant)
     (read-only-mode)))
-
-(cl-defstruct evergreen-configure-task name selected location parent)
-
-(defun evergreen-configure-task-is-visible (task)
-  (not (evergreen-configure-variant-collapsed (evergreen-configure-task-parent task))))
-
-(defun evergreen-configure-task-face (task)
-  (if (evergreen-configure-task-selected task)
-      'evergreen-configure-task-selected
-    'evergreen-configure-variant-unselected))
-
-(defun evergreen-configure-task-insert (task)
-  (insert
-   (with-temp-buffer
-     (insert "  ")
-     (evergreen-configure-insert-checkbox (evergreen-configure-task-selected task))
-     (insert " ")
-     (insert (evergreen-configure-task-name task))
-     (add-text-properties (point-min) (point-max) (list 'evergreen-configure-task task))
-     (add-face-text-property (point-min) (point-max) (evergreen-configure-task-face task))
-     (buffer-string)))
-  (setf (evergreen-configure-task-location task) (evergreen-configure-make-marker)))
 
 (defun evergreen-configure-make-marker ()
   (let ((marker (make-marker)))
@@ -236,6 +236,15 @@
 
 (progn
   (setq evergreen-configure-mode-map (make-sparse-keymap))
+  (when (require 'evil nil t)
+    (evil-define-key 'normal evergreen-configure-mode-map
+      (kbd "<tab>") 'evergreen-configure-toggle-current-variant
+      (kbd "m") 'evergreen-configure-select-at-point
+      (kbd "u") 'evergreen-configure-deselect-at-point
+      (kbd "x") 'evergreen-configure-schedule
+      (kbd "r") (lambda ()
+                  (interactive)
+                  (evergreen-configure-patch evergreen-patch '()))))
 
   (define-key evergreen-configure-mode-map (kbd "<tab>") 'evergreen-configure-toggle-current-variant)
   (define-key evergreen-configure-mode-map (kbd "m") 'evergreen-configure-select-at-point)
@@ -245,11 +254,6 @@
   (define-key evergreen-configure-mode-map (kbd "r") (lambda ()
                                                              (interactive)
                                                              (evergreen-configure-patch evergreen-patch '())))
-
-  (define-key evergreen-configure-mode-map (kbd "h") 'backward-char)
-  (define-key evergreen-configure-mode-map (kbd "j") 'next-line)
-  (define-key evergreen-configure-mode-map (kbd "k") 'previous-line)
-  (define-key evergreen-configure-mode-map (kbd "l") 'forward-char)
   )
 
 (define-derived-mode
@@ -258,8 +262,6 @@
   "Evergreen"
   "Major mode for evergreen-configure buffer")
   
-(evil-set-initial-state 'evergreen-configure-mode 'emacs)
-
 (defface evergreen-configure-variant-unselected
   '((t (:inherit 'shadow)))
   "The face to use for variants that have no selected tasks")
