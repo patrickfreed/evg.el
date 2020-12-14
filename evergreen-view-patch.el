@@ -178,7 +178,7 @@
      (insert
       (with-temp-buffer
         (insert (format "%s" (car variant-tasks)))
-        (add-text-properties (point-min) (point-max) (list 'face 'bold-italic))
+        (add-text-properties (point-min) (point-max) (list 'face 'bold))
         (buffer-string)))
      (newline)
      (evergreen-insert-variant-tasks (cdr variant-tasks) task-format)

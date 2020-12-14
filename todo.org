@@ -81,23 +81,25 @@
   - [X] default emacs-compatible bindings
   - [X] detect evil and use evil-compatible bindings
 
-* TODO UI standardization [4/5]
+* DONE UI standardization [5/5]
+  CLOSED: [2020-12-13 Sun 23:15]
   - [X] header
   - [X] task
   - [X] configure
   - [X] status
-  - [ ] patch
+  - [X] patch
 
 * TODO emacs terminal optimizations
 
-* TODO bugs / tasks [0/9]
+* TODO bugs / tasks [0/10]
   - [ ] bug: view test logs buffer name and header line malformatted
   - [ ] bug: Invalid face reference: t [364 times] in evergreen-grid
   - [ ] bug: status page configures patches already configured
   - [ ] bug: switch format broken
   - [ ] bug: test logs broken on server repository
   - [ ] bug: started time for tasks that haven't been started yet
-  - [ ] bug: vertical grid navigaiton on page with many tasks slow 
+  - [ ] bug: vertical grid navigaiton on page with many tasks slow
+  - [ ] bug: box cursor doesn't appear in evil-mode on view-patch
   - [ ] perform code audit
   - [ ] drop hard requirement for projectile
 
