@@ -79,7 +79,7 @@
 (defun evergreen-configure-variant-set-selected (variant selected)
   (seq-do
    (lambda (task)
-     (evergreen-configure-select-task task selected))
+     (evergreen-configure-task-set-selected task selected))
    (evergreen-configure-variant-tasks variant))
   (next-line))
 
