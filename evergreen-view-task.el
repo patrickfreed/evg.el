@@ -123,7 +123,7 @@
    (format "%s&text=true" (evergreen-task-task-log evergreen-current-task))
    (lambda (logs)
      (evergreen-view-logs
-      (format "Patch %d %s" evergreen-patch-number (evergreen-current-task-full-name))
+      (format "Patch %d / %s" evergreen-patch-number (evergreen-current-task-full-name))
       logs))))
 
 (defun evergreen-current-task-abort ()
@@ -165,19 +165,19 @@
            (format "https://evergreen.mongodb.com/%s&text=true" (evergreen-task-test-log-url test))
            (lambda (logs)
              (evergreen-view-logs
-              (format "evergreen-view-test: Patch %d %s on %S"
-                      evergreen-patch-number (evergreen-task-test-file-name test) (evergreen-current-task-full-name))
+              (format "Patch %d / %s / %s"
+                      evergreen-patch-number (evergreen-current-task-full-name) (evergreen-task-test-file-name test))
               logs)))))))
 
 (defun evergreen-current-task-full-name ()
-  (format "%s on %s" (evergreen-task-display-name evergreen-current-task) evergreen-build-variant))
+  (format "%s / %s"  evergreen-build-variant (evergreen-task-display-name evergreen-current-task)))
 
 (defun evergreen-view-task (task-id build-variant patch-number previous-buffer)
   (evergreen-get-task-async
    task-id
    (lambda (task)
-     (let ((full-display-name (format "%s on %s" (evergreen-task-display-name task) build-variant)))
-       (switch-to-buffer (get-buffer-create (format "evergreen-view-task: Patch %d %S" patch-number full-display-name)))
+     (let ((full-display-name (format "%s / %s" build-variant (evergreen-task-display-name task))))
+       (switch-to-buffer (get-buffer-create (format "evergreen-view-task: Patch %d / %s" patch-number full-display-name)))
        (evergreen-view-task-mode)
        (read-only-mode -1)
        (erase-buffer)

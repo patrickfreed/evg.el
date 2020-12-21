@@ -136,7 +136,7 @@
 (defun evergreen-view-patch (patch &optional task-format)
   (switch-to-buffer
    (get-buffer-create
-    (format "evergreen-view-patch: %S" (truncate-string-to-width (evergreen-patch-description patch) 50 nil nil t))))
+    (format "evergreen-view-patch: Patch %d %S" (evergreen-patch-number patch) (truncate-string-to-width (evergreen-patch-description patch) 50 nil nil t))))
   (read-only-mode -1)
   (evergreen-view-patch-mode)
   (setq display-line-numbers nil)

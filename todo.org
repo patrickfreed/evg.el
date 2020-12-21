@@ -89,10 +89,8 @@
   - [X] status
   - [X] patch
 
-* TODO emacs terminal optimizations
-
-* TODO bugs / tasks [0/10]
-  - [ ] bug: view test logs buffer name and header line malformatted
+* TODO bugs / tasks [1/10]
+  - [X] bug: view test logs buffer name and header line malformatted
   - [ ] bug: Invalid face reference: t [364 times] in evergreen-grid
   - [ ] bug: status page configures patches already configured
   - [ ] bug: switch format broken
@@ -102,6 +100,8 @@
   - [ ] bug: box cursor doesn't appear in evil-mode on view-patch
   - [ ] perform code audit
   - [ ] drop hard requirement for projectile
+
+* TODO emacs terminal optimizations
 
 * TODO prepare repository for release [0/2]
   - [ ] installation instructions
