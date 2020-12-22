@@ -15,7 +15,6 @@
 (require 'evergreen-ui)
 
 (require 'json)
-(require 'projectile)
 (require 'cl-lib)
 (require 'seq)
 

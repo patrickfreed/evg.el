@@ -102,9 +102,9 @@
   - [X] bug: "no tests results to display" appears when there are test results
   - [X] bug: line numbers in view task
 
-* TODO misc small features [1/7]
+* TODO misc small features [2/7]
   - [X] display patch author in header
-  - [ ] drop hard requirement for projectile
+  - [X] drop hard requirement for projectile
   - [ ] keybind for goto next failed task
   - [ ] select project name from those specified in ~/.evergreen.yml
   - [ ] add backwards navigation from patch

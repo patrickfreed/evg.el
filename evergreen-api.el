@@ -20,16 +20,15 @@
         )))
 
 (defun evergreen-read-project-name ()
-  "Get the project name from user input, defaulting to the current projectile project.
-   This requires projectile."
+  "Get the project name from user input, defaulting to the current projectile project."
   (or
    (and (boundp 'evergreen-project-name) evergreen-project-name)
    (let*
        ((default-project-name
-          (if-let ((name-projectile (projectile-project-name)))
-              (if (string= name-projectile "-")
-                  (error "not in a projectile-project")
-                name-projectile)))
+          (when (require 'projectile nil t)
+            (when-let ((name-projectile (projectile-project-name)))
+              (when (not (string= name-projectile "-"))
+                name-projectile))))
         (prompt
          (cond
           (default-project-name (format "Project name (%s): " default-project-name))
