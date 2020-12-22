@@ -145,7 +145,10 @@
   (setq-local evergreen-current-patch-tasks (or tasks (evergreen-get-current-patch-tasks)))
   (setq-local evergreen-task-format (or task-format 'grid))
   (setq-local global-hl-line-mode nil)
-  (setq-local cursor-type "box")
+  (setq-local cursor-type 'hollow)
+  (when (require 'evil nil t)
+    (setq-local evil-normal-state-cursor 'hollow))
+
   (cursor-intangible-mode)
   (cursor-sensor-mode)
 
