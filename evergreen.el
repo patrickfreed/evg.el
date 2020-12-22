@@ -104,10 +104,11 @@
 
 (defun evergreen-inspect-patch-at-point ()
   (interactive)
-  (if-let ((patch (get-text-property (point) 'evergreen-patch)))
-      (cond
-       ((string= (alist-get 'status patch) "created") (evergreen-configure-patch-data patch))
-       (t (evergreen-view-patch-data patch)))))
+  (when-let ((patch (get-text-property (point) 'evergreen-patch)))
+    (cond
+     ((and (string= (alist-get 'status patch) "created") (eq (alist-get 'activated patch) :json-false))
+      (evergreen-configure-patch-data patch))
+     (t (evergreen-view-patch-data patch)))))
 
 (defun evergreen-status-refresh ()
   (interactive)
