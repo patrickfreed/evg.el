@@ -7,31 +7,31 @@
 (cl-defstruct evergreen-grid-element description status data)
 
 (defun evergreen-grid-success ()
-  `((t
+  `((
      :background ,(face-attribute 'success :foreground)
      :foreground "black"
      :box t)))
 
 (defun evergreen-grid-failed ()
-  `((t
+  `((
      :background ,(face-attribute 'error :foreground)
      :foreground "black"
      :box t)))
 
 (defun evergreen-grid-started ()
-  `((t
+  `((
      :background ,(face-attribute 'warning :foreground)
      :foreground "black"
      :box t)))
 
 (defun evergreen-grid-system-failure ()
-  '((t
+  '((
      :background "#800080"
      :foreground "black"
      :box t)))
 
 (defun evergreen-grid-undispatched ()
-  '((t
+  '((
      :background "#bfbfbe"
      :foreground "black"
      :box t)))
@@ -43,7 +43,7 @@
    ((string= evergreen-status-started status) (evergreen-grid-started))
    ((string= evergreen-status-undispatched status) (evergreen-grid-undispatched))
    ((string= evergreen-status-system-failure status) (evergreen-grid-system-failure))
-   (t (progn (message "unknown status: %s" status) (evergreen-grid-undispatched)))
+   (t (message "unknown status: %s" status) (evergreen-grid-undispatched))
    ))
 
 (defun evergreen-grid-create (title elements)
