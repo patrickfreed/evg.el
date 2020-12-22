@@ -79,14 +79,21 @@
       (with-temp-buffer
         (insert (format "  %9s" (evergreen-status-text (alist-get 'status patch))))
         (insert " ")
-        (insert
-         (let ((description (alist-get 'description patch)))
-           (if (> (length description) 0)
-               description
-             "no description")
-           ))
+        (let ((author (alist-get 'author patch)))
+          (insert
+           (concat
+            "\""
+            (truncate-string-to-width
+             (let ((description (alist-get 'description patch)))
+               (if (> (length description) 0)
+                   description
+                 "no description"))
+             (- (window-width) 20 (length author))
+             nil nil t)
+            "\""))
+          (insert (propertize (concat " by: " author) 'face '('italic 'shadow))))
         (add-text-properties (point-min) (point-max) (list 'evergreen-patch patch))
-        (truncate-string-to-width (buffer-string) (- (window-width) 10) nil nil t)))
+        (buffer-string)))
      (newline))
    data)
   (read-only-mode))

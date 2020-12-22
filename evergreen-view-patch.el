@@ -11,7 +11,7 @@
 (defconst evergreen-patch-status-failed "failed")
 (defconst evergreen-patch-status-success "succeeded")
 
-(cl-defstruct evergreen-patch id description number status create-time start-time finish-time task-names)
+(cl-defstruct evergreen-patch id description number status author create-time start-time finish-time task-names)
 
 (defun evergreen-patch-parse (data)
   (make-evergreen-patch
@@ -19,11 +19,15 @@
    :description (alist-get 'description data)
    :number (alist-get 'patch_number data)
    :status (alist-get 'status data)
+   :author (alist-get 'author data)
    :create-time (alist-get 'create_time data)
    :start-time (alist-get 'start_time data)
    :finish-time (alist-get 'finish_time data)
    :task-names (alist-get 'variants_tasks data)
    ))
+
+(defun evergreen-patch-title (patch)
+  (format "Patch %d by %s" (evergreen-patch-number patch) (evergreen-patch-author patch)))
 
 (defun evergreen-patch-abort (patch)
   "Abort the provided patch. This does not refresh the buffer."
@@ -89,7 +93,7 @@
                   (get-text-property (point) 'evergreen-task-info)
                   (get-text-property (point) 'evergreen-element-data)))
            (build-variant (evergreen-task-info-variant-display-name task)))
-      (evergreen-view-task (evergreen-task-info-id task) build-variant (evergreen-patch-number evergreen-current-patch) (current-buffer)))
+      (evergreen-view-task (evergreen-task-info-id task) build-variant (evergreen-patch-title evergreen-current-patch) (current-buffer)))
   )
 
 (defun evergreen-view-patch-data (data)
@@ -136,7 +140,9 @@
 (defun evergreen-view-patch (patch &optional task-format tasks)
   (switch-to-buffer
    (get-buffer-create
-    (format "evergreen-view-patch: Patch %d %S" (evergreen-patch-number patch) (truncate-string-to-width (evergreen-patch-description patch) 50 nil nil t))))
+    (format "evergreen-view-patch: %s: %S"
+            (evergreen-patch-title patch)
+            (truncate-string-to-width (evergreen-patch-description patch) 50 nil nil t))))
   (read-only-mode -1)
   (evergreen-view-patch-mode)
   (setq display-line-numbers nil)
@@ -157,6 +163,7 @@
     (list
      (cons "Description" (evergreen-patch-description evergreen-current-patch))
      (cons "Patch Number" "12")
+     (cons "Author" (evergreen-patch-author evergreen-current-patch))
      (cons "Status" (evergreen-status-text (evergreen-patch-status evergreen-current-patch)))
      (cons "Created at" (evergreen-date-string (evergreen-patch-create-time evergreen-current-patch)))))
   (newline)

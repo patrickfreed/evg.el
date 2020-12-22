@@ -110,7 +110,7 @@
 (defun evergreen-view-task-refresh ()
   (interactive)
   (evergreen-view-task
-   (evergreen-task-id evergreen-current-task) evergreen-build-variant evergreen-patch-number evergreen-patch-buffer))
+   (evergreen-task-id evergreen-current-task) evergreen-build-variant evergreen-patch-title evergreen-patch-buffer))
 
 (defun evergreen-view-task-back-to-patch ()
   (interactive)
@@ -123,7 +123,7 @@
    (format "%s&text=true" (evergreen-task-task-log evergreen-current-task))
    (lambda (logs)
      (evergreen-view-logs
-      (format "Patch %d / %s" evergreen-patch-number (evergreen-current-task-full-name))
+      (format "%s / %s" evergreen-patch-title (evergreen-current-task-full-name))
       logs))))
 
 (defun evergreen-current-task-abort ()
@@ -168,19 +168,19 @@
                (format "https://evergreen.mongodb.com/%s&text=true" log-url)))
            (lambda (logs)
              (evergreen-view-logs
-              (format "Patch %d / %s / %s"
-                      evergreen-patch-number (evergreen-current-task-full-name) (evergreen-task-test-file-name test))
+              (format "%s / %s / %s"
+                      evergreen-patch-title (evergreen-current-task-full-name) (evergreen-task-test-file-name test))
               logs)))))))
 
 (defun evergreen-current-task-full-name ()
   (format "%s / %s"  evergreen-build-variant (evergreen-task-display-name evergreen-current-task)))
 
-(defun evergreen-view-task (task-id build-variant patch-number previous-buffer)
+(defun evergreen-view-task (task-id build-variant patch-title previous-buffer)
   (evergreen-get-task-async
    task-id
    (lambda (task)
      (let ((full-display-name (format "%s / %s" build-variant (evergreen-task-display-name task))))
-       (switch-to-buffer (get-buffer-create (format "evergreen-view-task: Patch %d / %s" patch-number full-display-name)))
+       (switch-to-buffer (get-buffer-create (format "evergreen-view-task: %s / %s" patch-title full-display-name)))
        (evergreen-view-task-mode)
        (setq display-line-numbers nil)
        (read-only-mode -1)
@@ -188,7 +188,7 @@
        (setq-local evergreen-build-variant build-variant)
        (setq-local evergreen-current-task task)
        (setq-local evergreen-patch-buffer previous-buffer)
-       (setq-local evergreen-patch-number patch-number)
+       (setq-local evergreen-patch-title patch-title)
 
        (evergreen-ui-insert-header
         (list
