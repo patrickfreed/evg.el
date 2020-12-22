@@ -218,8 +218,8 @@
                         (propertize (format "%d failed" (length failed-tests)) 'face '('error . nil))))
                (newline)
                (seq-do 'evergreen-task-test-insert failed-tests)
-               (seq-do 'evergreen-task-test-insert passed-tests)))
-         (insert (propertize "No test results to display." 'face 'italic))))
+               (seq-do 'evergreen-task-test-insert passed-tests))
+           (insert (propertize "No test results to display." 'face 'italic)))))
        (read-only-mode)
        (goto-line 0))))
 
