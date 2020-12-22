@@ -39,7 +39,9 @@
        default-project-name))))
 
 (defun evergreen-api-url (path)
-  (concat "https://evergreen.mongodb.com/api/rest/v2/" path))
+  (if (string-prefix-p "http" path)
+      path
+   (concat "https://evergreen.mongodb.com/api/rest/v2/" path)))
 
 (defun evergreen-api-get-async (url success-callback &optional params)
   (request

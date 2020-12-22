@@ -162,7 +162,10 @@
         (progn
           (message "Fetching test logs...")
           (evergreen-get-string-async
-           (format "https://evergreen.mongodb.com/%s&text=true" (evergreen-task-test-log-url test))
+           (let ((log-url (evergreen-task-test-log-url test)))
+             (if (string-prefix-p "http" log-url)
+                 log-url
+               (format "https://evergreen.mongodb.com/%s&text=true" log-url)))
            (lambda (logs)
              (evergreen-view-logs
               (format "Patch %d / %s / %s"
