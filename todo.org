@@ -89,7 +89,7 @@
   - [X] status
   - [X] patch
 
-* TODO bugs / tasks [9/13]
+* TODO bugs / tasks [10/13]
   - [X] bug: view test logs buffer name and header line malformatted
   - [X] bug: Invalid face reference: t [364 times] in evergreen-grid
   - [X] bug: status page configures patches already configured
@@ -99,7 +99,7 @@
   - [X] bug: vertical grid navigation on page with many tasks slow
   - [X] bug: box cursor doesn't appear in evil-mode on view-patch
   - [X] bug: "no tests results to display" appears when there are test results
-  - [ ] bug: line numbers in view task
+  - [X] bug: line numbers in view task
   - [ ] display patch author in header
   - [ ] drop hard requirement for projectile
   - [ ] perform code audit

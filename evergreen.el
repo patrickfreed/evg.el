@@ -62,6 +62,7 @@
 
 (defun evergreen-status-setup ()
   (read-only-mode -1)
+  (setq display-line-numbers nil)
   (erase-buffer)
   (evergreen-ui-insert-header
    (list

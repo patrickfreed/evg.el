@@ -182,6 +182,7 @@
      (let ((full-display-name (format "%s / %s" build-variant (evergreen-task-display-name task))))
        (switch-to-buffer (get-buffer-create (format "evergreen-view-task: Patch %d / %s" patch-number full-display-name)))
        (evergreen-view-task-mode)
+       (setq display-line-numbers nil)
        (read-only-mode -1)
        (erase-buffer)
        (setq-local evergreen-build-variant build-variant)
