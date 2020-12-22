@@ -33,8 +33,10 @@
   ))
 
 (defun evergreen-date-string (date)
-  "Get human-readable string version of the provided date string"
-  (format-time-string "%b %e, %Y, %r" (date-to-time date)))
+  "Get human-readable string version of the provided iso8601 date string"
+  (condition-case nil
+      (format-time-string "%b %e, %Y, %r" (encode-time (iso8601-parse date)))
+    (error "n/a")))
 
 (defun evergreen-submit-patch (project-name description)
   "Submit a patch to the given project with the given description. Returns the patch's ID."
