@@ -133,7 +133,7 @@
      (message "Refreshing...done")
      (evergreen-view-patch-data patch))))
 
-(defun evergreen-view-patch (patch &optional task-format)
+(defun evergreen-view-patch (patch &optional task-format tasks)
   (switch-to-buffer
    (get-buffer-create
     (format "evergreen-view-patch: Patch %d %S" (evergreen-patch-number patch) (truncate-string-to-width (evergreen-patch-description patch) 50 nil nil t))))
@@ -142,7 +142,7 @@
   (setq display-line-numbers nil)
   (erase-buffer)
   (setq-local evergreen-current-patch patch)
-  (setq-local evergreen-current-patch-tasks (evergreen-get-current-patch-tasks))
+  (setq-local evergreen-current-patch-tasks (or tasks (evergreen-get-current-patch-tasks)))
   (setq-local evergreen-task-format (or task-format 'grid))
   (setq-local global-hl-line-mode nil)
   (setq-local cursor-type "box")

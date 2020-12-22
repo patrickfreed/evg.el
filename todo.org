@@ -89,11 +89,11 @@
   - [X] status
   - [X] patch
 
-* TODO bugs / tasks [3/10]
+* TODO bugs / tasks [4/10]
   - [X] bug: view test logs buffer name and header line malformatted
   - [X] bug: Invalid face reference: t [364 times] in evergreen-grid
   - [X] bug: status page configures patches already configured
-  - [ ] bug: switch format broken
+  - [X] bug: switch format broken
   - [ ] bug: test logs broken on server repository
   - [ ] bug: started time for tasks that haven't been started yet
   - [ ] bug: vertical grid navigaiton on page with many tasks slow
