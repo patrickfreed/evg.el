@@ -87,11 +87,14 @@
    :variant-display-name variant
   ))
 
+(defun evergreen-task-at-point ()
+  (or
+   (get-text-property (point) 'evergreen-task-info)
+   (get-text-property (point) 'evergreen-element-data)))
+
 (defun evergreen-view-task-at-point ()
   (interactive)
-  (if-let ((task (or
-                  (get-text-property (point) 'evergreen-task-info)
-                  (get-text-property (point) 'evergreen-element-data)))
+  (if-let ((task (evergreen-task-at-point))
            (build-variant (evergreen-task-info-variant-display-name task)))
       (evergreen-view-task (evergreen-task-info-id task) build-variant (evergreen-patch-title evergreen-current-patch) (current-buffer)))
   )
@@ -127,6 +130,33 @@
                        :status (evergreen-task-info-status task)
                        :data task))
        tasks)))))
+
+(defun evergreen-goto-next-task-failure ()
+  "Move the point to the next task failure in the patch."
+  (interactive)
+  (evergreen-goto-failure (cond
+                           ((eq evergreen-task-format 'grid) (lambda () (forward-char) t))
+                           ((eq evergreen-task-format 'text) (lambda () (= (forward-line) 0))))))
+
+(defun evergreen-goto-previous-task-failure ()
+  "Move the point to the previous task failure in the patch."
+  (interactive)
+  (evergreen-goto-failure (cond
+                           ((eq evergreen-task-format 'grid) (lambda () (backward-char) t))
+                           ((eq evergreen-task-format 'text) (lambda () (= (forward-line -1) 0))))))
+
+(defun evergreen-goto-failure (travel-fn)
+  (let ((initial-point (point)))
+    (while (and
+            (condition-case nil (funcall travel-fn) (error nil))
+            (if-let ((task (evergreen-task-at-point)))
+                (not (string= "failed" (evergreen-task-info-status task)))
+              t)))
+    (when (not (evergreen-task-at-point))
+      (goto-char initial-point)
+      (message "No more failures"))
+    )
+  )
 
 (defun evergreen-view-patch-refresh ()
   (interactive)
@@ -207,10 +237,14 @@
     (evil-define-key 'normal evergreen-view-patch-mode-map
       (kbd "<RET>") 'evergreen-view-task-at-point
       "r" 'evergreen-view-patch-refresh
-      "d" 'evergreen-switch-task-format))
+      "d" 'evergreen-switch-task-format
+      (kbd "M-j") 'evergreen-goto-next-task-failure
+      (kbd "M-k") 'evergreen-goto-previous-task-failure))
   (define-key evergreen-view-patch-mode-map (kbd "<RET>") 'evergreen-view-task-at-point)
   (define-key evergreen-view-patch-mode-map (kbd "r") 'evergreen-view-patch-refresh)
   (define-key evergreen-view-patch-mode-map (kbd "d") 'evergreen-switch-task-format)
+  (define-key evergreen-view-patch-mode-map (kbd "M-n") 'evergreen-goto-next-task-failure)
+  (define-key evergreen-view-patch-mode-map (kbd "M-p") 'evergreen-goto-previous-task-failure)
   )
 
 (define-derived-mode
