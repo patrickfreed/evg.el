@@ -114,7 +114,9 @@
 
 (defun evergreen-view-task-back-to-patch ()
   (interactive)
-  (switch-to-buffer evergreen-patch-buffer))
+  (let ((buf (current-buffer)))
+    (switch-to-buffer evergreen-patch-buffer)
+    (kill-buffer buf)))
 
 (defun evergreen-view-current-task-logs ()
   "Switch to a buffer displaying the current task's logs"

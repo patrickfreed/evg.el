@@ -1,6 +1,6 @@
 ;;; -*- lexical-binding: t; -*-
 
-(defconst evergreen-back-key (kbd "<backtab>"))
+(defconst evergreen-back-key (kbd "<"))
 (defcustom evergreen-always-prompt-for-project-name
   t
   "Whether to always ask for the project name when invoking evergreen-status. If nil, only prompt for project name if not in a 

@@ -100,7 +100,7 @@
   )
 
 (defun evergreen-view-patch-data (data)
-  (evergreen-view-patch (evergreen-patch-parse data)))
+  (evergreen-view-patch (evergreen-patch-parse data) nil nil (current-buffer)))
 
 (defun evergreen-switch-task-format ()
   (interactive)
@@ -158,6 +158,12 @@
     )
   )
 
+(defun evergreen-view-patch-back-to-status ()
+  (interactive)
+  (let ((buf (current-buffer)))
+    (switch-to-buffer evergreen-previous-buffer)
+    (kill-buffer buf)))
+
 (defun evergreen-view-patch-refresh ()
   (interactive)
   (message "Refreshing...")
@@ -167,7 +173,7 @@
      (message "Refreshing...done")
      (evergreen-view-patch-data patch))))
 
-(defun evergreen-view-patch (patch &optional task-format tasks)
+(defun evergreen-view-patch (patch &optional task-format tasks prev-buffer)
   (switch-to-buffer
    (get-buffer-create
     (format "evergreen-view-patch: %s: %S"
@@ -177,6 +183,7 @@
   (evergreen-view-patch-mode)
   (setq display-line-numbers nil)
   (erase-buffer)
+  (when prev-buffer (setq-local evergreen-previous-buffer prev-buffer))
   (setq-local evergreen-current-patch patch)
   (setq-local evergreen-current-patch-tasks (or tasks (evergreen-get-current-patch-tasks)))
   (setq-local evergreen-task-format (or task-format 'grid))
@@ -239,12 +246,14 @@
       "r" 'evergreen-view-patch-refresh
       "d" 'evergreen-switch-task-format
       (kbd "M-j") 'evergreen-goto-next-task-failure
-      (kbd "M-k") 'evergreen-goto-previous-task-failure))
+      (kbd "M-k") 'evergreen-goto-previous-task-failure
+      evergreen-back-key 'evergreen-view-patch-back-to-status))
   (define-key evergreen-view-patch-mode-map (kbd "<RET>") 'evergreen-view-task-at-point)
   (define-key evergreen-view-patch-mode-map (kbd "r") 'evergreen-view-patch-refresh)
   (define-key evergreen-view-patch-mode-map (kbd "d") 'evergreen-switch-task-format)
   (define-key evergreen-view-patch-mode-map (kbd "M-n") 'evergreen-goto-next-task-failure)
   (define-key evergreen-view-patch-mode-map (kbd "M-p") 'evergreen-goto-previous-task-failure)
+  (define-key evergreen-view-task-mode-map evergreen-back-key 'evergreen-view-patch-back-to-status)
   )
 
 (define-derived-mode
