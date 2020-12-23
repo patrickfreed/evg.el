@@ -119,6 +119,9 @@
 
 * ---------------- release ready here ---------------
 
+* TODO fix aborted / system failed tasks in grid / task view
+  - [ ] switch to graphql for view-task
+
 * TODO waterfall [0/3]
   - [ ] view version results
   - [ ] size dimension options for grid
