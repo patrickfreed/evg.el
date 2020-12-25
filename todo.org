@@ -102,12 +102,11 @@
   - [X] bug: "no tests results to display" appears when there are test results
   - [X] bug: line numbers in view task
 
-* TODO misc small features [4/6]
+* TODO misc small features [4/5]
   - [X] display patch author in header
   - [X] drop hard requirement for projectile
   - [X] keybind for goto next failed task
   - [X] add backwards navigation from patch
-  - [ ] add finished time / time spent to tasks + patches
   - [ ] perform code audit
 
 * TODO emacs terminal optimizations
@@ -143,10 +142,13 @@
 
 * TODO diffs
 
+* TODO replace all usages of REST API with graphql
+
 * TODO ui improvements [0/2]
   - [ ] indicate text is "clickable" on hover/point entry
   - [ ] add breadcrumbs header for navigating patch > task > test
   - [ ] select project name from those specified in ~/.evergreen.yml
+  - [ ] add finished time / time spent to tasks + patches
 
 * TODO patch log page [0/5]
   - [ ] log patch page (similar to git-log in magit)
