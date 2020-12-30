@@ -4,6 +4,9 @@
 
 (require 'cl-lib)
 
+(defvar-local evergreen-configure-target-patch nil)
+(defvar-local evergreen-configure-variants nil)
+
 (cl-defstruct evergreen-configure-task name selected location parent)
 
 (defun evergreen-configure-task-is-visible (task)
@@ -15,6 +18,7 @@
     'evergreen-configure-variant-unselected))
 
 (defun evergreen-configure-task-insert (task)
+  "Insert the given task into the buffer and mark its location."
   (insert
    (with-temp-buffer
      (insert "  ")
@@ -40,7 +44,7 @@
           (evergreen-configure-task-insert task)
           (read-only-mode)))
       (evergreen-configure-variant-update-nselected (evergreen-configure-task-parent task))))
-  (when (evergreen-configure-task-location task) (next-line)))
+  (when (evergreen-configure-task-location task) (forward-line)))
 
 (cl-defstruct evergreen-configure-variant display-name name tasks collapsed location)
 
@@ -53,14 +57,14 @@
    (evergreen-configure-variant-tasks variant)))
 
 (defun evergreen-configure-variant-face (variant)
+  "Get the face for a given variant line depending on the number of selected tasks for that variant."
   (let ((nselected (evergreen-configure-variant-nselected-tasks variant)))
     (if (> nselected 0)
-        (if (= nselected (length (evergreen-configure-variant-tasks variant)))
-            'success
-          'warning)
+        (if (= nselected (length (evergreen-configure-variant-tasks variant))) 'success 'warning)
       '('evergreen-configure-variant-unselected . 'bold))))
 
 (defun evergreen-configure-variant-insert (variant)
+  "Insert a variant line into the configure buffer."
   (insert
    (propertize
     (concat
@@ -81,7 +85,7 @@
    (lambda (task)
      (evergreen-configure-task-set-selected task selected))
    (evergreen-configure-variant-tasks variant))
-  (next-line))
+  (forward-line))
 
 (defun evergreen-configure-variant-parse (data scheduled-tasks)
   "Parse a configure-variant from the given data, using the provided alist of display-name to evergreen-task-info
@@ -103,8 +107,7 @@
                             :parent nil))
                          (gethash "tasks" data))
          :collapsed t
-         :location nil
-         )))
+         :location nil)))
     (seq-do
      (lambda (task)
        (setf (evergreen-configure-task-parent task) variant))
@@ -112,6 +115,7 @@
     variant))
 
 (defun evergreen-configure-variant-update-nselected (variant)
+  "Update the number of selected variants displayed on the variant line."
   (save-excursion 
     (read-only-mode -1)
     (goto-char (marker-position (evergreen-configure-variant-location variant)))
@@ -120,6 +124,7 @@
     (read-only-mode)))
 
 (defun evergreen-configure-make-marker ()
+  "Make a marker that is at the beginning of the current line and updates properly in response to insertion."
   (let ((marker (make-marker)))
     (set-marker marker (line-beginning-position))
     (set-marker-insertion-type marker t)
@@ -135,13 +140,13 @@
   (evergreen-configure-patch (evergreen-patch-parse patch-data) '()))
 
 (defun evergreen-configure-patch (patch scheduled-tasks)
-  "Switch to a configuration buffer for the given evergreen-patch struct, using the provided alist of display-name
+  "Switch to a configuration buffer for the given evergreen-patch struct using the provided alist of display-name
    to evergreen-task-info to determine pre-scheduled tasks"
   (switch-to-buffer (get-buffer-create (format "evergreen-configure: %S" (evergreen-patch-description patch))))
   (read-only-mode -1)
   (evergreen-configure-mode)
   (erase-buffer)
-  (setq-local evergreen-patch patch)
+  (setq-local evergreen-configure-target-patch patch)
 
   (evergreen-ui-insert-header
    (list
@@ -152,17 +157,16 @@
    "Configure Patch")
 
   (newline)
-  (setq-local evergreen-variants
+  (setq-local evergreen-configure-variants
               (seq-map
                (lambda (variant-data)
                  (let ((variant (evergreen-configure-variant-parse variant-data scheduled-tasks)))
                    (evergreen-configure-variant-insert variant)
                    (newline)
                    variant))
-               (evergreen-get-patch-variants (evergreen-patch-id patch)))
-              )
+               (evergreen-get-patch-variants (evergreen-patch-id patch))))
   (read-only-mode)
-  (goto-line 0))
+  (goto-char (point-min)))
 
 (defun evergreen-configure-current-variant ()
   (get-text-property (point) 'evergreen-configure-variant))
@@ -179,7 +183,7 @@
       (setf (evergreen-configure-variant-collapsed variant) (not (evergreen-configure-variant-collapsed variant)))
       (if (evergreen-configure-variant-collapsed variant)
           (progn
-            (next-line)
+            (forward-line)
             (seq-do
              (lambda (task)
                (setf (evergreen-configure-task-location task) nil)
@@ -218,15 +222,15 @@
       ((selected-variants
         (seq-filter
          (lambda (variant) (> (evergreen-configure-variant-nselected-tasks variant) 0))
-         evergreen-variants)))
+         evergreen-configure-variants)))
       (progn
         (message "Scheduling patch...")
         (evergreen-api-post
-         (format "patches/%s/configure" (evergreen-patch-id evergreen-patch))
-         (lambda (_) (evergreen-view-patch evergreen-patch))
+         (format "patches/%s/configure" (evergreen-patch-id evergreen-configure-target-patch))
+         (lambda (_) (evergreen-view-patch evergreen-configure-target-patch))
          (json-encode
           (list
-           (cons "description" (evergreen-patch-description evergreen-patch))
+           (cons "description" (evergreen-patch-description evergreen-configure-target-patch))
            (cons
             "variants"
             (seq-map
@@ -249,7 +253,7 @@
       (kbd "x") 'evergreen-configure-schedule
       (kbd "r") (lambda ()
                   (interactive)
-                  (evergreen-configure-patch evergreen-patch '()))))
+                  (evergreen-configure-patch evergreen-configure-target-patch '()))))
 
   (define-key evergreen-configure-mode-map (kbd "<tab>") 'evergreen-configure-toggle-current-variant)
   (define-key evergreen-configure-mode-map (kbd "m") 'evergreen-configure-select-at-point)
@@ -258,7 +262,7 @@
 
   (define-key evergreen-configure-mode-map (kbd "r") (lambda ()
                                                              (interactive)
-                                                             (evergreen-configure-patch evergreen-patch '())))
+                                                             (evergreen-configure-patch evergreen-configure-target-patch '())))
   )
 
 (define-derived-mode
@@ -269,8 +273,10 @@
   
 (defface evergreen-configure-variant-unselected
   '((t (:inherit 'shadow)))
-  "The face to use for variants that have no selected tasks")
+  "The face to use for variants that have no selected tasks"
+  :group 'evergreen)
 
 (defface evergreen-configure-task-selected
   '((t (:inherit 'success :bold nil)))
-  "The face to use for a task that has been selected")
+  "The face to use for a task that has been selected"
+  :group 'evergreen)

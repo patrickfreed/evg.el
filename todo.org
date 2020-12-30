@@ -102,12 +102,13 @@
   - [X] bug: "no tests results to display" appears when there are test results
   - [X] bug: line numbers in view task
 
-* TODO misc small features [4/5]
+* DONE misc small features [5/5]
+  CLOSED: [2021-01-17 Sun 00:46]
   - [X] display patch author in header
   - [X] drop hard requirement for projectile
   - [X] keybind for goto next failed task
   - [X] add backwards navigation from patch
-  - [ ] perform code audit
+  - [X] eliminate compile warnings
 
 * TODO emacs terminal optimizations
 

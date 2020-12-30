@@ -10,7 +10,8 @@
     (((class color) (background  dark))
      ,@(and (>= emacs-major-version 27) '(:extend t))
      :background "grey20"))
-  "Face for the header portion of an Evergreen buffer")
+  "Face for the header portion of an Evergreen buffer"
+  :group 'evergreen)
 
 (defface evergreen-header-title
   '((t
@@ -18,7 +19,8 @@
      :height 1.25
      :underline t
      :rear-nonsticky t))
-  "Face for the title of the header of an Evergreen buffer")
+  "Face for the title of the header of an Evergreen buffer"
+  :group 'evergreen)
 
 (defun evergreen-ui-insert-header (items &optional title)
   (let ((start (point)))

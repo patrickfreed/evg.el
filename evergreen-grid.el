@@ -46,7 +46,7 @@
    (t (message "unknown status: %s" status) (evergreen-grid-undispatched))
    ))
 
-(defun evergreen-grid-create (title elements)
+(defun evergreen-grid-create (_title elements)
   (with-temp-buffer
     (seq-do
      (lambda (element)
@@ -62,7 +62,7 @@
           'face (evergreen-grid-get-face (evergreen-grid-element-status element))
           'help-echo (evergreen-grid-element-description element)
           'cursor-sensor-functions (list
-                                    (lambda (w p action)
+                                    (lambda (_w _p action)
                                       (if (eq action 'entered)
                                           (message (evergreen-grid-element-description element)))))
           'evergreen-element-data (evergreen-grid-element-data element))

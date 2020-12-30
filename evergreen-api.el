@@ -1,5 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
+(require 'url)
+
 (provide 'evergreen-api)
 
 (defun evergreen-api-init ()
@@ -54,7 +56,10 @@
 ;; From: https://github.com/rcy/graphql-elisp/blob/master/graphql.el
 (defun evergreen-api-graphql-request (query &optional variables)
   (let* ((url-request-method "POST")
-         (url-request-extra-headers (list (cons "Content-Type"  "application/json") (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key)))
+         (url-request-extra-headers
+          (list (cons "Content-Type"  "application/json")
+                (cons "Api-User" evergreen-user)
+                (cons "Api-Key" evergreen-api-key)))
          (url-request-data
           (json-encode (list (cons "query" query)
                              (cons "variables" (and variables (json-encode variables))))))
@@ -62,7 +67,7 @@
     (with-current-buffer buffer
       (goto-char url-http-end-of-headers)
       (gethash "data" (let ((json-object-type 'hash-table))
-        (json-read))))))
+                        (json-read))))))
 
 (defun evergreen-get-string-async (url handler &optional params)
   "Perform an asynchronous GET request against the given URL, passing result as string to the provided handler."

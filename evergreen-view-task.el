@@ -11,6 +11,10 @@
 (defconst evergreen-status-undispatched "undispatched")
 (defconst evergreen-status-system-failure "system-failed")
 
+(defvar-local evergreen-build-variant nil)
+(defvar-local evergreen-current-task nil)
+(defvar-local evergreen-view-task-patch-title nil)
+
 (cl-defstruct evergreen-task
   id
   display-name
@@ -50,10 +54,11 @@
 
 (defun evergreen-task-test-insert (test)
   (insert
-   (with-temp-buffer
-     (insert (format "%7s %s" (evergreen-status-text (evergreen-task-test-status test)) (evergreen-task-test-file-name test)))
-     (put-text-property (point-min) (point-max) 'evergreen-task-test test)
-     (buffer-string)))
+   (propertize
+    (format "%7s %s"
+            (evergreen-status-text (evergreen-task-test-status test))
+            (evergreen-task-test-file-name test))
+    'evergreen-task-test test))
   (newline))
 
 (defun evergreen-task-parse (data test-data)
@@ -83,23 +88,21 @@
          (funcall handler (evergreen-task-parse task-data test-data))))
       '(("limit" . 100000)))))))
 
-(defvar evergreen-task-error-regexp-alist '(("mongo-rust-driver" "thread '.*' panicked" "run with `RUST_BACKTRACE=full` for a verbose backtrace")))
-
 (defface evergreen-view-task-title
   '((t
      :bold t
      :italic t
      :underline t
      :height 1.5))
-  "view task title face")
+  "view task title face"
+  :group 'evergreen)
 
 (defun evergreen-view-task-header-line (property value)
   (format
    "%-16s%s"
-   (with-temp-buffer
-     (insert (format "%s:" property))
-     (add-text-properties (point-min) (point-max) (list 'face 'bold))
-     (buffer-string))
+   (propertize
+     (concat property ":")
+     'face 'bold)
    (with-temp-buffer
      (setq fill-column (- (window-width) 26))
      (setq fill-prefix (make-string 16 ? ))
@@ -110,13 +113,10 @@
 (defun evergreen-view-task-refresh ()
   (interactive)
   (evergreen-view-task
-   (evergreen-task-id evergreen-current-task) evergreen-build-variant evergreen-patch-title evergreen-patch-buffer))
-
-(defun evergreen-view-task-back-to-patch ()
-  (interactive)
-  (let ((buf (current-buffer)))
-    (switch-to-buffer evergreen-patch-buffer)
-    (kill-buffer buf)))
+   (evergreen-task-id evergreen-current-task)
+   evergreen-build-variant
+   evergreen-view-task-patch-title
+   evergreen-previous-buffer))
 
 (defun evergreen-view-current-task-logs ()
   "Switch to a buffer displaying the current task's logs"
@@ -125,7 +125,7 @@
    (format "%s&text=true" (evergreen-task-task-log evergreen-current-task))
    (lambda (logs)
      (evergreen-view-logs
-      (format "%s / %s" evergreen-patch-title (evergreen-current-task-full-name))
+      (format "%s / %s" evergreen-view-task-patch-title (evergreen-current-task-full-name))
       logs))))
 
 (defun evergreen-current-task-abort ()
@@ -144,18 +144,6 @@
      (message "Task restarted")
      (evergreen-view-task-refresh))))
 
-(defun evergreen-view-task-highlight-errors ()
-  "Highlight the error portions of the log output based on provided regex.
-   This code is not used in favor of simply enabling compilation-mode. Kept here if needed
-   at a later date"
-  (pcase (cdr (assoc "mongo-rust-driver" evergreen-task-error-regexp-alist))
-    (`(,start-regexp ,end-regexp) 
-     (while
-         (search-forward-regexp start-regexp nil t)
-       (let* ((start (line-beginning-position)) (end (or (search-forward-regexp end-regexp nil t) (line-end-position))))
-         (set-text-properties start end (list 'face 'diff-removed))
-         )))))
-
 (defun evergreen-view-test-at-point ()
   (interactive)
   (if-let ((test (get-text-property (point) 'evergreen-task-test)))
@@ -171,7 +159,9 @@
            (lambda (logs)
              (evergreen-view-logs
               (format "%s / %s / %s"
-                      evergreen-patch-title (evergreen-current-task-full-name) (evergreen-task-test-file-name test))
+                      evergreen-view-task-patch-title
+                      (evergreen-current-task-full-name)
+                      (evergreen-task-test-file-name test))
               logs)))))))
 
 (defun evergreen-current-task-full-name ()
@@ -189,8 +179,8 @@
        (erase-buffer)
        (setq-local evergreen-build-variant build-variant)
        (setq-local evergreen-current-task task)
-       (setq-local evergreen-patch-buffer previous-buffer)
-       (setq-local evergreen-patch-title patch-title)
+       (setq-local evergreen-previous-buffer previous-buffer)
+       (setq-local evergreen-view-task-patch-title patch-title)
 
        (evergreen-ui-insert-header
         (list
@@ -200,19 +190,22 @@
          (cons "Started at" (evergreen-date-string (evergreen-task-start-time task)))))
        (newline)
 
-       (insert-button "View Task Logs" 'action (lambda (b) (evergreen-view-current-task-logs)))
-       (if (evergreen-task-is-in-progress task)
-           (progn
-             (newline)
-             (insert-button "Abort Task" 'action (lambda (b) (evergreen-current-task-abort)))))
-       (if (not (or (evergreen-task-is-undispatched task) (evergreen-task-is-in-progress task)))
-           (progn
-             (newline)
-             (insert-button "Restart Task" 'action (lambda (b) (evergreen-current-task-restart)))))
+       (insert-button "View Task Logs" 'action (lambda (_) (evergreen-view-current-task-logs)))
+       (when (evergreen-task-is-in-progress task)
+         (newline)
+         (insert-button "Abort Task" 'action (lambda (_) (evergreen-current-task-abort))))
+       (when (not (or (evergreen-task-is-undispatched task) (evergreen-task-is-in-progress task)))
+         (newline)
+         (insert-button "Restart Task" 'action (lambda (_) (evergreen-current-task-restart))))
        (newline 2)
-       (let
-           ((failed-tests (seq-filter (lambda (test) (string= "fail" (evergreen-task-test-status test))) (evergreen-task-tests task)))
-            (passed-tests (seq-filter (lambda (test) (string= "pass" (evergreen-task-test-status test))) (evergreen-task-tests task))))
+       (let ((failed-tests
+              (seq-filter
+               (lambda (test) (string= "fail" (evergreen-task-test-status test)))
+               (evergreen-task-tests task)))
+             (passed-tests
+              (seq-filter
+               (lambda (test) (string= "pass" (evergreen-task-test-status test)))
+               (evergreen-task-tests task))))
          (if (or failed-tests passed-tests)
              (progn
                (insert
@@ -224,7 +217,7 @@
                (seq-do 'evergreen-task-test-insert passed-tests))
            (insert (propertize "No test results to display." 'face 'italic)))))
        (read-only-mode)
-       (goto-line 0))))
+       (goto-char (point-min)))))
 
 (defvar evergreen-view-task-mode-map nil "Keymap for evergreen-view-task buffers")
 
@@ -235,11 +228,10 @@
     (evil-define-key 'normal evergreen-view-task-mode-map
       (kbd "<RET>") 'evergreen-view-test-at-point
       "r" 'evergreen-view-task-refresh
-      evergreen-back-key 'evergreen-view-task-back-to-patch))
+      evergreen-back-key 'evergreen-back))
   (define-key evergreen-view-task-mode-map (kbd "<RET>") 'evergreen-view-test-at-point)
   (define-key evergreen-view-task-mode-map (kbd "r") 'evergreen-view-task-refresh)
-  (define-key evergreen-view-task-mode-map evergreen-back-key 'evergreen-view-task-back-to-patch)
-  )
+  (define-key evergreen-view-task-mode-map evergreen-back-key 'evergreen-back))
 
 (define-derived-mode
   evergreen-view-task-mode
@@ -260,12 +252,8 @@
 
   (when (require 'evil nil t)
     (evil-define-key 'normal evergreen-view-logs-mode-map
-      evergreen-back-key 'evergreen-view-logs-back))
-  (define-key evergreen-view-logs-mode-map evergreen-back-key 'evergreen-view-logs-back))
-
-(defun evergreen-view-logs-back ()
-  (interactive)
-  (switch-to-buffer evergreen-previous-buffer))
+      evergreen-back-key 'evergreen-back))
+  (define-key evergreen-view-logs-mode-map evergreen-back-key 'evergreen-back))
 
 (defun evergreen-view-logs (buffer-name logs)
   (let ((back-buffer (current-buffer)))

@@ -11,6 +11,10 @@
 (defconst evergreen-patch-status-failed "failed")
 (defconst evergreen-patch-status-success "succeeded")
 
+(defvar-local evergreen-view-patch-patch nil)
+(defvar-local evergreen-view-patch-tasks nil)
+(defvar-local evergreen-view-patch-task-format nil)
+
 (cl-defstruct evergreen-patch id description number status author create-time start-time finish-time task-names)
 
 (defun evergreen-patch-parse (data)
@@ -33,13 +37,13 @@
   "Abort the provided patch. This does not refresh the buffer."
   (evergreen-api-post
    (format "patches/%s/abort" (evergreen-patch-id patch))
-   (lambda (patch-data) (message "Aborted patch"))))
+   (lambda (_) (message "Aborted patch"))))
 
 (defun evergreen-patch-restart (patch)
   "Restart the provided patch. This does refreshes the buffer."
   (evergreen-api-post
    (format "patches/%s/restart" (evergreen-patch-id patch))
-   (lambda (patch-data) (message "Restarted patch"))))
+   (lambda (_) (message "Restarted patch"))))
 
 (defun evergreen-get-current-patch-tasks ()
   "Fetches full list of task results broken down by variant."
@@ -57,7 +61,7 @@
                 }
               }
             }"
-           (evergreen-patch-id evergreen-current-patch))
+           (evergreen-patch-id evergreen-view-patch-patch))
           )))
     (seq-map
      (lambda (variant-data)
@@ -71,11 +75,11 @@
 
 (defun evergreen-current-patch-is-in-progress ()
   (or
-   (string= evergreen-patch-status-started (evergreen-patch-status evergreen-current-patch))
+   (string= evergreen-patch-status-started (evergreen-patch-status evergreen-view-patch-patch))
    (seq-some
     (lambda (variant-tasks)
       (seq-some (lambda (task) (string= evergreen-status-started (evergreen-task-info-status task))) (cdr variant-tasks)))
-    evergreen-current-patch-tasks)))
+    evergreen-view-patch-tasks)))
 
 (cl-defstruct evergreen-task-info id display-name status variant-display-name)
 
@@ -96,7 +100,7 @@
   (interactive)
   (if-let ((task (evergreen-task-at-point))
            (build-variant (evergreen-task-info-variant-display-name task)))
-      (evergreen-view-task (evergreen-task-info-id task) build-variant (evergreen-patch-title evergreen-current-patch) (current-buffer)))
+      (evergreen-view-task (evergreen-task-info-id task) build-variant (evergreen-patch-title evergreen-view-patch-patch) (current-buffer)))
   )
 
 (defun evergreen-view-patch-data (data)
@@ -104,9 +108,9 @@
 
 (defun evergreen-switch-task-format ()
   (interactive)
-  (evergreen-view-patch evergreen-current-patch
-                        (if (eq evergreen-task-format 'text) 'grid 'text)
-                        evergreen-current-patch-tasks))
+  (evergreen-view-patch evergreen-view-patch-patch
+                        (if (eq evergreen-view-patch-task-format 'text) 'grid 'text)
+                        evergreen-view-patch-tasks))
 
 (defun evergreen-insert-variant-tasks (tasks task-format)
   (if (eq task-format 'text)
@@ -135,15 +139,15 @@
   "Move the point to the next task failure in the patch."
   (interactive)
   (evergreen-goto-failure (cond
-                           ((eq evergreen-task-format 'grid) (lambda () (forward-char) t))
-                           ((eq evergreen-task-format 'text) (lambda () (= (forward-line) 0))))))
+                           ((eq evergreen-view-patch-task-format 'grid) (lambda () (forward-char) t))
+                           ((eq evergreen-view-patch-task-format 'text) (lambda () (= (forward-line) 0))))))
 
 (defun evergreen-goto-previous-task-failure ()
   "Move the point to the previous task failure in the patch."
   (interactive)
   (evergreen-goto-failure (cond
-                           ((eq evergreen-task-format 'grid) (lambda () (backward-char) t))
-                           ((eq evergreen-task-format 'text) (lambda () (= (forward-line -1) 0))))))
+                           ((eq evergreen-view-patch-task-format 'grid) (lambda () (backward-char) t))
+                           ((eq evergreen-view-patch-task-format 'text) (lambda () (= (forward-line -1) 0))))))
 
 (defun evergreen-goto-failure (travel-fn)
   (let ((initial-point (point)))
@@ -158,22 +162,18 @@
     )
   )
 
-(defun evergreen-view-patch-back-to-status ()
-  (interactive)
-  (let ((buf (current-buffer)))
-    (switch-to-buffer evergreen-previous-buffer)
-    (kill-buffer buf)))
-
 (defun evergreen-view-patch-refresh ()
   (interactive)
   (message "Refreshing...")
   (evergreen-get-patch
-   (evergreen-patch-id evergreen-current-patch)
+   (evergreen-patch-id evergreen-view-patch-patch)
    (lambda (patch)
      (message "Refreshing...done")
      (evergreen-view-patch-data patch))))
 
 (defun evergreen-view-patch (patch &optional task-format tasks prev-buffer)
+  "Switch to a buffer displaying the results of the provided patch. Optionally specify the format to display the task
+results (either 'text or 'grid) and a previous buffer that can be returned to."
   (switch-to-buffer
    (get-buffer-create
     (format "evergreen-view-patch: %s: %S"
@@ -184,9 +184,9 @@
   (setq display-line-numbers nil)
   (erase-buffer)
   (when prev-buffer (setq-local evergreen-previous-buffer prev-buffer))
-  (setq-local evergreen-current-patch patch)
-  (setq-local evergreen-current-patch-tasks (or tasks (evergreen-get-current-patch-tasks)))
-  (setq-local evergreen-task-format (or task-format 'grid))
+  (setq-local evergreen-view-patch-patch patch)
+  (setq-local evergreen-view-patch-tasks (or tasks (evergreen-get-current-patch-tasks)))
+  (setq-local evergreen-view-patch-task-format (or task-format 'grid))
   (setq-local global-hl-line-mode nil)
   (setq-local cursor-type 'hollow)
   (when (require 'evil nil t)
@@ -196,26 +196,26 @@
   (cursor-sensor-mode)
 
   ;; header
-   (evergreen-ui-insert-header
-    (list
-     (cons "Description" (evergreen-patch-description evergreen-current-patch))
-     (cons "Patch Number" "12")
-     (cons "Author" (evergreen-patch-author evergreen-current-patch))
-     (cons "Status" (evergreen-status-text (evergreen-patch-status evergreen-current-patch)))
-     (cons "Created at" (evergreen-date-string (evergreen-patch-create-time evergreen-current-patch)))))
+  (evergreen-ui-insert-header
+   (list
+    (cons "Description" (evergreen-patch-description evergreen-view-patch-patch))
+    (cons "Patch Number" "12")
+    (cons "Author" (evergreen-patch-author evergreen-view-patch-patch))
+    (cons "Status" (evergreen-status-text (evergreen-patch-status evergreen-view-patch-patch)))
+    (cons "Created at" (evergreen-date-string (evergreen-patch-create-time evergreen-view-patch-patch)))))
   (newline)
 
   ;; restart/abort buttons
   (insert-button "Reconfigure tasks/variants"
-                 'action (lambda (_) (evergreen-configure-patch evergreen-current-patch evergreen-current-patch-tasks)))
+                 'action (lambda (_) (evergreen-configure-patch evergreen-view-patch-patch evergreen-view-patch-tasks)))
   (newline)
   (let ((is-in-progress (evergreen-current-patch-is-in-progress)))
     (if is-in-progress
         (progn
-          (insert-button "Abort patch" 'action (lambda (_) (evergreen-patch-abort evergreen-current-patch)))
+          (insert-button "Abort patch" 'action (lambda (_) (evergreen-patch-abort evergreen-view-patch-patch)))
           (newline))
-      (when (not (string= (evergreen-patch-status evergreen-current-patch) evergreen-patch-status-created))
-        (insert-button "Restart patch" 'action (lambda (_) (evergreen-patch-restart evergreen-current-patch)))
+      (when (not (string= (evergreen-patch-status evergreen-view-patch-patch) evergreen-patch-status-created))
+        (insert-button "Restart patch" 'action (lambda (_) (evergreen-patch-restart evergreen-view-patch-patch)))
         (newline))))
   (newline)
 
@@ -230,9 +230,9 @@
      (newline)
      (evergreen-insert-variant-tasks (cdr variant-tasks) task-format)
      (newline))
-   evergreen-current-patch-tasks)
+   evergreen-view-patch-tasks)
   (read-only-mode)
-  (goto-line 0)
+  (goto-char (point-min))
   )
 
 (defvar evergreen-view-patch-mode-map nil "Keymap for evergreen-view-patch buffers")
@@ -247,13 +247,13 @@
       "d" 'evergreen-switch-task-format
       (kbd "M-j") 'evergreen-goto-next-task-failure
       (kbd "M-k") 'evergreen-goto-previous-task-failure
-      evergreen-back-key 'evergreen-view-patch-back-to-status))
+      evergreen-back-key 'evergreen-back))
   (define-key evergreen-view-patch-mode-map (kbd "<RET>") 'evergreen-view-task-at-point)
   (define-key evergreen-view-patch-mode-map (kbd "r") 'evergreen-view-patch-refresh)
   (define-key evergreen-view-patch-mode-map (kbd "d") 'evergreen-switch-task-format)
   (define-key evergreen-view-patch-mode-map (kbd "M-n") 'evergreen-goto-next-task-failure)
   (define-key evergreen-view-patch-mode-map (kbd "M-p") 'evergreen-goto-previous-task-failure)
-  (define-key evergreen-view-task-mode-map evergreen-back-key 'evergreen-view-patch-back-to-status)
+  (define-key evergreen-view-task-mode-map evergreen-back-key 'evergreen-back)
   )
 
 (define-derived-mode
