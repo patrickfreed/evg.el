@@ -110,10 +110,17 @@
   - [X] add backwards navigation from patch
   - [X] eliminate compile warnings
 
-* TODO emacs terminal optimizations
+* TODO emacs terminal optimizations [0/2]
+  - [ ] fix grid view
+  - [ ] bundle as standalone application
 
-* TODO prepare repository for release [0/2]
+* TODO add BB search link
+
+* TODO prepare repository for release [0/3]
   - [ ] installation instructions
+    - [ ] emacs plugin
+    - [ ] standalone application
+  - [ ] rename repository
   - [ ] readme
 
 * ---------------- release ready here ---------------
@@ -121,31 +128,31 @@
 * TODO fix aborted / system failed tasks in grid / task view
   - [ ] switch to graphql for view-task
 
-* TODO waterfall [0/3]
-  - [ ] view version results
-  - [ ] size dimension options for grid
-  - [ ] evergreen-waterfall bufer separated into columns
-
-* TODO handle multiple executions
-
-* TODO log viewer highlighting improvements [0/2]
-  - [ ] across the board prettifying (based on lobster)
+* TODO log viewer improvements [0/2]
+  - [ ] support lobster features (separate extension?)
+    - [ ] add / remove filters
+    - [ ] add / remove highlights
+    - [ ] different colors for different nodes
+    - [ ] option for default log viewer
   - [ ] per-project log viewer hooks for custom formatting
-
-* TODO auto update results buffers [0/2]
-  - [ ] auto update view-patch buffers (configurable)
-  - [ ] auto update view-task buffers (configurable)
 
 * TODO configure usability improvements [0/3]
   - [ ] select shared tasks for multiple variants
   - [ ] allow patch name change in configure
   - [ ] support aliases in configure
 
-* TODO diffs
+* TODO waterfall [0/3]
+  - [ ] view version results
+  - [ ] size dimension options for grid
+  - [ ] evergreen-waterfall bufer separated into columns
+
+* TODO auto update results buffers [0/2]
+  - [ ] auto update view-patch buffers (configurable)
+  - [ ] auto update view-task buffers (configurable)
 
 * TODO replace all usages of REST API with graphql
 
-* TODO ui improvements [0/2]
+* TODO ui improvements [0/4]
   - [ ] indicate text is "clickable" on hover/point entry
   - [ ] add breadcrumbs header for navigating patch > task > test
   - [ ] select project name from those specified in ~/.evergreen.yml
@@ -161,4 +168,8 @@
 * TODO PR integration [0/2]
   - [ ] list PRs in status buffer
   - [ ] list patches by PR
+
+* TODO handle multiple executions
+
+* TODO diffs
 
