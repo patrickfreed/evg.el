@@ -110,8 +110,8 @@
   - [X] add backwards navigation from patch
   - [X] eliminate compile warnings
 
-* TODO emacs terminal optimizations [0/2]
-  - [ ] fix grid view
+* TODO emacs terminal optimizations [1/2]
+  - [X] fix grid view
   - [ ] bundle as standalone application
 
 * TODO add BB search link
