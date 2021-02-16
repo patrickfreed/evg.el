@@ -110,11 +110,14 @@
   - [X] add backwards navigation from patch
   - [X] eliminate compile warnings
 
-* TODO emacs terminal optimizations [1/2]
-  - [X] fix grid view
-  - [ ] bundle as standalone application
+* TODO fix aborted / system failed tasks in grid / task view
+  - [ ] switch to graphql for view-task
 
-* TODO add BB search link
+* TODO bundle as emacs package
+
+* DONE emacs terminal optimizations [1/1]
+  CLOSED: [2021-02-16 Tue 00:08]
+  - [X] fix grid view
 
 * TODO prepare repository for release [0/3]
   - [ ] installation instructions
@@ -125,18 +128,7 @@
 
 * ---------------- release ready here ---------------
 
-* TODO fix aborted / system failed tasks in grid / task view
-  - [ ] switch to graphql for view-task
-
-* TODO log viewer improvements [0/2]
-  - [ ] support lobster features (separate extension?)
-    - [ ] add / remove filters
-    - [ ] add / remove highlights
-    - [ ] different colors for different nodes
-    - [ ] option for default log viewer
-  - [ ] per-project log viewer hooks for custom formatting
-
-* TODO configure usability improvements [0/3]
+* TODO configure patch usability improvements [0/3]
   - [ ] select shared tasks for multiple variants
   - [ ] allow patch name change in configure
   - [ ] support aliases in configure
@@ -145,6 +137,16 @@
   - [ ] view version results
   - [ ] size dimension options for grid
   - [ ] evergreen-waterfall bufer separated into columns
+
+* TODO add BB search link
+
+* TODO log viewer improvements [0/2]
+  - [ ] support lobster features (separate extension?)
+    - [ ] add / remove filters
+    - [ ] add / remove highlights
+    - [ ] different colors for different nodes
+    - [ ] option for default log viewer
+  - [ ] per-project log viewer hooks for custom formatting
 
 * TODO auto update results buffers [0/2]
   - [ ] auto update view-patch buffers (configurable)
