@@ -56,7 +56,7 @@
                 displayName
                 tasks {
                   id
-                  name
+                  displayName
                   status
                 }
               }
