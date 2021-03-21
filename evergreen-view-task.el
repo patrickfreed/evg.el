@@ -38,19 +38,17 @@
   file-name
   status
   log-url
-  log-line
   start-time
   finish-time)
 
 (defun evergreen-task-test-parse (test-data)
-  (let ((logs (alist-get 'logs test-data)))
+  (let ((logs (gethash "logs" test-data)))
     (make-evergreen-task-test
-     :file-name (alist-get 'test_file test-data)
-     :status (alist-get 'status test-data)
-     :start-time (alist-get 'start_time test-data)
-     :finish-time (alist-get 'end_time test-data)
-     :log-url (alist-get 'url_raw_display logs)
-     :log-line (alist-get 'line_num logs))))
+     :file-name (gethash "testFile" test-data)
+     :status (gethash "status" test-data)
+     :start-time (gethash "startTime" test-data)
+     :finish-time (gethash "endTime" test-data)
+     :log-url (gethash "rawDisplayURL" logs))))
 
 (defun evergreen-task-test-insert (test)
   (insert
@@ -74,19 +72,33 @@
      :agent-log (alist-get 'agent_log logs)
      :system-log (alist-get 'system_log logs)
      :event-log (alist-get 'event_log logs)
-     :tests (seq-map 'evergreen-task-test-parse test-data))))
+     :tests (seq-map 'evergreen-task-test-parse test-data)
+     )))
+
+(defun evergreen-get-task-tests (task-id)
+  (gethash "testResults" (gethash "taskTests" (evergreen-api-graphql-request
+   (format
+    "{
+       taskTests(execution: 0, taskId: %S, statuses: []) {
+         testResults {
+           testFile,
+           status,
+           startTime,
+           endTime,
+           logs {
+             rawDisplayURL,
+           }
+         }
+       }
+     }"
+    task-id)))))
 
 (defun evergreen-get-task-async (task-id handler)
   (evergreen-api-get-async
    (format "tasks/%s" task-id)
    (cl-function
     (lambda (&key ((:data task-data)) &allow-other-keys)
-     (evergreen-api-get-async
-      (format "tasks/%s/tests" task-id)
-      (cl-function
-       (lambda (&key ((:data test-data)) &allow-other-keys)
-         (funcall handler (evergreen-task-parse task-data test-data))))
-      '(("limit" . 100000)))))))
+      (funcall handler (evergreen-task-parse task-data (evergreen-get-task-tests task-id)))))))
 
 (defface evergreen-view-task-title
   '((t
