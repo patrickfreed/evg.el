@@ -63,7 +63,7 @@
          (url-request-data
           (json-encode (list (cons "query" query)
                              (cons "variables" (and variables (json-encode variables))))))
-         (buffer (url-retrieve-synchronously "https://evergreen.mongodb.com/graphql/query")))
+         (buffer (url-retrieve-synchronously "https://evergreen.mongodb.com/graphql/query" t)))
     (with-current-buffer buffer
       (goto-char url-http-end-of-headers)
       (gethash "data" (let ((json-object-type 'hash-table))

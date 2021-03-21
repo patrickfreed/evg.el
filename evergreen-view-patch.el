@@ -47,6 +47,7 @@
 
 (defun evergreen-get-current-patch-tasks ()
   "Fetches full list of task results broken down by variant."
+  (message "fetching patch data")
   (let ((buildvariants-data
          (evergreen-api-graphql-request
           (format
@@ -63,6 +64,7 @@
             }"
            (evergreen-patch-id evergreen-view-patch-patch))
           )))
+    (message "fetching data done")
     (seq-map
      (lambda (variant-data)
        (let ((variant-display-name (gethash "displayName" variant-data)))

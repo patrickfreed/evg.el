@@ -180,9 +180,11 @@
   (format "%s / %s"  evergreen-build-variant (evergreen-task-display-name evergreen-current-task)))
 
 (defun evergreen-view-task (task-id build-variant patch-title previous-buffer)
+  (message "fetching task data")
   (evergreen-get-task-async
    task-id
    (lambda (task)
+     (message "fetching data done")
      (let ((full-display-name (format "%s / %s" build-variant (evergreen-task-display-name task))))
        (switch-to-buffer (get-buffer-create (format "evergreen-view-task: %s / %s" patch-title full-display-name)))
        (evergreen-view-task-mode)

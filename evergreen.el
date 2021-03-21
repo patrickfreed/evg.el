@@ -75,6 +75,7 @@ not in a projectile project. Defaults to t."
 
 (cl-defun evergreen-display-status-callback (&key data &allow-other-keys)
   "Update the status buffer using the returned patch data."
+  (message "fetching status done")
   (evergreen-status-setup)
   (insert "Recent Patches:")
   (newline)
