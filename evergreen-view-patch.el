@@ -86,7 +86,7 @@
 (defun evergreen-task-info-parse (data variant)
   (make-evergreen-task-info
    :id (gethash "id" data)
-   :display-name (gethash "name" data)
+   :display-name (gethash "displayName" data)
    :status (gethash "status" data)
    :variant-display-name variant
   ))
@@ -129,10 +129,11 @@
      (evergreen-grid-create
       ""
       (seq-map
-       (lambda (task) (make-evergreen-grid-element
-                       :description (evergreen-task-info-display-name task)
-                       :status (evergreen-task-info-status task)
-                       :data task))
+       (lambda (task)
+         (make-evergreen-grid-element
+          :description (evergreen-task-info-display-name task)
+          :status (evergreen-task-info-status task)
+          :data task))
        tasks)))))
 
 (defun evergreen-goto-next-task-failure ()
