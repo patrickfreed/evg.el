@@ -157,7 +157,7 @@
     (while (and
             (condition-case nil (funcall travel-fn) (error nil))
             (if-let ((task (evergreen-task-at-point)))
-                (not (string= "failed" (evergreen-task-info-status task)))
+                (not (string-match-p evergreen-status-failed-regex (evergreen-task-info-status task)))
               t)))
     (when (not (evergreen-task-at-point))
       (goto-char initial-point)

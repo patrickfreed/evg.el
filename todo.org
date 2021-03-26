@@ -110,8 +110,9 @@
   - [X] add backwards navigation from patch
   - [X] eliminate compile warnings
 
-* TODO fix aborted / system failed tasks in grid / task view
-  - [ ] switch to graphql for view-task
+* DONE fix aborted / system failed tasks in grid / task view
+  CLOSED: [2021-03-26 Fri 02:02]
+  - [X] switch to graphql for view-task
 
 * TODO bundle as emacs package
 
@@ -158,7 +159,7 @@
   - [ ] indicate text is "clickable" on hover/point entry
   - [ ] add breadcrumbs header for navigating patch > task > test
   - [ ] select project name from those specified in ~/.evergreen.yml
-  - [ ] add finished time / time spent to tasks + patches
+  - [ ] add finished time / time spent to tasks + patches + hover text
 
 * TODO patch log page [0/5]
   - [ ] log patch page (similar to git-log in magit)
@@ -174,4 +175,9 @@
 * TODO handle multiple executions
 
 * TODO diffs
+
+* TODO quick wins
+  - [ ] paginate evergreen-status page via '+' button (see magit-log for inspiration)
+  - [ ] "my patches" buffer (across projects)
+  - [ ] "my patches" buffer (within project)
 

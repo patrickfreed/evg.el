@@ -81,7 +81,7 @@
           'cursor-sensor-functions (list
                                     (lambda (_w _p action)
                                       (if (eq action 'entered)
-                                          (message (evergreen-grid-element-description element)))))
+                                          (message "%s - %s" (evergreen-grid-element-description element) (evergreen-grid-element-status element)))))
           'evergreen-element-data (evergreen-grid-element-data element))
          (propertize
           " "
