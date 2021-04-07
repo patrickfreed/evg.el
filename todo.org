@@ -114,17 +114,18 @@
   CLOSED: [2021-03-26 Fri 02:02]
   - [X] switch to graphql for view-task
 
-* TODO bundle as emacs package
-
 * DONE emacs terminal optimizations [1/1]
   CLOSED: [2021-02-16 Tue 00:08]
   - [X] fix grid view
 
-* TODO prepare repository for release [0/3]
+* TODO prepare repository for release [3/6]
+  - [X] organize repository structure
+  - [X] release script
   - [ ] installation instructions
     - [ ] emacs plugin
     - [ ] standalone application
-  - [ ] rename repository
+  - [ ] test release / installation
+  - [X] rename repository
   - [ ] readme
 
 * ---------------- release ready here ---------------
