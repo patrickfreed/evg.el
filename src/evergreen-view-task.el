@@ -4,12 +4,7 @@
 
 (require 'cl-lib)
 
-(defconst evergreen-status-started "started")
-(defconst evergreen-status-failed "failed")
-(defconst evergreen-status-success "success")
-(defconst evergreen-status-aborted "aborted")
-(defconst evergreen-status-undispatched "undispatched")
-(defconst evergreen-status-system-failure "system-failed")
+(require 'evergreen-ui)
 
 (defvar-local evergreen-build-variant nil)
 (defvar-local evergreen-current-task nil)
