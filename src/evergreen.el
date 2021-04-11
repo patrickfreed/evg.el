@@ -43,35 +43,38 @@
     (cons "Project" evergreen-project-name)))
   (newline))
 
-(cl-defun evergreen-display-status-callback (&key data &allow-other-keys)
-  "Update the status buffer using the returned patch data."
-  (message "fetching status done")
-  (evergreen-status-setup)
-  (insert "Recent Patches:")
-  (newline)
-  (seq-do
-   (lambda (patch)
-     (insert
-      (propertize
-       (concat
-        (format "  %9s" (evergreen-status-text (alist-get 'status patch)))
-        " "
-        (let ((author (alist-get 'author patch)))
-          (concat
-           "\""
-           (truncate-string-to-width
-            (let ((description (alist-get 'description patch)))
-              (if (> (length description) 0)
-                  description
-                "no description"))
-            (- (window-width) 20 (length author))
-            nil nil t)
-           "\""
-           (propertize (concat " by: " author) 'face '('italic 'shadow)))))
-       'evergreen-patch patch))
-     (newline))
-   data)
-  (read-only-mode))
+(defun evergreen-get-display-status-callback (status-buffer)
+  (cl-function
+   (lambda (&key data &allow-other-keys)
+     "Update the status buffer using the returned patch data."
+     (message "fetching status done")
+     (with-current-buffer status-buffer
+       (evergreen-status-setup)
+       (insert "Recent Patches:")
+       (newline)
+       (seq-do
+        (lambda (patch)
+          (insert
+           (propertize
+            (concat
+             (format "  %9s" (evergreen-status-text (alist-get 'status patch)))
+             " "
+             (let ((author (alist-get 'author patch)))
+               (concat
+                "\""
+                (truncate-string-to-width
+                 (let ((description (alist-get 'description patch)))
+                   (if (> (length description) 0)
+                       description
+                     "no description"))
+                 (- (window-width) 20 (length author))
+                 nil nil t)
+                "\""
+                (propertize (concat " by: " author) 'face '('italic 'shadow)))))
+            'evergreen-patch patch))
+          (newline))
+        data)
+       (read-only-mode)))))
 
 ;;;###autoload
 (defun evergreen-status (project-name)
@@ -126,7 +129,7 @@
   (message "fetching %s evergreen status..." project-name)
   (evergreen-api-get-async
    (format "projects/%s/patches" project-name)
-   'evergreen-display-status-callback
+   (evergreen-get-display-status-callback (current-buffer))
    '(("limit" . 15))))
 
 (defun evergreen-get-patch (patch-id handler)
