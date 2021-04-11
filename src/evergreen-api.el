@@ -16,7 +16,7 @@
   "Load credentials from ~/.evergreen.yml if unset.
    This function may be invoked repeatedly, all but the first
    invocation are no-ops."
-  (if (not (boundp 'evergreen-api-key))
+  (if (not evergreen-api-key)
       (with-temp-buffer
         (insert-file-contents "~/.evergreen.yml")
         (goto-char (point-min))
