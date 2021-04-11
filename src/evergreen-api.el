@@ -5,11 +5,18 @@
 
 (provide 'evergreen-api)
 
+(defvar evergreen-user
+  nil
+  "The API user to use to authenticate with the Evergreen API. If unset, this will be read from ~/.evergreen.yml")
+(defvar evergreen-api-key
+  nil
+  "The API key to use to authenticate with the Evergreen API. If unset, this will be read from ~/.evergreen.yml")
+
 (defun evergreen-api-init ()
   "Load credentials from ~/.evergreen.yml if unset.
    This function may be invoked repeatedly, all but the first
    invocation are no-ops."
-  (if (not (boundp 'evergreen-api-key))
+  (if (not evergreen-api-key)
       (with-temp-buffer
         (insert-file-contents "~/.evergreen.yml")
         (goto-char (point-min))
