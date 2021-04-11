@@ -31,7 +31,7 @@
   :group 'evergreen)
 
 (defconst evergreen-status-failed-regex
-  "\\(fail\\|abort\\|timed out\\)"
+  "\\(fail\\|abort\\|timed.out\\)"
   "Regular expression matching any task status associated with failure")
 
 (defun evergreen-status-text (status)

@@ -52,7 +52,7 @@
 (defun evergreen-grid-get-face (status)
   (cond
    ((string= evergreen-status-success status) 'evergreen-grid-succeeded)
-   ((or (string= evergreen-status-failed status) (string= evergreen-status-aborted status)) 'evergreen-grid-failed)
+   ((string-match-p evergreen-status-failed-regex status) 'evergreen-grid-failed)
    ((string= evergreen-status-started status) 'evergreen-grid-started)
    ((string= evergreen-status-undispatched status) 'evergreen-grid-undispatched)
    ((string= evergreen-status-system-failure status) 'evergreen-grid-system-failed)
