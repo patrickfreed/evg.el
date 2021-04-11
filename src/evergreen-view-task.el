@@ -130,10 +130,12 @@
   (message "Fetching task logs...")
   (evergreen-get-string-async
    (format "%s&text=true" (evergreen-task-task-log evergreen-current-task))
-   (lambda (logs)
-     (evergreen-view-logs
-      (format "%s / %s" evergreen-view-task-patch-title (evergreen-current-task-full-name))
-      logs))))
+   (let ((task-buffer (current-buffer)))
+    (lambda (logs)
+      (with-current-buffer task-buffer
+        (evergreen-view-logs
+         (format "%s / %s" evergreen-view-task-patch-title (evergreen-current-task-full-name))
+         logs))))))
 
 (defun evergreen-current-task-abort ()
   "Abort the current task. This does not refresh the buffer because evg takes a little while
