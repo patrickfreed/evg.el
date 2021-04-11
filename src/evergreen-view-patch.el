@@ -203,7 +203,7 @@ results (either 'text or 'grid) and a previous buffer that can be returned to."
   (evergreen-ui-insert-header
    (list
     (cons "Description" (evergreen-patch-description evergreen-view-patch-patch))
-    (cons "Patch Number" "12")
+    (cons "Patch Number" (format "%d" (evergreen-patch-number evergreen-view-patch-patch)))
     (cons "Author" (evergreen-patch-author evergreen-view-patch-patch))
     (cons "Status" (evergreen-status-text (evergreen-patch-status evergreen-view-patch-patch)))
     (cons "Created at" (evergreen-date-string (evergreen-patch-create-time evergreen-view-patch-patch)))))
