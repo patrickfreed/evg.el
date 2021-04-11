@@ -35,9 +35,7 @@
          (cond
           (default-project-name (format "Project name (%s): " default-project-name))
           (t "Project name: "))))
-     (if (or evergreen-always-prompt-for-project-name (not default-project-name))
-         (read-string prompt nil nil default-project-name)
-       default-project-name))))
+     (read-string prompt nil nil default-project-name))))
 
 (defun evergreen-api-url (path)
   (if (string-prefix-p "http" path)
