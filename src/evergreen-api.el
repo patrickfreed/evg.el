@@ -1,6 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
 (require 'url)
+(require 'request)
 
 (provide 'evergreen-api)
 
