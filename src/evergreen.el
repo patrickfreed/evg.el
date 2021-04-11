@@ -2,12 +2,6 @@
 
 (defgroup evergreen nil "Customization group for evergreen related options." :group 'extensions)
 (defconst evergreen-back-key (kbd "<"))
-(defcustom evergreen-always-prompt-for-project-name
-  t
-  "Whether to always ask for the project name when invoking evergreen-status. If nil, only prompt for project name if
-not in a projectile project. Defaults to t."
-  :type 'boolean
-  :group 'evergreen)
 
 (require 'evergreen-configure)
 (require 'evergreen-view-patch)
