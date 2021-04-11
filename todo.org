@@ -118,13 +118,11 @@
   CLOSED: [2021-02-16 Tue 00:08]
   - [X] fix grid view
 
-* TODO prepare repository for release [3/6]
+* TODO prepare repository for release [5/6]
   - [X] organize repository structure
   - [X] release script
-  - [ ] installation instructions
-    - [ ] emacs plugin
-    - [ ] standalone application
-  - [ ] test release / installation
+  - [X] installation instructions
+  - [X] test release / installation
   - [X] rename repository
   - [ ] readme
 
