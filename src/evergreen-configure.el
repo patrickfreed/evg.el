@@ -4,6 +4,11 @@
 
 (require 'cl-lib)
 
+(require 'evergreen-view-task)
+(require 'evergreen-view-patch)
+(require 'evergreen-ui)
+(require 'evergreen-api)
+
 (defvar-local evergreen-configure-target-patch nil)
 (defvar-local evergreen-configure-variants nil)
 
@@ -240,6 +245,13 @@
                 (cons "tasks"
                       (seq-map 'evergreen-configure-task-name (evergreen-configure-variant-selected-tasks variant)))))
              selected-variants))))))))
+
+(defun evergreen-get-patch-variants (patch-id)
+  "Get list of variants and their associated tasks for the given patch."
+  (let ((data
+         (evergreen-api-graphql-request
+          (format "{ patch(id: \"%s\") { project { variants { displayName,name,tasks }}}}" patch-id))))
+    (gethash "variants" (gethash "project" (gethash "patch" data)))))
 
 (defvar evergreen-configure-mode-map nil "Keymap for evergreen-configure buffers")
 

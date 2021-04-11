@@ -3,6 +3,7 @@
 (provide 'evergreen-view-patch)
 
 (require 'evergreen-view-task)
+(require 'evergreen-ui)
 
 (require 'cl-lib)
 

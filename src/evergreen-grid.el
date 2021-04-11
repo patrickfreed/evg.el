@@ -4,6 +4,8 @@
 
 (require 'cl-lib)
 
+(require 'evergreen-ui)
+
 (cl-defstruct evergreen-grid-element description status data)
 
 (defface evergreen-grid-rectangle
