@@ -130,10 +130,14 @@
 
 * ---------------- release ready here ---------------
 
-* TODO configure patch usability improvements [0/3]
+* TODO configure patch usability improvements [0/5]
   - [ ] select shared tasks for multiple variants
   - [ ] allow patch name change in configure
   - [ ] support aliases in configure
+  - [ ] add command for toggling a task by name
+  - [ ] add command for toggling a variant by name
+
+* TODO handle multiple executions
 
 * TODO waterfall [0/3]
   - [ ] view version results
@@ -173,12 +177,15 @@
   - [ ] list PRs in status buffer
   - [ ] list patches by PR
 
-* TODO handle multiple executions
-
 * TODO diffs
 
-* TODO quick wins
+* TODO quick wins [0/8]
   - [ ] paginate evergreen-status page via '+' button (see magit-log for inspiration)
   - [ ] "my patches" buffer (across projects)
   - [ ] "my patches" buffer (within project)
+  - [ ] include execution time in hover text
+  - [ ] update mouse hover text to coincide with cursor hover text
+  - [ ] view-task keyboard shortcuts
+  - [ ] kill evergreen-configure buffer once patch is scheduled
+  - [ ] improve echo-buffer messages
 
