@@ -165,13 +165,15 @@
              (if (string-prefix-p "http" log-url)
                  log-url
                (format "https://evergreen.mongodb.com/%s&text=true" log-url)))
-           (lambda (logs)
-             (evergreen-view-logs
-              (format "%s / %s / %s"
-                      evergreen-view-task-patch-title
-                      (evergreen-current-task-full-name)
-                      (evergreen-task-test-file-name test))
-              logs)))))))
+           (let ((task-buffer (current-buffer)))
+             (lambda (logs)
+               (with-current-buffer task-buffer
+                 (evergreen-view-logs
+                  (format "%s / %s / %s"
+                          evergreen-view-task-patch-title
+                          (evergreen-current-task-full-name)
+                          (evergreen-task-test-file-name test))
+                  logs)))))))))
 
 (defun evergreen-current-task-full-name ()
   (format "%s / %s"  evergreen-build-variant (evergreen-task-display-name evergreen-current-task)))
