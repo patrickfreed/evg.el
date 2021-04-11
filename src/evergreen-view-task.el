@@ -16,6 +16,7 @@
   start-time
   finish-time
   status
+  execution
   all-log
   task-log
   agent-log
@@ -54,7 +55,7 @@
     'evergreen-task-test test))
   (newline))
 
-(defun evergreen-task-parse (data test-data)
+(defun evergreen-task-parse (data)
   (let ((logs (alist-get 'logs data)))
     (make-evergreen-task
      :id (alist-get 'task_id data)
@@ -62,19 +63,20 @@
      :start-time (alist-get 'start_time data)
      :finish-time (alist-get 'finish_time data)
      :status (alist-get 'display_status data)
+     :execution (alist-get 'execution data)
      :all-log (alist-get 'all_log logs)
      :task-log (alist-get 'task_log logs)
      :agent-log (alist-get 'agent_log logs)
      :system-log (alist-get 'system_log logs)
      :event-log (alist-get 'event_log logs)
-     :tests (seq-map 'evergreen-task-test-parse test-data)
+     :tests nil
      )))
 
-(defun evergreen-get-task-tests (task-id)
+(defun evergreen-get-task-tests (task-id execution)
   (gethash "testResults" (gethash "taskTests" (evergreen-api-graphql-request
    (format
     "{
-       taskTests(execution: 0, taskId: %S, statuses: []) {
+       taskTests(execution: %d, taskId: %S, statuses: []) {
          testResults {
            testFile,
            status,
@@ -86,14 +88,17 @@
          }
        }
      }"
-    task-id)))))
+    execution task-id)))))
 
 (defun evergreen-get-task-async (task-id handler)
   (evergreen-api-get-async
    (format "tasks/%s" task-id)
    (cl-function
     (lambda (&key ((:data task-data)) &allow-other-keys)
-      (funcall handler (evergreen-task-parse task-data (evergreen-get-task-tests task-id)))))))
+      (let* ((task (evergreen-task-parse task-data))
+             (test-data (evergreen-get-task-tests task-id (evergreen-task-execution task))))
+        (setf (evergreen-task-tests task) (seq-map 'evergreen-task-test-parse test-data))
+        (funcall handler task))))))
 
 (defface evergreen-view-task-title
   '((t
@@ -199,6 +204,7 @@
         (list
          (cons "Task Name" (evergreen-task-display-name task))
          (cons "Build Variant" build-variant)
+         (cons "Execution" (format "%d" (1+ (evergreen-task-execution task))))
          (cons "Status" (evergreen-status-text (evergreen-task-status task)))
          (cons "Started at" (evergreen-date-string (evergreen-task-start-time task)))))
        (newline)
