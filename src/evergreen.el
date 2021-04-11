@@ -73,6 +73,7 @@
    data)
   (read-only-mode))
 
+;;;###autoload
 (defun evergreen-status (project-name)
   "Open the evergreen status page for the given project"
   (interactive (list (evergreen-read-project-name)))
