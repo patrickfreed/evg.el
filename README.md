@@ -1,4 +1,4 @@
-# evergreen
+# evg.el
 
 A frontend for the [Evergreen CI system](https://github.com/evergreen-ci/evergreen), implemented as an Emacs
 package. The keybindings and appearance take heavy inspiration from [`magit`](https://github.com/magit/magit),
@@ -34,7 +34,7 @@ The package does not yet support the following features, but will in some future
 For more info on what's coming up next, check out the [`todo.org`](./todo.org) file.
 
 Have a feature request or bug report, please [file a GitHub
-issue](https://github.com/patrickfreed/evergreen-emacs/issues)!
+issue](https://github.com/patrickfreed/evg.el/issues)!
 
 ## Installation
 
@@ -45,26 +45,26 @@ with the proper credentials.
 
 ## Commands
 
-<kbd>M-x evergreen-status</kbd>: Brings up the `evergreen-status` buffer for an Evergreen project, prompting for the
+<kbd>M-x evg-status</kbd>: Brings up the `evg-status` buffer for an Evergreen project, prompting for the
 name. If using Projectile, this will default to the name of the project where this command was invoked.
 - A suggested binding for this command is <kbd>C-c e</kbd>.
 
-<kbd>M-x evergreen-patch</kbd>: Create a new patch of the current project, prompting for a description. Switches to a
+<kbd>M-x evg-patch</kbd>: Create a new patch of the current project, prompting for a description. Switches to a
 new buffer for configuring the tasks to be run as part of the patch.
-- This doesn't necessarily need to be bound, since it can be easily invoked from a project's `evergreen-status` buffer.
+- This doesn't necessarily need to be bound, since it can be easily invoked from a project's `evg-status` buffer.
 
 ## Overview
 
-Like `magit`, `evergreen` makes use of many different specialized buffers for different tasks. These buffers can be
+Like `magit`, `evg` makes use of many different specialized buffers for different tasks. These buffers can be
 navigated to and from by selecting different things in a buffer via <kbd>RET</kbd> or by invoking commands. After moving
-from one `evergreen` buffer to the next, the previous evergreen buffer can always be reached by pressing
+from one `evg` buffer to the next, the previous `evg` buffer can always be reached by pressing
 <kbd><</kbd>. The next sections detail the functionality of each of these specialized buffers and list their key
 bindings. 
 
-### The evergreen-status buffer
+### The evg-status buffer
 
 Each project has what is called a "status buffer", modeled after the `magit` status buffer for a git repository, which
-can be reached via <kbd>M-x evergreen-status</kbd>. The status buffer serves as a "homepage" for the project, containing
+can be reached via <kbd>M-x evg-status</kbd>. The status buffer serves as a "homepage" for the project, containing
 basic information and allowing different actions to be taken using the project.  
 
 Currently, the status buffer displays a list of recent patches for a given project, and those patches may be inspected
@@ -72,13 +72,13 @@ by moving the cursor over them and pressing <kbd>RET</kbd>. Patches may also be 
 <kbd>p</kbd>.
 
 #### Keymap
-- <kbd>p</kbd>: executes `evergreen-patch`
+- <kbd>p</kbd>: executes `evg-patch`
 - <kbd>RET</kbd>: if pressed while the point is over a patch, view the patch's results
 - <kbd>r</kbd>: refresh the buffer by fetching the recent patches from Evergreen again
 
-![Status Buffer](./screenshots/evergreen-status-buffer.png)
+![Status Buffer](./screenshots/evg-status-buffer.png)
 
-### The evergreen-configure buffer
+### The evg-configure buffer
 
 This buffer is used to configure a new patch or to reconfigure an existing one. It can be used to select which tasks on
 which variants are to be scheduled as part of a patch build. Each variant is listed along with the number of scheduled
@@ -95,9 +95,9 @@ and hitting <kbd>TAB</kbd>. Tasks and variants may be marked for scheduling usin
 - <kbd>x</kbd>: submit the patch configuration to Evergreen, scheduling the patch and any marked tasks. This will also
   unschedule any previously scheduled tasks if they were unmarked.
 
-![Configure Buffer](./screenshots/evergreen-configure-buffer.png)
+![Configure Buffer](./screenshots/evg-configure-buffer.png)
   
-### The evergreen-view-patch buffer
+### The evg-view-patch buffer
 
 This buffer is used to view the results of a patch. By default, it will show a grid for each variant included in the
 patch, with colored rectangles representing the various tasks for each variant. They are colored according to their
@@ -120,11 +120,11 @@ finished, it can be restarted by hitting the `Restart Patch` button.
 - <kbd>M-n</kbd>: move the cursor to the next failure (<kbd>M-j</kbd> if evil-mode is enabled)
 - <kbd>M-p</kbd>: move the cursor to the previous failure (<kbd>M-k</kbd> if evil-mode is enabled)
 - <kbd>d</kbd>: switch the results display between grid and text mode
-- <kbd><</kbd>: go back to the evergreen-status buffer for this project
+- <kbd><</kbd>: go back to the evg-status buffer for this project
 
-![View Patch Buffer](./screenshots/evergreen-view-patch-buffer.gif)
+![View Patch Buffer](./screenshots/evg-view-patch-buffer.gif)
 
-### The evergreen-view-task buffer
+### The evg-view-task buffer
 
 This buffer is used to display the results of an individual task. If available, the test results for that task will also
 be displayed. The logs for an individual test can be viewed by moving the cursor over the test and pressing
@@ -134,16 +134,16 @@ restarted by pressing `Restart Task`. If the task has multiple executions, the l
 
 #### Keymap
 - <kbd>r</kbd>: refresh the buffer with the latest results from Evergreen
-- <kbd><</kbd>: go back to the evergreen-view-patch buffer for the patch this task belongs to
+- <kbd><</kbd>: go back to the evg-view-patch buffer for the patch this task belongs to
 
-![View Task Buffer](./screenshots/evergreen-view-task-buffer.png)
+![View Task Buffer](./screenshots/evg-view-task-buffer.png)
 
-### The evergreen-view-logs buffer
+### The evg-view-logs buffer
 
 This buffer is used to display the logs of a given task or test, the name of which is displayed in the header of the
 buffer. The logs are viewed in `compilation-mode`, which should highlight any errors detected in the logs.
 
 #### Keymap
-- <kbd><</kbd>: go back to the evergreen-view-task buffer for the patch these logs belong to
+- <kbd><</kbd>: go back to the evg-view-task buffer for the patch these logs belong to
 
-![View Logs Buffer](./screenshots/evergreen-view-logs-buffer.png)
+![View Logs Buffer](./screenshots/evg-view-logs-buffer.png)
