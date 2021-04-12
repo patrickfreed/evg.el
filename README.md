@@ -1,7 +1,7 @@
 # evergreen
 
 A frontend for the [Evergreen CI system](https://github.com/evergreen-ci/evergreen), implemented as an Emacs
-package. The controls and appearance take heavy inspiration from [`magit`](https://github.com/magit/magit),
+package. The keybindings and appearance take heavy inspiration from [`magit`](https://github.com/magit/magit),
 [`dired`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html), and, of course, the Evergreen web UI
 itself.
 
@@ -24,6 +24,7 @@ The package currently supports the following features:
 
 The package does not yet support the following features, but will in some future release:
 - viewing the waterfall
+- support viewing previous executions
 - Lobster-like log viewing experience
 - auto-updating results buffers
 - spawn host management
@@ -108,16 +109,16 @@ The task results can also be viewed in a text-based mode, which may be easier to
 switches the buffer between text and grid mode.  
 
 The cursor can be moved automatically to the next failure by pressing <kbd>M-n</kbd> (<kbd>M-j</kbd> in evil-mode) and
-the previous one by pressing <kbd>C-p</kbd> (<kbd>C-k</kbd> in evil-mode). This works when viewing the results in either
-grid or text mode.
+to the previous one by pressing <kbd>M-p</kbd> (<kbd>M-k</kbd> in evil-mode). This works when viewing the results in
+either grid or text mode.
 
-The patch can be aborted (if it is in progress) by hitting the "Abort Patch" button. Similarly, if the patch has already
-finished, it can be restarted by hitting the "Restart Patch" button.
+The patch can be aborted (if it is in progress) by hitting the `Abort Patch` button. Similarly, if the patch has already
+finished, it can be restarted by hitting the `Restart Patch` button.
 
 #### Keymap
 - <kbd>r</kbd>: refresh the buffer with the latest results from Evergreen
 - <kbd>M-n</kbd>: move the cursor to the next failure (<kbd>M-j</kbd> if evil-mode is enabled)
-- <kbd>M-p</kbd>: move the cursor to the previous failure (<kbd>M-p</kbd> if evil-mode is enabled)
+- <kbd>M-p</kbd>: move the cursor to the previous failure (<kbd>M-k</kbd> if evil-mode is enabled)
 - <kbd>d</kbd>: switch the results display between grid and text mode
 - <kbd><</kbd>: go back to the evergreen-status buffer for this project
 
@@ -125,11 +126,11 @@ finished, it can be restarted by hitting the "Restart Patch" button.
 
 ### The evergreen-view-task buffer
 
-This buffer is used to display the results of an individual task. If available, the individual test results will also be
-displayed as a list. The logs for an individual test can be viewed by moving the cursor over the test and pressing
-<kbd>RET</kbd>. The entire task's logs can be viewed by pressing the "View Task Logs" button. If the task is in
-progress, it can be aborted by pressing the "Abort Task" button. Similarly, if the task has already completed, it can be
-restarted by pressing "Restart Task". If the task has multiple executions, the latest one is always displayed.
+This buffer is used to display the results of an individual task. If available, the test results for that task will also
+be displayed. The logs for an individual test can be viewed by moving the cursor over the test and pressing
+<kbd>RET</kbd>. The entire task's logs can be viewed by pressing the `View Task Logs` button. If the task is in
+progress, it can be aborted by pressing the `Abort Task` button. Similarly, if the task has already completed, it can be
+restarted by pressing `Restart Task`. If the task has multiple executions, the latest one is always displayed.
 
 #### Keymap
 - <kbd>r</kbd>: refresh the buffer with the latest results from Evergreen
