@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Patrick Freed
 
 ;; Author: Patrick Freed
-;; URL: https://github.com/patrickfreed/evg-emacs
+;; URL: https://github.com/patrickfreed/evg.el
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
