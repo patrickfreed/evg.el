@@ -3,36 +3,36 @@
 (require 'url)
 (require 'request)
 
-(provide 'evergreen-api)
+(provide 'evg-api)
 
-(defvar evergreen-user
+(defvar evg-user
   nil
   "The API user to use to authenticate with the Evergreen API. If unset, this will be read from ~/.evergreen.yml")
-(defvar evergreen-api-key
+(defvar evg-api-key
   nil
   "The API key to use to authenticate with the Evergreen API. If unset, this will be read from ~/.evergreen.yml")
 
-(defun evergreen-api-init ()
+(defun evg-api-init ()
   "Load credentials from ~/.evergreen.yml if unset.
    This function may be invoked repeatedly, all but the first
    invocation are no-ops."
-  (if (not evergreen-api-key)
+  (if (not evg-api-key)
       (with-temp-buffer
         (insert-file-contents "~/.evergreen.yml")
         (goto-char (point-min))
         (if (search-forward-regexp "api_key: \"?\\([a-z0-9]*\\)\"?$")
-            (setq evergreen-api-key (match-string 1))
+            (setq evg-api-key (match-string 1))
           (error "api key not included in ~/.evergreen.yml"))
         (goto-char (point-min))
         (if (search-forward-regexp "user: \"?\\(.*\\)\"?$")
-            (setq evergreen-user (match-string 1))
+            (setq evg-user (match-string 1))
           (error "api user not included in ~/.evergreen.yml"))
         )))
 
-(defun evergreen-read-project-name ()
+(defun evg-read-project-name ()
   "Get the project name from user input, defaulting to the current projectile project."
   (or
-   (and (boundp 'evergreen-project-name) evergreen-project-name)
+   (and (boundp 'evg-project-name) evg-project-name)
    (let*
        ((default-project-name
           (when (require 'projectile nil t)
@@ -45,27 +45,27 @@
           (t "Project name: "))))
      (read-string prompt nil nil default-project-name))))
 
-(defun evergreen-api-url (path)
+(defun evg-api-url (path)
   (if (string-prefix-p "http" path)
       path
    (concat "https://evergreen.mongodb.com/api/rest/v2/" path)))
 
-(defun evergreen-api-get-async (url success-callback &optional params)
+(defun evg-api-get-async (url success-callback &optional params)
   (request
-    (evergreen-api-url url)
+    (evg-api-url url)
     :type "GET"
-    :headers (list (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key))
+    :headers (list (cons "Api-User" evg-user) (cons "Api-Key" evg-api-key))
     :params params
     :success success-callback
     :parser 'json-read))
 
 ;; From: https://github.com/rcy/graphql-elisp/blob/master/graphql.el
-(defun evergreen-api-graphql-request (query &optional variables)
+(defun evg-api-graphql-request (query &optional variables)
   (let* ((url-request-method "POST")
          (url-request-extra-headers
           (list (cons "Content-Type"  "application/json")
-                (cons "Api-User" evergreen-user)
-                (cons "Api-Key" evergreen-api-key)))
+                (cons "Api-User" evg-user)
+                (cons "Api-Key" evg-api-key)))
          (url-request-data
           (json-encode (list (cons "query" query)
                              (cons "variables" (and variables (json-encode variables))))))
@@ -75,24 +75,24 @@
       (gethash "data" (let ((json-object-type 'hash-table))
                         (json-read))))))
 
-(defun evergreen-get-string-async (url handler &optional params)
+(defun evg-get-string-async (url handler &optional params)
   "Perform an asynchronous GET request against the given URL, passing result as string to the provided handler."
   (request
     url
     :type "GET"
-    :headers (list (cons "Api-User" evergreen-user) (cons "Api-Key" evergreen-api-key))
+    :headers (list (cons "Api-User" evg-user) (cons "Api-Key" evg-api-key))
     :params params
     :success (cl-function (lambda (&key data &allow-other-keys) (funcall handler data)))
     :parser 'buffer-string))
 
-(defun evergreen-api-post (url handler &optional data)
+(defun evg-api-post (url handler &optional data)
   "Perform an asynchronous POST request against the given URL. Result will be passed to handler"
   (request
-    (evergreen-api-url url)
+    (evg-api-url url)
     :type "POST"
     :headers (list
-              (cons "Api-User" evergreen-user)
-              (cons "Api-Key" evergreen-api-key)
+              (cons "Api-User" evg-user)
+              (cons "Api-Key" evg-api-key)
               (cons "Content-Type"  "application/json"))
     :data data
     :success (cl-function (lambda (&key data &allow-other-keys) (funcall handler data)))

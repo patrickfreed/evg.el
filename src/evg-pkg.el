@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Patrick Freed
 
 ;; Author: Patrick Freed
-;; URL: https://github.com/patrickfreed/evergreen-emacs
+;; URL: https://github.com/patrickfreed/evg-emacs
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 ;;; Code:
 
 (define-package
-  "evergreen"
+  "evg"
   "0.1.0"
   "A frontend for the Evergreen CI system, implemented as an Emacs package."
   '((request "0.3.2")))

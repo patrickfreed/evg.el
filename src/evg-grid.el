@@ -1,65 +1,65 @@
 ;;; -*- lexical-binding: t; -*-
 
-(provide 'evergreen-grid)
+(provide 'evg-grid)
 
 (require 'cl-lib)
 
-(require 'evergreen-ui)
+(require 'evg-ui)
 
-(cl-defstruct evergreen-grid-element description status data)
+(cl-defstruct evg-grid-element description status data)
 
-(defface evergreen-grid-rectangle
+(defface evg-grid-rectangle
   '((t
      :overline "black"))
   "Base face for rectangles in an evergreen patch results grid."
-  :group 'evergreen)
+  :group 'evg)
 
-(defface evergreen-grid-undispatched
+(defface evg-grid-undispatched
   '((t
      :background "#bfbfbe"
-     :inherit 'evergreen-grid-rectangle))
+     :inherit 'evg-grid-rectangle))
   "Face used for undispatched task results in an evergreen patch results grid."
-  :group 'evergreen)
+  :group 'evg)
 
-(defface evergreen-grid-system-failed
+(defface evg-grid-system-failed
   '((t
      :background "#800080"
-     :inherit 'evergreen-grid-rectangle))
+     :inherit 'evg-grid-rectangle))
   "Face used for tasks that encountered a system failure in an evergreen patch results grid."
-  :group 'evergreen)
+  :group 'evg)
 
-(defface evergreen-grid-failed
+(defface evg-grid-failed
   `((t
      :background ,(face-attribute 'error :foreground)
-     :inherit 'evergreen-grid-rectangle))
+     :inherit 'evg-grid-rectangle))
   "Face used for failed task results in an evergreen patch results grid."
-  :group 'evergreen)
+  :group 'evg)
 
-(defface evergreen-grid-succeeded
+(defface evg-grid-succeeded
   `((t
      :background ,(face-attribute 'success :foreground)
-     :inherit 'evergreen-grid-rectangle))
+     :inherit 'evg-grid-rectangle))
   "Face used for successful task results in an evergreen patch results grid."
-  :group 'evergreen)
+  :group 'evg)
 
-(defface evergreen-grid-started
+(defface evg-grid-started
   `((t
      :background ,(face-attribute 'warning :foreground)
-     :inherit 'evergreen-grid-element))
+     :inherit 'evg-grid-element))
   "Face used for tasks that are still executing in an evergreen patch results grid."
-  :group 'evergreen)
+  :group 'evg)
 
-(defun evergreen-grid-get-face (status)
+(defun evg-grid-get-face (status)
   (cond
-   ((string= evergreen-status-success status) 'evergreen-grid-succeeded)
-   ((string-match-p evergreen-status-failed-regex status) 'evergreen-grid-failed)
-   ((string= evergreen-status-started status) 'evergreen-grid-started)
-   ((string= evergreen-status-undispatched status) 'evergreen-grid-undispatched)
-   ((string= evergreen-status-system-failure status) 'evergreen-grid-system-failed)
-   (t (message "unknown status: %s" status) 'evergreen-grid-undispatched)
+   ((string= evg-status-success status) 'evg-grid-succeeded)
+   ((string-match-p evg-status-failed-regex status) 'evg-grid-failed)
+   ((string= evg-status-started status) 'evg-grid-started)
+   ((string= evg-status-undispatched status) 'evg-grid-undispatched)
+   ((string= evg-status-system-failure status) 'evg-grid-system-failed)
+   (t (message "unknown status: %s" status) 'evg-grid-undispatched)
    ))
 
-(defun evergreen-grid-create (_title elements)
+(defun evg-grid-create (_title elements)
   (with-temp-buffer
     (seq-do
      (lambda (element)
@@ -78,13 +78,13 @@
         (concat
          (propertize
           " "
-          'face (evergreen-grid-get-face (evergreen-grid-element-status element))
-          'help-echo (evergreen-grid-element-description element)
+          'face (evg-grid-get-face (evg-grid-element-status element))
+          'help-echo (evg-grid-element-description element)
           'cursor-sensor-functions (list
                                     (lambda (_w _p action)
                                       (if (eq action 'entered)
-                                          (message "%s - %s" (evergreen-grid-element-description element) (evergreen-grid-element-status element)))))
-          'evergreen-element-data (evergreen-grid-element-data element))
+                                          (message "%s - %s" (evg-grid-element-description element) (evg-grid-element-status element)))))
+          'evg-element-data (evg-grid-element-data element))
          (propertize
           " "
           'display '(space . (:width (1)))

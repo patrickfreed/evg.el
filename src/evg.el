@@ -1,21 +1,21 @@
 ;;; -*- lexical-binding: t; -*-
 
-(defgroup evergreen nil "Customization group for evergreen related options." :group 'extensions)
+(defgroup evg nil "Customization group for evergreen related options." :group 'extensions)
 
-(require 'evergreen-configure)
-(require 'evergreen-view-patch)
-(require 'evergreen-view-task)
-(require 'evergreen-grid)
-(require 'evergreen-api)
-(require 'evergreen-ui)
+(require 'evg-configure)
+(require 'evg-view-patch)
+(require 'evg-view-task)
+(require 'evg-grid)
+(require 'evg-api)
+(require 'evg-ui)
 
 (require 'json)
 (require 'cl-lib)
 (require 'seq)
 
-(defvar-local evergreen-project-name nil)
+(defvar-local evg-project-name nil)
 
-(defun evergreen-submit-patch (project-name description)
+(defun evg-submit-patch (project-name description)
   "Submit a patch to the given project with the given description. Returns the patch's ID."
   (let* ((command (format "evergreen patch -p \"%s\" --yes --description \"%s\"" project-name description))
         (output (shell-command-to-string command)))
@@ -23,33 +23,33 @@
         (match-string 1 output)
       (message "failed: %s" output))))
 
-(defun evergreen-patch ()
+(defun evg-patch ()
   "Interactively submit a patch to the current project, prompting for a description"
   (interactive)
   (let ((description (read-string "Description: ")))
-    (if-let (id (evergreen-submit-patch evergreen-project-name description))
+    (if-let (id (evg-submit-patch evg-project-name description))
         (progn
           (message "Submitted patch id: %s" id)
-          (evergreen-get-patch id 'evergreen-configure-patch-data))
+          (evg-get-patch id 'evg-configure-patch-data))
       (message "Patch failed"))))
 
-(defun evergreen-status-setup ()
+(defun evg-status-setup ()
   "Prepare the buffer to display the status for a project."
   (read-only-mode -1)
   (setq display-line-numbers nil)
   (erase-buffer)
-  (evergreen-ui-insert-header
+  (evg-ui-insert-header
    (list
-    (cons "Project" evergreen-project-name)))
+    (cons "Project" evg-project-name)))
   (newline))
 
-(defun evergreen-get-display-status-callback (status-buffer)
+(defun evg-get-display-status-callback (status-buffer)
   (cl-function
    (lambda (&key data &allow-other-keys)
      "Update the status buffer using the returned patch data."
      (message "fetching status done")
      (with-current-buffer status-buffer
-       (evergreen-status-setup)
+       (evg-status-setup)
        (insert "Recent Patches:")
        (newline)
        (seq-do
@@ -57,7 +57,7 @@
           (insert
            (propertize
             (concat
-             (format "  %9s" (evergreen-status-text (alist-get 'status patch)))
+             (format "  %9s" (evg-status-text (alist-get 'status patch)))
              " "
              (let ((author (alist-get 'author patch)))
                (concat
@@ -71,70 +71,70 @@
                  nil nil t)
                 "\""
                 (propertize (concat " by: " author) 'face '('italic 'shadow)))))
-            'evergreen-patch patch))
+            'evg-patch patch))
           (newline))
         data)
        (read-only-mode)))))
 
 ;;;###autoload
-(defun evergreen-status (project-name)
+(defun evg-status (project-name)
   "Open the evergreen status page for the given project"
-  (interactive (list (evergreen-read-project-name)))
-  (evergreen-api-init)
-  (switch-to-buffer (get-buffer-create (format "evergreen-status: %s" project-name)))
-  (evergreen-mode)
-  (setq-local evergreen-project-name project-name)
-  (evergreen-status-setup)
+  (interactive (list (evg-read-project-name)))
+  (evg-api-init)
+  (switch-to-buffer (get-buffer-create (format "evg-status: %s" project-name)))
+  (evg-mode)
+  (setq-local evg-project-name project-name)
+  (evg-status-setup)
 
   (insert "Fetching patches...")
   (read-only-mode)
-  (evergreen-list-patches-async project-name)
+  (evg-list-patches-async project-name)
   (goto-char (point-min)))
 
-(defun evergreen-inspect-patch-at-point ()
+(defun evg-inspect-patch-at-point ()
   "Open a buffer viewing the results of the patch under the point."
   (interactive)
-  (when-let ((patch (get-text-property (point) 'evergreen-patch)))
+  (when-let ((patch (get-text-property (point) 'evg-patch)))
     (if (and (string= (alist-get 'status patch) "created") (eq (alist-get 'activated patch) :json-false))
-        (evergreen-configure-patch-data patch)
-      (evergreen-view-patch-data patch))))
+        (evg-configure-patch-data patch)
+      (evg-view-patch-data patch))))
 
-(defun evergreen-status-refresh ()
+(defun evg-status-refresh ()
   "Refetch the status of the recent patches for this project and update the status buffer accordingly."
   (interactive)
-  (evergreen-status evergreen-project-name))
+  (evg-status evg-project-name))
 
-(defvar evergreen-mode-map nil "Keymap for evergreen-status page")
+(defvar evg-mode-map nil "Keymap for evg-status page")
 
 (progn
-  (setq evergreen-mode-map (make-sparse-keymap))
+  (setq evg-mode-map (make-sparse-keymap))
 
   (when (require 'evil nil t)
-    (evil-define-key 'normal evergreen-mode-map
-      (kbd "<RET>") 'evergreen-inspect-patch-at-point
-      "p" 'evergreen-patch
-      "r" 'evergreen-status-refresh))
-  (define-key evergreen-mode-map (kbd "<RET>") 'evergreen-inspect-patch-at-point)
-  (define-key evergreen-mode-map (kbd "p") 'evergreen-patch)
-  (define-key evergreen-mode-map (kbd "r") 'evergreen-status-refresh))
+    (evil-define-key 'normal evg-mode-map
+      (kbd "<RET>") 'evg-inspect-patch-at-point
+      "p" 'evg-patch
+      "r" 'evg-status-refresh))
+  (define-key evg-mode-map (kbd "<RET>") 'evg-inspect-patch-at-point)
+  (define-key evg-mode-map (kbd "p") 'evg-patch)
+  (define-key evg-mode-map (kbd "r") 'evg-status-refresh))
 
 (define-derived-mode
-  evergreen-mode
+  evg-mode
   fundamental-mode
   "Evergreen"
-  "Major mode for evergreen-status page")
+  "Major mode for evg-status page")
   
-(defun evergreen-list-patches-async (project-name)
+(defun evg-list-patches-async (project-name)
   "Fetch list of recent patches associated with the given project."
   (message "fetching %s evergreen status..." project-name)
-  (evergreen-api-get-async
+  (evg-api-get-async
    (format "projects/%s/patches" project-name)
-   (evergreen-get-display-status-callback (current-buffer))
+   (evg-get-display-status-callback (current-buffer))
    '(("limit" . 15))))
 
-(defun evergreen-get-patch (patch-id handler)
+(defun evg-get-patch (patch-id handler)
   "Fetch the details of a single patch as a JSON object and pass it to the given handler."
-  (evergreen-api-get-async
+  (evg-api-get-async
    (format "patches/%s" patch-id)
    (cl-function
     (lambda (&key data &allow-other-keys) (funcall handler data)))))

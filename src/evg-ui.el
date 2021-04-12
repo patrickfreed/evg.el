@@ -1,58 +1,58 @@
 ;;; -*- lexical-binding: t; -*-
 
-(provide 'evergreen-ui)
+(provide 'evg-ui)
 
 (require 'seq)
 
 ;; back navigation
-(defconst evergreen-back-key (kbd "<"))
-(defvar-local evergreen-previous-buffer nil)
+(defconst evg-back-key (kbd "<"))
+(defvar-local evg-previous-buffer nil)
 
-(defun evergreen-back ()
+(defun evg-back ()
   (interactive)
   (let ((buf (current-buffer)))
-    (switch-to-buffer evergreen-previous-buffer)
+    (switch-to-buffer evg-previous-buffer)
     (kill-buffer buf)))
 
 ;; statuses
-(defconst evergreen-status-started "started")
-(defconst evergreen-status-failed "failed")
-(defconst evergreen-status-success "success")
-(defconst evergreen-status-aborted "aborted")
-(defconst evergreen-status-undispatched "undispatched")
-(defconst evergreen-status-system-failure "system-failed")
+(defconst evg-status-started "started")
+(defconst evg-status-failed "failed")
+(defconst evg-status-success "success")
+(defconst evg-status-aborted "aborted")
+(defconst evg-status-undispatched "undispatched")
+(defconst evg-status-system-failure "system-failed")
 
-(defconst evergreen-system-failed-color  "#800080" "The color used to indicate system failed")
-(defface evergreen-status-text-system-failed
+(defconst evg-system-failed-color  "#800080" "The color used to indicate system failed")
+(defface evg-status-text-system-failed
   `((t
-     :foreground ,evergreen-system-failed-color
+     :foreground ,evg-system-failed-color
      :weight bold))
   "Face used for system failure status text"
-  :group 'evergreen)
+  :group 'evg)
 
-(defconst evergreen-status-failed-regex
+(defconst evg-status-failed-regex
   "\\(fail\\|abort\\|timed.out\\)"
   "Regular expression matching any task status associated with failure")
 
-(defun evergreen-status-text (status)
+(defun evg-status-text (status)
   "Propertize the given status string appropriately according to the value of the status (e.g. green for \"success\")."
   (let ((status-face
          (cond
           ((string-match-p "\\(succ\\|pass\\)" status) 'success)
-          ((string-match-p evergreen-status-system-failure status) 'evergreen-status-text-system-failed)
-          ((string-match-p evergreen-status-failed-regex status) 'error)
+          ((string-match-p evg-status-system-failure status) 'evg-status-text-system-failed)
+          ((string-match-p evg-status-failed-regex status) 'error)
           ((string-match-p "start" status) 'warning)
           (t 'shadow))))
     (propertize status 'face status-face)))
 
-(defun evergreen-date-string (date)
+(defun evg-date-string (date)
   "Get human-readable string version of the provided iso8601 date string"
   (condition-case nil
       (format-time-string "%b %e, %Y, %r" (encode-time (iso8601-parse date)))
     (error "n/a")))
 
 ;; from section-header in magit
-(defface evergreen-header
+(defface evg-header
   `((((class color) (background light))
      ,@(and (>= emacs-major-version 27) '(:extend t))
      :background "grey95")
@@ -60,21 +60,21 @@
      ,@(and (>= emacs-major-version 27) '(:extend t))
      :background "grey20"))
   "Face for the header portion of an Evergreen buffer"
-  :group 'evergreen)
+  :group 'evg)
 
-(defface evergreen-header-title
+(defface evg-header-title
   '((t
      :bold t
      :height 1.25
      :underline t
      :rear-nonsticky t))
   "Face for the title of the header of an Evergreen buffer"
-  :group 'evergreen)
+  :group 'evg)
 
-(defun evergreen-ui-insert-header (items &optional title)
+(defun evg-ui-insert-header (items &optional title)
   (let ((start (point)))
     (when title
-      (insert (propertize title 'face 'evergreen-header-title))
+      (insert (propertize title 'face 'evg-header-title))
       (insert " ")
       (newline 2))
     (seq-do
@@ -95,5 +95,5 @@
        (newline))
      items)
     (let ((overlay (make-overlay start (point))))
-      (overlay-put overlay 'face 'evergreen-header))))
+      (overlay-put overlay 'face 'evg-header))))
   
