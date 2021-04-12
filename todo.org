@@ -118,7 +118,8 @@
   CLOSED: [2021-02-16 Tue 00:08]
   - [X] fix grid view
 
-* TODO prepare repository for release [7/8]
+* DONE prepare repository for release [8/8]
+  CLOSED: [2021-04-11 Sun 22:27]
   - [X] organize repository structure
   - [X] release script
   - [X] installation instructions
@@ -126,7 +127,7 @@
   - [X] rename repository
   - [X] readme
   - [X] add license
-  - [ ] do the release
+  - [X] do the release
 
 * ---------------- release ready here ---------------
 
