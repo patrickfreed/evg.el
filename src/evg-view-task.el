@@ -44,7 +44,7 @@
      :status (gethash "status" test-data)
      :start-time (gethash "startTime" test-data)
      :finish-time (gethash "endTime" test-data)
-     :log-url (gethash "rawDisplayURL" logs))))
+     :log-url (gethash "urlRaw" logs))))
 
 (defun evg-task-test-insert (test)
   (insert
@@ -83,7 +83,7 @@
            startTime,
            endTime,
            logs {
-             rawDisplayURL,
+             urlRaw,
            }
          }
        }
