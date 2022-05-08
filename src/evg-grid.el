@@ -54,7 +54,7 @@
    ((string= evg-status-success status) 'evg-grid-succeeded)
    ((string-match-p evg-status-failed-regex status) 'evg-grid-failed)
    ((string= evg-status-started status) 'evg-grid-started)
-   ((string= evg-status-undispatched status) 'evg-grid-undispatched)
+   ((string-match-p evg-status-undispatched-regex status) 'evg-grid-undispatched)
    ((string= evg-status-system-failure status) 'evg-grid-system-failed)
    (t (message "unknown status: %s" status) 'evg-grid-undispatched)
    ))
