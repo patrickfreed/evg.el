@@ -53,18 +53,19 @@
          (evg-api-graphql-request
           (format
            "{
-              patchBuildVariants(patchId: %S) {
-                variant
-                displayName
-                tasks {
-                  id
+              version(id: %S) {
+                buildVariants(options: {}) {
+                  variant
                   displayName
-                  status
+                  tasks {
+                    id
+                    displayName
+                    status
+                  }
                 }
               }
             }"
-           (evg-patch-id evg-view-patch-patch))
-          )))
+           (evg-patch-id evg-view-patch-patch)))))
     (message "fetching data done")
     (seq-map
      (lambda (variant-data)
@@ -73,8 +74,7 @@
                (seq-map
                 (lambda (data) (evg-task-info-parse data variant-display-name))
                 (gethash "tasks" variant-data)))))
-     (gethash "patchBuildVariants" buildvariants-data))
-    ))
+     (gethash "buildVariants" (gethash "version" buildvariants-data)))))
 
 (defun evg-current-patch-is-in-progress ()
   (or
