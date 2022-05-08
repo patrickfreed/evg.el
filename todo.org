@@ -131,6 +131,14 @@
 
 * ---------------- release ready here ---------------
 
+* TODO add automated testing [0/6]
+  - [ ] test status page
+  - [ ] test submitting patch
+  - [ ] test viewing patch result
+  - [ ] test viewing task result
+  - [ ] test viewing task logs
+  - [ ] test view test logs
+
 * TODO configure patch usability improvements [0/5]
   - [ ] select shared tasks for multiple variants
   - [ ] allow patch name change in configure
