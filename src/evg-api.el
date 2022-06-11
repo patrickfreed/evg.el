@@ -75,6 +75,34 @@
       (gethash "data" (let ((json-object-type 'hash-table))
                         (json-read))))))
 
+(defun evg-api-graphql-request-async (query success-handler &optional variables)
+  (let* ((url-request-method "POST")
+         (url-request-extra-headers
+          (list (cons "Content-Type" "application/json")
+                (cons "Api-User" evg-user)
+                (cons "Api-Key" evg-api-key)))
+         (url-request-data
+          (json-encode (list (cons "query" query)
+                             (cons "variables" (and variables (json-encode variables))))))
+         (buffer
+          (url-retrieve
+           "https://evergreen.mongodb.com/graphql/query"
+           (lambda (status)
+             (goto-char url-http-end-of-headers)
+             (let* ((json-object-type 'hash-table)
+                    (json-array-type 'list)
+                    (raw-data (json-read))
+                    (data (gethash "data" raw-data)))
+               (evg-debug-print data)
+               (funcall success-handler data))
+             )
+           nil
+           'silent)))))
+
+;; (defun evg-api-graphql-request-async (query success-callback &optional variables)
+;;   (request
+;;     ))
+
 (defun evg-get-string-async (url handler &optional params)
   "Perform an asynchronous GET request against the given URL, passing result as string to the provided handler."
   (request

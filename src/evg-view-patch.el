@@ -16,7 +16,7 @@
 (defvar-local evg-view-patch-tasks nil)
 (defvar-local evg-view-patch-task-format nil)
 
-(cl-defstruct evg-patch id description number status author create-time start-time finish-time task-names)
+(cl-defstruct evg-patch id description number status author create-time start-time finish-time)
 
 (defun evg-patch-parse (data)
   (make-evg-patch
@@ -28,11 +28,12 @@
    :create-time (alist-get 'create_time data)
    :start-time (alist-get 'start_time data)
    :finish-time (alist-get 'finish_time data)
-   :task-names (alist-get 'variants_tasks data)
    ))
 
 (defun evg-patch-title (patch)
-  (format "Patch %d by %s" (evg-patch-number patch) (evg-patch-author patch)))
+  (if-let ((patch-number (evg-patch-number patch)))
+      (format "Patch %d by %s" (evg-patch-number patch) (evg-patch-author patch))
+    (format "Waterfall commit %s by %s" (evg-patch-id patch) (evg-patch-author patch))))
 
 (defun evg-patch-abort (patch)
   "Abort the provided patch. This does not refresh the buffer."
@@ -178,6 +179,7 @@
 (defun evg-view-patch (patch &optional task-format tasks prev-buffer)
   "Switch to a buffer displaying the results of the provided patch. Optionally specify the format to display the task
 results (either 'text or 'grid) and a previous buffer that can be returned to."
+  (message "viewing %s" (evg-patch-description patch))
   (switch-to-buffer
    (get-buffer-create
     (format "evg-view-patch: %s: %S"
@@ -203,7 +205,7 @@ results (either 'text or 'grid) and a previous buffer that can be returned to."
   (evg-ui-insert-header
    (list
     (cons "Description" (evg-patch-description evg-view-patch-patch))
-    (cons "Patch Number" (format "%d" (evg-patch-number evg-view-patch-patch)))
+    ;; (cons "Patch Number" (format "%d" (evg-patch-number evg-view-patch-patch)))
     (cons "Author" (evg-patch-author evg-view-patch-patch))
     (cons "Status" (evg-status-text (evg-patch-status evg-view-patch-patch)))
     (cons "Created at" (evg-date-string (evg-patch-create-time evg-view-patch-patch)))))

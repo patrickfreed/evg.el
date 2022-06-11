@@ -139,6 +139,11 @@
   - [ ] test viewing task logs
   - [ ] test view test logs
 
+* TODO waterfall [0/3]
+  - [ ] view version results
+  - [ ] size dimension options for grid
+  - [ ] evergreen-waterfall bufer separated into columns
+
 * TODO configure patch usability improvements [0/5]
   - [ ] select shared tasks for multiple variants
   - [ ] allow patch name change in configure
@@ -147,11 +152,6 @@
   - [ ] add command for toggling a variant by name
 
 * TODO handle multiple executions
-
-* TODO waterfall [0/3]
-  - [ ] view version results
-  - [ ] size dimension options for grid
-  - [ ] evergreen-waterfall bufer separated into columns
 
 * TODO add BB search link
 
