@@ -16,13 +16,27 @@
 (defvar-local evg-view-patch-tasks nil)
 (defvar-local evg-view-patch-task-format nil)
 
-(cl-defstruct evg-patch id description number status author create-time start-time finish-time)
+(cl-defstruct evg-patch id description number revision status author create-time start-time finish-time)
+
+(defun evg-patch-parse-graphql-response (version)
+  (make-evg-patch
+     :id (gethash "id" version)
+     :description (gethash "message" version)
+     :number (when-let ((patch-data (gethash "patch" version)))
+               (gethash "patchNumber" patch-data))
+     :revision (gethash "revision" version)
+     :status (gethash "status" version)
+     :author (gethash "author" version)
+     :create-time (gethash "createTime" version)
+     :start-time (gethash "startTime" version)
+     :finish-time (gethash "finishTime" version)))
 
 (defun evg-patch-parse (data)
   (make-evg-patch
    :id (alist-get 'patch_id data)
    :description (alist-get 'description data)
    :number (alist-get 'patch_number data)
+   :revision nil
    :status (alist-get 'status data)
    :author (alist-get 'author data)
    :create-time (alist-get 'create_time data)
@@ -33,18 +47,18 @@
 (defun evg-patch-title (patch)
   (if-let ((patch-number (evg-patch-number patch)))
       (format "Patch %d by %s" (evg-patch-number patch) (evg-patch-author patch))
-    (format "Waterfall commit %s by %s" (evg-patch-id patch) (evg-patch-author patch))))
+    (format "Revision %s by %s" (substring (evg-patch-revision patch) 0 7) (evg-patch-author patch))))
 
 (defun evg-patch-abort (patch)
   "Abort the provided patch. This does not refresh the buffer."
   (evg-api-post
-   (format "patches/%s/abort" (evg-patch-id patch))
+   (format "versions/%s/abort" (evg-patch-id patch))
    (lambda (_) (message "Aborted patch"))))
 
 (defun evg-patch-restart (patch)
   "Restart the provided patch. This does refreshes the buffer."
   (evg-api-post
-   (format "patches/%s/restart" (evg-patch-id patch))
+   (format "versions/%s/restart" (evg-patch-id patch))
    (lambda (_) (message "Restarted patch"))))
 
 (defun evg-get-current-patch-tasks ()
@@ -174,12 +188,11 @@
    (evg-patch-id evg-view-patch-patch)
    (lambda (patch)
      (message "Refreshing...done")
-     (evg-view-patch-data patch))))
+     (evg-view-patch patch))))
 
 (defun evg-view-patch (patch &optional task-format tasks prev-buffer)
   "Switch to a buffer displaying the results of the provided patch. Optionally specify the format to display the task
 results (either 'text or 'grid) and a previous buffer that can be returned to."
-  (message "viewing %s" (evg-patch-description patch))
   (switch-to-buffer
    (get-buffer-create
     (format "evg-view-patch: %s: %S"
@@ -204,8 +217,10 @@ results (either 'text or 'grid) and a previous buffer that can be returned to."
   ;; header
   (evg-ui-insert-header
    (list
-    (cons "Description" (evg-patch-description evg-view-patch-patch))
-    ;; (cons "Patch Number" (format "%d" (evg-patch-number evg-view-patch-patch)))
+    (cons "Description" (car (split-string (evg-patch-description patch) "[\r\n]")))
+    (if (evg-patch-number evg-view-patch-patch)
+        (cons "Patch Number" (format "%d" (evg-patch-number evg-view-patch-patch)))
+      (cons "Revision" (evg-patch-revision evg-view-patch-patch)))
     (cons "Author" (evg-patch-author evg-view-patch-patch))
     (cons "Status" (evg-status-text (evg-patch-status evg-view-patch-patch)))
     (cons "Created at" (evg-date-string (evg-patch-create-time evg-view-patch-patch)))))

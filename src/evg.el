@@ -32,7 +32,7 @@
     (if-let (id (evg-submit-patch evg-project-name description))
         (progn
           (message "Submitted patch id: %s" id)
-          (evg-get-patch id 'evg-configure-patch-data))
+          (evg-get-patch id 'evg-configure-patch))
       (message "Patch failed"))))
 
 (defun evg-status-setup ()
@@ -57,28 +57,19 @@
   (cl-function
    (lambda (data)
      (evg-debug-print data)
-     (message "waterfall versions callback")
      (with-current-buffer status-buffer
        (setq-local
         evg-status-waterfall-versions
         (seq-map
          (lambda (version-data)
            (let ((version (gethash "version" version-data)))
-             (make-evg-patch
-              :id (gethash "id" version)
-              :description (gethash "message" version)
-              :status (gethash "status" version)
-              :author (gethash "author" version)
-              :create-time (gethash "createTime" version)
-              :start-time (gethash "startTime" version)
-              :finish-time (gethash "finishTime" version))))
+             (evg-patch-parse-graphql-response version)))
          (gethash "versions" (gethash "mainlineCommits" data))))
        (evg-status-display)))))
 
 (defun evg-status-get-recent-patches-callback (status-buffer)
   (cl-function
    (lambda (&key data &allow-other-keys)
-     (message "recent patches callback")
      (with-current-buffer status-buffer
        (setq-local evg-status-recent-patches data)
        (evg-status-display)))))
@@ -87,20 +78,20 @@
   (when (and evg-status-recent-patches evg-status-waterfall-versions)
     (message "fetching status done")
     (evg-status-setup)
-    (insert "Waterfall")
+    (insert "Recent Commits:")
     (newline)
     (seq-do
      (lambda (patch)
        (insert
         (propertize
          (concat
-          (format "  %9s" (evg-status-text (evg-patch-status patch)))
+          (format "%9s" (evg-status-text (evg-patch-status patch)))
           " "
           (let ((author (evg-patch-author patch)))
             (concat
              "\""
              (truncate-string-to-width
-              (let ((description (evg-patch-description patch)))
+              (let ((description (car (split-string (evg-patch-description patch) "[\r\n]"))))
                 (if (> (length description) 0)
                     description
                   "no description"))
@@ -119,7 +110,7 @@
        (insert
         (propertize
          (concat
-          (format "  %9s" (evg-status-text (alist-get 'status patch)))
+          (format "%9s" (evg-status-text (alist-get 'status patch)))
           " "
           (let ((author (alist-get 'author patch)))
             (concat
@@ -136,7 +127,8 @@
          'evg-patch patch))
        (newline))
      evg-status-recent-patches)
-    (read-only-mode)))
+    (read-only-mode)
+    (goto-char 0)))
 
 ;;;###autoload
 (defun evg-status (project-name)
@@ -154,21 +146,20 @@
   (goto-char (point-min)))
 
 (defun evg-inspect-patch-at-point ()
-  "Open a buffer viewing the results of the patch under the point."
+  "Open a buffer viewing the results of the version under the point."
   (interactive)
   (when-let ((patch (get-text-property (point) 'evg-patch)))
     (if (and (string= (alist-get 'status patch) "created") (eq (alist-get 'activated patch) :json-false))
         (evg-configure-patch-data patch)
-      (evg-view-patch-data patch))))
+      (evg-view-patch-data patch)))
+
+  (when-let ((version (get-text-property (point) 'evg-waterfall-version)))
+    (evg-view-patch version)))
 
 (defun evg-status-refresh ()
   "Refetch the status of the recent patches for this project and update the status buffer accordingly."
   (interactive)
   (evg-status evg-project-name))
-
-(defun evg-status-waterfall ()
-  (interactive)
-  (evg-view-waterfall evg-project-name))
 
 (defvar evg-mode-map nil "Keymap for evg-status page")
 
@@ -179,8 +170,7 @@
     (evil-define-key 'normal evg-mode-map
       (kbd "<RET>") 'evg-inspect-patch-at-point
       "p" 'evg-patch
-      "r" 'evg-status-refresh
-      "w" 'evg-status-waterfall))
+      "r" 'evg-status-refresh))
   (define-key evg-mode-map (kbd "<RET>") 'evg-inspect-patch-at-point)
   (define-key evg-mode-map (kbd "p") 'evg-patch)
   (define-key evg-mode-map (kbd "r") 'evg-status-refresh))
@@ -197,30 +187,48 @@
   (evg-api-get-async
    (format "projects/%s/patches" project-name)
    (evg-status-get-recent-patches-callback (current-buffer))
-   '(("limit" . 5)))
+   '(("limit" . 10)))
   (evg-api-graphql-request-async
    (format
     "{
-              mainlineCommits(options: { projectID: %S, limit: 1 }) {
-                versions {
-                  version {
-                    id
-                    status
-                    message
-                    startTime
-                    finishTime
-                    createTime
-                    author
-                  }
-                } 
-              }
-            }"
+       mainlineCommits(options: { projectID: %S, limit: 10 }) {
+         versions {
+           version {
+             id
+             status
+             message
+             revision
+             startTime
+             finishTime
+             createTime
+             author
+           }
+         } 
+       }
+     }"
     project-name)
    (evg-status-get-waterfall-versions-callback (current-buffer))))
 
 (defun evg-get-patch (patch-id handler)
-  "Fetch the details of a single patch as a JSON object and pass it to the given handler."
-  (evg-api-get-async
-   (format "patches/%s" patch-id)
-   (cl-function
-    (lambda (&key data &allow-other-keys) (funcall handler data)))))
+  "Fetch the details of a single patch and pass the evg-patch object to the given handler."
+  (evg-api-graphql-request-async
+   (format
+    "{
+       version(id: %S) {
+         id
+         message
+         status
+         revision
+         patch {
+           patchNumber
+         }
+         author
+         createTime
+         startTime
+         finishTime
+       }
+     }"
+    patch-id)
+   (lambda (data)
+     (let ((version (gethash "version" data)))
+       (funcall handler (evg-patch-parse-graphql-response version))))))

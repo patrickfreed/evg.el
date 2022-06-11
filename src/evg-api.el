@@ -99,10 +99,6 @@
            nil
            'silent)))))
 
-;; (defun evg-api-graphql-request-async (query success-callback &optional variables)
-;;   (request
-;;     ))
-
 (defun evg-get-string-async (url handler &optional params)
   "Perform an asynchronous GET request against the given URL, passing result as string to the provided handler."
   (request
