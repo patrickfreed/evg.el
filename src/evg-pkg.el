@@ -26,6 +26,6 @@
 
 (define-package
   "evg"
-  "0.1.2"
+  "0.2.0"
   "A frontend for the Evergreen CI system, implemented as an Emacs package."
   '((request "0.3.2")))
