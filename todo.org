@@ -139,6 +139,10 @@
   - [ ] test viewing task logs
   - [ ] test view test logs
 
+* DONE waterfall [1/1]
+CLOSED: [2022-06-11 Sat 19:57]
+  - [X] view version results
+
 * TODO configure patch usability improvements [0/5]
   - [ ] select shared tasks for multiple variants
   - [ ] allow patch name change in configure
@@ -147,13 +151,6 @@
   - [ ] add command for toggling a variant by name
 
 * TODO handle multiple executions
-
-* TODO waterfall [0/3]
-  - [ ] view version results
-  - [ ] size dimension options for grid
-  - [ ] evergreen-waterfall bufer separated into columns
-
-* TODO add BB search link
 
 * TODO log viewer improvements [0/2]
   - [ ] support lobster features (separate extension?)
@@ -167,7 +164,10 @@
   - [ ] auto update view-patch buffers (configurable)
   - [ ] auto update view-task buffers (configurable)
 
-* TODO replace all usages of REST API with graphql
+* TODO API access improvements [0/3]
+  - [ ] replace all usages of REST API with graphql
+  - [ ] replace all sync API with async API
+  - [ ] remove request / consolidate on request
 
 * TODO ui improvements [0/4]
   - [ ] indicate text is "clickable" on hover/point entry
@@ -188,7 +188,7 @@
 
 * TODO diffs
 
-* TODO quick wins [0/8]
+* TODO quick wins [0/10]
   - [ ] paginate evergreen-status page via '+' button (see magit-log for inspiration)
   - [ ] "my patches" buffer (across projects)
   - [ ] "my patches" buffer (within project)
@@ -197,4 +197,12 @@
   - [ ] view-task keyboard shortcuts
   - [ ] kill evergreen-configure buffer once patch is scheduled
   - [ ] improve echo-buffer messages
+  - [ ] include more project information in status page
+  - [ ] open patch in browser
 
+* TODO BB integrations [0/2]
+  - [ ] investigate new build baron features
+  - [ ] build baron link?
+
+* TODO perf integration
+  - [ ] investigate
