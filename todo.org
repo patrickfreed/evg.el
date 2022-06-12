@@ -131,13 +131,14 @@
 
 * ---------------- release ready here ---------------
 
-* TODO add automated testing [0/6]
+* TODO add automated testing [0/7]
   - [ ] test status page
   - [ ] test submitting patch
   - [ ] test viewing patch result
   - [ ] test viewing task result
   - [ ] test viewing task logs
   - [ ] test view test logs
+  - [ ] set up GH actions
 
 * DONE waterfall [1/1]
 CLOSED: [2022-06-11 Sat 19:57]
@@ -188,7 +189,7 @@ CLOSED: [2022-06-11 Sat 19:57]
 
 * TODO diffs
 
-* TODO quick wins [0/10]
+* TODO quick wins [0/11]
   - [ ] paginate evergreen-status page via '+' button (see magit-log for inspiration)
   - [ ] "my patches" buffer (across projects)
   - [ ] "my patches" buffer (within project)
@@ -199,6 +200,7 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] improve echo-buffer messages
   - [ ] include more project information in status page
   - [ ] open patch in browser
+  - [ ] view list of all test failures for a given patch 
 
 * TODO BB integrations [0/2]
   - [ ] investigate new build baron features
