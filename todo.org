@@ -189,7 +189,7 @@ CLOSED: [2022-06-11 Sat 19:57]
 
 * TODO diffs
 
-* TODO quick wins [0/11]
+* TODO quick wins [0/12]
   - [ ] paginate evergreen-status page via '+' button (see magit-log for inspiration)
   - [ ] "my patches" buffer (across projects)
   - [ ] "my patches" buffer (within project)
@@ -200,7 +200,8 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] improve echo-buffer messages
   - [ ] include more project information in status page
   - [ ] open patch in browser
-  - [ ] view list of all test failures for a given patch 
+  - [ ] view list of all test failures for a given patch
+  - [ ] include inactive versions in waterfall
 
 * TODO BB integrations [0/2]
   - [ ] investigate new build baron features

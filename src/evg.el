@@ -60,11 +60,13 @@
      (with-current-buffer status-buffer
        (setq-local
         evg-status-waterfall-versions
-        (seq-map
-         (lambda (version-data)
-           (let ((version (gethash "version" version-data)))
-             (evg-patch-parse-graphql-response version)))
-         (gethash "versions" (gethash "mainlineCommits" data))))
+        (seq-filter
+         (lambda (x) x)
+         (seq-map
+          (lambda (version-data)
+            (if-let ((version (gethash "version" version-data)))
+                (evg-patch-parse-graphql-response version)))
+          (gethash "versions" (gethash "mainlineCommits" data)))))
        (evg-status-display)))))
 
 (defun evg-status-get-recent-patches-callback (status-buffer)
