@@ -193,7 +193,7 @@
   (evg-api-graphql-request-async
    (format
     "{
-       mainlineCommits(options: { projectID: %S, limit: 10 }) {
+       mainlineCommits(options: { projectIdentifier: %S, limit: 10 }) {
          versions {
            version {
              id
