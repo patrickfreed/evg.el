@@ -130,7 +130,11 @@
   - [X] do the release
 
 * ---------------- release ready here ---------------
-
+  
+* TODO Commit queue [/]
+  - [ ] Add commit queue to status page
+  - [ ] separate log buffer for the entire commit queue
+  
 * TODO add automated testing [0/7]
   - [ ] test status page
   - [ ] test submitting patch
@@ -176,12 +180,13 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] select project name from those specified in ~/.evergreen.yml
   - [ ] add finished time / time spent to tasks + patches + hover text
 
-* TODO patch log page [1/5]
+* TODO patch log page [1/6]
   - [ ] log patch page (similar to git-log in magit)
   - [ ] filtering by author
   - [ ] filtering by description
   - [ ] filtering by status
   - [X] include "my patches" in status page
+  - [ ] pagination
 
 * TODO PR integration [0/2]
   - [ ] list PRs in status buffer
@@ -189,7 +194,7 @@ CLOSED: [2022-06-11 Sat 19:57]
 
 * TODO diffs
 
-* TODO quick wins [2/13]
+* TODO quick wins [2/14]
   - [ ] paginate evergreen-status page via '+' button (see magit-log for inspiration)
   - [ ] "my patches" buffer (across projects)
   - [ ] "my patches" buffer (within project)
@@ -203,6 +208,10 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] view list of all test failures for a given patch
   - [ ] include inactive versions in waterfall
   - [X] use "q" to close buffers instead of "<"
+
+* TODO new interactive commands [0/2]
+  - [ ] view patch by id/URL
+  - [ ] view revision by hash/id
 
 * TODO BB integrations [0/2]
   - [ ] investigate new build baron features
