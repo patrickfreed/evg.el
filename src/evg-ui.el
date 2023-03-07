@@ -5,7 +5,7 @@
 (require 'seq)
 
 ;; back navigation
-(defconst evg-back-key (kbd "<"))
+(defconst evg-back-key (kbd "q"))
 (defvar-local evg-previous-buffer nil)
 
 (defun evg-back ()

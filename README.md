@@ -58,7 +58,7 @@ new buffer for configuring the tasks to be run as part of the patch.
 Like `magit`, `evg` makes use of many different specialized buffers for different tasks. These buffers can be
 navigated to and from by selecting different things in a buffer via <kbd>RET</kbd> or by invoking commands. After moving
 from one `evg` buffer to the next, the previous `evg` buffer can always be reached by pressing
-<kbd><</kbd>. The next sections detail the functionality of each of these specialized buffers and list their key
+<kbd>q</kbd>. The next sections detail the functionality of each of these specialized buffers and list their key
 bindings. 
 
 ### The evg-status buffer
@@ -120,7 +120,7 @@ finished, it can be restarted by hitting the `Restart Patch` button.
 - <kbd>M-n</kbd>: move the cursor to the next failure (<kbd>M-j</kbd> if evil-mode is enabled)
 - <kbd>M-p</kbd>: move the cursor to the previous failure (<kbd>M-k</kbd> if evil-mode is enabled)
 - <kbd>d</kbd>: switch the results display between grid and text mode
-- <kbd><</kbd>: go back to the evg-status buffer for this project
+- <kbd>q</kbd>: go back to the evg-status buffer for this project
 
 ![View Patch Buffer](./screenshots/evg-view-patch-buffer.gif)
 
@@ -134,7 +134,7 @@ restarted by pressing `Restart Task`. If the task has multiple executions, the l
 
 #### Keymap
 - <kbd>r</kbd>: refresh the buffer with the latest results from Evergreen
-- <kbd><</kbd>: go back to the evg-view-patch buffer for the patch this task belongs to
+- <kbd>q</kbd>: go back to the evg-view-patch buffer for the patch this task belongs to
 
 ![View Task Buffer](./screenshots/evg-view-task-buffer.png)
 
@@ -144,6 +144,6 @@ This buffer is used to display the logs of a given task or test, the name of whi
 buffer. The logs are viewed in `compilation-mode`, which should highlight any errors detected in the logs.
 
 #### Keymap
-- <kbd><</kbd>: go back to the evg-view-task buffer for the patch these logs belong to
+- <kbd>q</kbd>: go back to the evg-view-task buffer for the patch these logs belong to
 
 ![View Logs Buffer](./screenshots/evg-view-logs-buffer.png)
