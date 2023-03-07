@@ -199,11 +199,13 @@
 (defun evg-view-patch-refresh ()
   (interactive)
   (message "Refreshing...")
-  (evg-get-patch
-   (evg-patch-id evg-view-patch-patch)
-   (lambda (patch)
-     (message "Refreshing...done")
-     (evg-view-patch patch))))
+  (let* ((id (evg-patch-id evg-view-patch-patch))
+         (cb (lambda (patch)
+               (message "Refreshing...done")
+               (evg-view-patch patch)))
+         (patch (if (evg-patch-number evg-view-patch-patch)
+                    (evg-get-patch id cb)
+                  (evg-get-version id cb))))))
 
 (defun evg-view-patch (patch &optional task-format tasks prev-buffer)
   "Switch to a buffer displaying the results of the provided patch. Optionally specify the format to display the task

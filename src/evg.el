@@ -255,3 +255,24 @@
    (lambda (data)
      (let ((version (gethash "patch" data)))
        (funcall handler (evg-patch-parse-graphql-response version))))))
+
+(defun evg-get-version (version-id handler)
+  "Fetch the details of a single mainline commit and pass the evg-patch object to the given handler."
+  (evg-api-graphql-request-async
+   (format
+    "{
+       version(id: %S) {
+         id
+         message
+         status
+         revision
+         author
+         createTime
+         startTime
+         finishTime
+       }
+     }"
+    version-id)
+   (lambda (data)
+     (let ((version (gethash "version" data)))
+       (funcall handler (evg-patch-parse-version-graphql-response version))))))
