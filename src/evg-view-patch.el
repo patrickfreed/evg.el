@@ -78,7 +78,7 @@
 
 (defun evg-get-current-patch-tasks ()
   "Fetches full list of task results broken down by variant."
-  (message "fetching patch data")
+  (message "Fetching patch data")
   (let ((buildvariants-data
          (evg-api-graphql-request
           (format
@@ -96,7 +96,7 @@
               }
             }"
            (evg-patch-id evg-view-patch-patch)))))
-    (message "fetching data done")
+    (message "Fetching patch data done")
     (seq-map
      (lambda (variant-data)
        (let ((variant-display-name (gethash "displayName" variant-data)))

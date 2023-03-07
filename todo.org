@@ -176,12 +176,12 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] select project name from those specified in ~/.evergreen.yml
   - [ ] add finished time / time spent to tasks + patches + hover text
 
-* TODO patch log page [0/5]
+* TODO patch log page [1/5]
   - [ ] log patch page (similar to git-log in magit)
   - [ ] filtering by author
   - [ ] filtering by description
   - [ ] filtering by status
-  - [ ] update status page to be "my patches"
+  - [X] include "my patches" in status page
 
 * TODO PR integration [0/2]
   - [ ] list PRs in status buffer
@@ -189,14 +189,14 @@ CLOSED: [2022-06-11 Sat 19:57]
 
 * TODO diffs
 
-* TODO quick wins [0/12]
+* TODO quick wins [1/13]
   - [ ] paginate evergreen-status page via '+' button (see magit-log for inspiration)
   - [ ] "my patches" buffer (across projects)
   - [ ] "my patches" buffer (within project)
   - [ ] include execution time in hover text
   - [ ] update mouse hover text to coincide with cursor hover text
   - [ ] view-task keyboard shortcuts
-  - [ ] kill evergreen-configure buffer once patch is scheduled
+  - [X] kill evergreen-configure buffer once patch is scheduled
   - [ ] improve echo-buffer messages
   - [ ] include more project information in status page
   - [ ] open patch in browser

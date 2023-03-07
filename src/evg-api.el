@@ -93,11 +93,10 @@
                     (json-array-type 'list)
                     (raw-data (json-read))
                     (data (gethash "data" raw-data)))
-               (evg-debug-print data)
-               (funcall success-handler data))
-             )
+               (funcall success-handler data)))
            nil
-           'silent)))))
+           'silent)))
+    (message "URL BUFFER: %S" buffer)))
 
 (defun evg-get-string-async (url handler &optional params)
   "Perform an asynchronous GET request against the given URL, passing result as string to the provided handler."

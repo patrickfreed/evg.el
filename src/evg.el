@@ -14,6 +14,7 @@
 (require 'seq)
 
 (defvar-local evg-project-name nil)
+(defvar-local evg-status-my-patches nil)
 (defvar-local evg-status-recent-patches nil)
 (defvar-local evg-status-waterfall-versions nil)
 
@@ -56,7 +57,6 @@
 (defun evg-status-get-waterfall-versions-callback (status-buffer)
   (cl-function
    (lambda (data)
-     (evg-debug-print data)
      (with-current-buffer status-buffer
        (setq-local
         evg-status-waterfall-versions
@@ -69,66 +69,64 @@
           (gethash "versions" (gethash "mainlineCommits" data)))))
        (evg-status-display)))))
 
+(defun evg-status-get-my-patches-callback (status-buffer)
+  (cl-function
+   (lambda (data)
+     (with-current-buffer status-buffer
+       (setq-local
+        evg-status-my-patches
+        (seq-map
+         'evg-patch-parse-graphql-response
+         (gethash "patches" (gethash "patches" (gethash "user" data)))))
+       (evg-status-display)))))
+
 (defun evg-status-get-recent-patches-callback (status-buffer)
   (cl-function
    (lambda (&key data &allow-other-keys)
      (with-current-buffer status-buffer
-       (setq-local evg-status-recent-patches data)
+       (setq-local
+        evg-status-recent-patches
+        (seq-map 'evg-patch-parse data))
        (evg-status-display)))))
 
 (defun evg-status-display ()
-  (when (and evg-status-recent-patches evg-status-waterfall-versions)
-    (message "fetching status done")
+  (defun insert-patch (patch)
+    (insert
+     (propertize
+      (concat
+       (format "%9s" (evg-status-text (evg-patch-status patch)))
+       " "
+       (let ((author (evg-patch-author patch)))
+         (concat
+          "\""
+          (truncate-string-to-width
+           (let ((description (car (split-string (evg-patch-description patch) "[\r\n]"))))
+             (if (> (length description) 0)
+                 description
+               "no description"))
+           (- (window-width) 20 (length author))
+           nil nil t)
+          "\""
+          " "
+          (propertize (concat "by: " author) 'face '('italic 'shadow)))))
+      'evg-patch-property patch))
+    (insert " ")
+    (newline))
+
+  (when (and evg-status-recent-patches evg-status-waterfall-versions evg-status-my-patches)
+    (message "Fetching status done")
     (evg-status-setup)
-    (insert "Recent Commits:")
+    (insert (propertize "Recent Commits:" 'face '('bold)))
     (newline)
-    (seq-do
-     (lambda (patch)
-       (insert
-        (propertize
-         (concat
-          (format "%9s" (evg-status-text (evg-patch-status patch)))
-          " "
-          (let ((author (evg-patch-author patch)))
-            (concat
-             "\""
-             (truncate-string-to-width
-              (let ((description (car (split-string (evg-patch-description patch) "[\r\n]"))))
-                (if (> (length description) 0)
-                    description
-                  "no description"))
-              (- (window-width) 20 (length author))
-              nil nil t)
-             "\""
-             (propertize (concat " by: " author) 'face '('italic 'shadow)))))
-         'evg-waterfall-version patch))
-       (newline))
-     evg-status-waterfall-versions)
+    (seq-do 'insert-patch evg-status-waterfall-versions)
     (newline)
-    (insert "Recent Patches:")
+    (insert (propertize "My Patches:" 'face '('bold)))
     (newline)
-    (seq-do
-     (lambda (patch)
-       (insert
-        (propertize
-         (concat
-          (format "%9s" (evg-status-text (alist-get 'status patch)))
-          " "
-          (let ((author (alist-get 'author patch)))
-            (concat
-             "\""
-             (truncate-string-to-width
-              (let ((description (alist-get 'description patch)))
-                (if (> (length description) 0)
-                    description
-                  "no description"))
-              (- (window-width) 20 (length author))
-              nil nil t)
-             "\""
-             (propertize (concat " by: " author) 'face '('italic 'shadow)))))
-         'evg-patch patch))
-       (newline))
-     evg-status-recent-patches)
+    (seq-do 'insert-patch evg-status-my-patches)
+    (newline)
+    (insert (propertize "Recent Patches:" 'face '('bold)))
+    (newline)
+    (seq-do 'insert-patch evg-status-recent-patches)
     (read-only-mode)
     (goto-char 0)))
 
@@ -142,7 +140,7 @@
   (setq-local evg-project-name project-name)
   (evg-status-setup)
 
-  (insert "Fetching patches...")
+  (insert "Fetching status...")
   (read-only-mode)
   (evg-list-patches-async project-name)
   (goto-char (point-min)))
@@ -155,8 +153,8 @@
         (evg-configure-patch-data patch)
       (evg-view-patch-data patch)))
 
-  (when-let ((version (get-text-property (point) 'evg-waterfall-version)))
-    (evg-view-patch version)))
+  (when-let ((patch (get-text-property (point) 'evg-patch-property)))
+    (evg-view-patch patch)))
 
 (defun evg-status-refresh ()
   "Refetch the status of the recent patches for this project and update the status buffer accordingly."
@@ -209,7 +207,30 @@
        }
      }"
     project-name)
-   (evg-status-get-waterfall-versions-callback (current-buffer))))
+   (evg-status-get-waterfall-versions-callback (current-buffer)))
+  (evg-api-graphql-request-async
+   (format
+    "{
+       user(userId: %S) {
+         patches(patchesInput: { limit: 10 }) {
+           patches {
+             id
+             description
+             status
+             githash
+             patchNumber
+             author
+             time {
+               submittedAt
+               started
+               finished
+             }
+           }
+         } 
+       }
+     }"
+    evg-user)
+   (evg-status-get-my-patches-callback (current-buffer))))
 
 (defun evg-get-patch (patch-id handler)
   "Fetch the details of a single patch and pass the evg-patch object to the given handler."
