@@ -65,7 +65,7 @@
          (seq-map
           (lambda (version-data)
             (if-let ((version (gethash "version" version-data)))
-                (evg-patch-parse-graphql-response version)))
+                (evg-patch-parse-version-graphql-response version)))
           (gethash "versions" (gethash "mainlineCommits" data)))))
        (evg-status-display)))))
 
@@ -216,21 +216,21 @@
   (evg-api-graphql-request-async
    (format
     "{
-       version(id: %S) {
+       patch(id: %S) {
          id
-         message
+         description
          status
-         revision
-         patch {
-           patchNumber
-         }
+         githash
+         patchNumber
          author
-         createTime
-         startTime
-         finishTime
+         time {
+           submittedAt
+           started
+           finished
+         }
        }
      }"
     patch-id)
    (lambda (data)
-     (let ((version (gethash "version" data)))
+     (let ((version (gethash "patch" data)))
        (funcall handler (evg-patch-parse-graphql-response version))))))

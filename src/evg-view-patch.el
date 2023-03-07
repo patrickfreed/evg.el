@@ -18,7 +18,22 @@
 
 (cl-defstruct evg-patch id description number revision status author create-time start-time finish-time)
 
-(defun evg-patch-parse-graphql-response (version)
+(defun evg-patch-parse-graphql-response (patch)
+  "Parse a patch() GrapQL query response into an evg-patch."
+  (let ((times (gethash "time" patch)))
+    (make-evg-patch
+     :id (gethash "id" patch)
+     :description (gethash "description" patch)
+     :number (gethash "patchNumber" patch)
+     :revision (gethash "githash" patch)
+     :status (gethash "status" patch)
+     :author (gethash "author" patch)
+     :create-time (gethash "submittedAt" times)
+     :start-time (gethash "started" times)
+     :finish-time (gethash "finished" times))))
+
+(defun evg-patch-parse-version-graphql-response (version)
+  "Parse a version() GraphQL query resposne into an evg-patch."
   (make-evg-patch
      :id (gethash "id" version)
      :description (gethash "message" version)
@@ -32,6 +47,7 @@
      :finish-time (gethash "finishTime" version)))
 
 (defun evg-patch-parse (data)
+  "Parse a patch entry from a projects/<project>/patches REST API response into an evg-patch."
   (make-evg-patch
    :id (alist-get 'patch_id data)
    :description (alist-get 'description data)
@@ -41,8 +57,7 @@
    :author (alist-get 'author data)
    :create-time (alist-get 'create_time data)
    :start-time (alist-get 'start_time data)
-   :finish-time (alist-get 'finish_time data)
-   ))
+   :finish-time (alist-get 'finish_time data)))
 
 (defun evg-patch-title (patch)
   (if-let ((patch-number (evg-patch-number patch)))

@@ -232,7 +232,10 @@
         (message "Scheduling patch...")
         (evg-api-post
          (format "patches/%s/configure" (evg-patch-id evg-configure-target-patch))
-         (lambda (_) (evg-view-patch evg-configure-target-patch))
+         (lambda (_)
+           (let ((configure-buffer (current-buffer)))
+             (evg-view-patch evg-configure-target-patch)
+             (kill-buffer configure-buffer)))
          (json-encode
           (list
            (cons "description" (evg-patch-description evg-configure-target-patch))
