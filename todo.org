@@ -135,7 +135,9 @@
   - [ ] Add commit queue to status page
   - [ ] separate log buffer for the entire commit queue
   
-* TODO add automated testing [0/7]
+* TODO task history buffer
+
+* TODO add automated testing [0/8]
   - [ ] test status page
   - [ ] test submitting patch
   - [ ] test viewing patch result
@@ -174,17 +176,19 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] replace all sync API with async API
   - [ ] remove request / consolidate on request
 
-* TODO ui improvements [0/4]
+* TODO ui improvements [0/5]
   - [ ] indicate text is "clickable" on hover/point entry
   - [ ] add breadcrumbs header for navigating patch > task > test
   - [ ] select project name from those specified in ~/.evergreen.yml
   - [ ] add finished time / time spent to tasks + patches + hover text
+  - [ ] add known failure indicators
 
-* TODO patch log page [1/6]
+* TODO patch log page [1/7]
   - [ ] log patch page (similar to git-log in magit)
   - [ ] filtering by author
   - [ ] filtering by description
   - [ ] filtering by status
+  - [ ] goto entry
   - [X] include "my patches" in status page
   - [ ] pagination
 
