@@ -95,8 +95,7 @@
                     (data (gethash "data" raw-data)))
                (funcall success-handler data)))
            nil
-           'silent)))
-    (message "URL BUFFER: %S" buffer)))
+           'silent)))))
 
 (defun evg-get-string-async (url handler &optional params)
   "Perform an asynchronous GET request against the given URL, passing result as string to the provided handler."
