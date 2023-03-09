@@ -131,13 +131,18 @@
 
 * ---------------- release ready here ---------------
   
-* TODO Commit queue [/]
+* TODO Commit queue [0/2]
   - [ ] Add commit queue to status page
   - [ ] separate log buffer for the entire commit queue
   
 * TODO task history buffer
+  
+* TODO patch failure overview
+  - [ ] filter down to only failures
+  - [ ] include test failures in patch view
+  - [ ] add known failure indicators
 
-* TODO add automated testing [0/8]
+* TODO add automated testing [0/7]
   - [ ] test status page
   - [ ] test submitting patch
   - [ ] test viewing patch result
@@ -181,7 +186,6 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] add breadcrumbs header for navigating patch > task > test
   - [ ] select project name from those specified in ~/.evergreen.yml
   - [ ] add finished time / time spent to tasks + patches + hover text
-  - [ ] add known failure indicators
 
 * TODO patch log page [1/7]
   - [ ] log patch page (similar to git-log in magit)
