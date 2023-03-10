@@ -85,20 +85,21 @@
       (newline 2))
     (seq-do
      (lambda (pair)
-       (insert
-        (format "%-16s"
-                (with-temp-buffer
-                  (insert (format "%s:" (car pair)))
-                  (add-text-properties (point-min) (point-max) (list 'face 'bold))
-                  (buffer-string)))
-        (with-temp-buffer
-          (setq fill-column (- (window-width) 26))
-          (setq fill-prefix (make-string 16 ? ))
-          (insert (cdr pair))
-          (fill-paragraph)
-          (buffer-string))
-        )
-       (newline))
+       (when pair
+        (insert
+         (format "%-16s"
+                 (with-temp-buffer
+                   (insert (format "%s:" (car pair)))
+                   (add-text-properties (point-min) (point-max) (list 'face 'bold))
+                   (buffer-string)))
+         (with-temp-buffer
+           (setq fill-column (- (window-width) 26))
+           (setq fill-prefix (make-string 16 ? ))
+           (insert (cdr pair))
+           (fill-paragraph)
+           (buffer-string))
+         )
+        (newline)))
      items)
     (let ((overlay (make-overlay start (point))))
       (overlay-put overlay 'face 'evg-header))))

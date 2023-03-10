@@ -225,6 +225,8 @@ results (either 'text or 'grid) and a previous buffer that can be returned to."
   (evg-ui-insert-header
    (list
     (cons "Description" (car (split-string (evg-patch-description patch) "[\r\n]")))
+    (when (not (evg-patch-is-mainline-commit patch))
+      (cons "Patch ID" (evg-patch-id patch)))
     (if (evg-patch-number evg-view-patch-patch)
         (cons "Patch Number" (format "%d" (evg-patch-number evg-view-patch-patch)))
       (cons "Revision" (evg-patch-revision evg-view-patch-patch)))
