@@ -187,7 +187,7 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] select project name from those specified in ~/.evergreen.yml
   - [ ] add finished time / time spent to tasks + patches + hover text
 
-* TODO patch log page [1/7]
+* TODO patch log page [1/9]
   - [ ] log patch page (similar to git-log in magit)
   - [ ] filtering by author
   - [ ] filtering by description
@@ -195,6 +195,8 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] goto entry
   - [X] include "my patches" in status page
   - [ ] pagination
+  - [ ] find mainline commits with test failure
+  - [ ] open task history
 
 * TODO PR integration [0/2]
   - [ ] list PRs in status buffer
