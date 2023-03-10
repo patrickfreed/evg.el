@@ -16,7 +16,7 @@
 (defvar-local evg-view-patch-tasks nil)
 (defvar-local evg-view-patch-task-format nil)
 
-(cl-defstruct evg-patch id description number revision status author create-time start-time finish-time)
+(cl-defstruct evg-patch id description number revision status author activated create-time start-time finish-time)
 
 (defun evg-patch-parse-graphql-response (patch)
   "Parse a patch() GrapQL query response into an evg-patch."
@@ -28,6 +28,7 @@
      :revision (gethash "githash" patch)
      :status (gethash "status" patch)
      :author (gethash "author" patch)
+     :activated (gethash "activated" patch)
      :create-time (gethash "submittedAt" times)
      :start-time (gethash "started" times)
      :finish-time (gethash "finished" times))))
@@ -58,6 +59,9 @@
    :create-time (alist-get 'create_time data)
    :start-time (alist-get 'start_time data)
    :finish-time (alist-get 'finish_time data)))
+
+(defun evg-patch-is-mainline-commit (patch)
+  (not (evg-patch-number patch)))
 
 (defun evg-patch-title (patch)
   (if-let ((patch-number (evg-patch-number patch)))

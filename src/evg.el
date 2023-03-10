@@ -154,7 +154,9 @@
       (evg-view-patch-data patch)))
 
   (when-let ((patch (get-text-property (point) 'evg-patch-property)))
-    (evg-view-patch patch)))
+    (if (or (evg-patch-is-mainline-commit patch) (evg-patch-activated patch))
+        (evg-view-patch patch)
+      (evg-configure-patch patch))))
 
 (defun evg-status-refresh ()
   "Refetch the status of the recent patches for this project and update the status buffer accordingly."
@@ -241,6 +243,7 @@
          id
          description
          status
+         activated
          githash
          patchNumber
          author

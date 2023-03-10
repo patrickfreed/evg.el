@@ -144,7 +144,7 @@
 (defun evg-configure-patch-data (patch-data)
   (evg-configure-patch (evg-patch-parse patch-data) '()))
 
-(defun evg-configure-patch (patch scheduled-tasks)
+(defun evg-configure-patch (patch &optional scheduled-tasks)
   "Switch to a configuration buffer for the given evg-patch struct using the provided alist of display-name
    to evg-task-info to determine pre-scheduled tasks"
   (switch-to-buffer (get-buffer-create (format "evg-configure: %S" (evg-patch-description patch))))
