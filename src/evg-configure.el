@@ -141,37 +141,38 @@
     (concat "[" (if is-selected "✔" " ") "]")
     'face 'org-checkbox)))
 
-(defun evg-configure-patch-data (patch-data)
-  (evg-configure-patch (evg-patch-parse patch-data) '()))
-
 (defun evg-configure-patch (patch &optional scheduled-tasks)
   "Switch to a configuration buffer for the given evg-patch struct using the provided alist of display-name
    to evg-task-info to determine pre-scheduled tasks"
-  (switch-to-buffer (get-buffer-create (format "evg-configure: %S" (evg-patch-description patch))))
-  (read-only-mode -1)
-  (evg-configure-mode)
-  (erase-buffer)
-  (setq-local evg-configure-target-patch patch)
+  (let ((prev-buffer (current-buffer)))
+    (switch-to-buffer (get-buffer-create (format "evg-configure: %S" (evg-patch-description patch))))
+    (read-only-mode -1)
+    (evg-configure-mode)
+    (erase-buffer)
 
-  (evg-ui-insert-header
-   (list
-    (cons "Description" (evg-patch-description patch))
-    (cons "Patch Number" (number-to-string (evg-patch-number patch)))
-    (cons "Status" (evg-status-text (evg-patch-status patch)))
-    (cons "Created at" (evg-date-string (evg-patch-create-time patch))))
-   "Configure Patch")
+    (setq-local evg-configure-target-patch patch)
+    (setq-local evg-previous-buffer prev-buffer)
 
-  (newline)
-  (setq-local evg-configure-variants
-              (seq-map
-               (lambda (variant-data)
-                 (let ((variant (evg-configure-variant-parse variant-data scheduled-tasks)))
-                   (evg-configure-variant-insert variant)
-                   (newline)
-                   variant))
-               (evg-get-patch-variants (evg-patch-id patch))))
-  (read-only-mode)
-  (goto-char (point-min)))
+    (evg-ui-insert-header
+     (list
+      (cons "Description" (evg-patch-description patch))
+      (cons "Patch Number" (number-to-string (evg-patch-number patch)))
+      (cons "Patch ID" (evg-patch-id patch))
+      (cons "Status" (evg-status-text (evg-patch-status patch)))
+      (cons "Created at" (evg-date-string (evg-patch-create-time patch))))
+     "Configure Patch")
+
+    (newline)
+    (setq-local evg-configure-variants
+                (seq-map
+                 (lambda (variant-data)
+                   (let ((variant (evg-configure-variant-parse variant-data scheduled-tasks)))
+                     (evg-configure-variant-insert variant)
+                     (newline)
+                     variant))
+                 (evg-get-patch-variants (evg-patch-id patch))))
+    (read-only-mode)
+    (goto-char (point-min))))
 
 (defun evg-configure-current-variant ()
   (get-text-property (point) 'evg-configure-variant))
@@ -266,6 +267,7 @@
       (kbd "m") 'evg-configure-select-at-point
       (kbd "u") 'evg-configure-deselect-at-point
       (kbd "x") 'evg-configure-schedule
+      evg-back-key 'evg-back
       (kbd "r") (lambda ()
                   (interactive)
                   (evg-configure-patch evg-configure-target-patch '()))))
@@ -274,11 +276,11 @@
   (define-key evg-configure-mode-map (kbd "m") 'evg-configure-select-at-point)
   (define-key evg-configure-mode-map (kbd "u") 'evg-configure-deselect-at-point)
   (define-key evg-configure-mode-map (kbd "x") 'evg-configure-schedule)
+  (define-key evg-view-task-mode-map evg-back-key 'evg-back)
 
   (define-key evg-configure-mode-map (kbd "r") (lambda ()
                                                              (interactive)
-                                                             (evg-configure-patch evg-configure-target-patch '())))
-  )
+                                                             (evg-configure-patch evg-configure-target-patch '()))))
 
 (define-derived-mode
   evg-configure-mode

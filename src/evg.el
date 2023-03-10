@@ -82,11 +82,13 @@
 
 (defun evg-status-get-recent-patches-callback (status-buffer)
   (cl-function
-   (lambda (&key data &allow-other-keys)
+   (lambda (data)
      (with-current-buffer status-buffer
        (setq-local
         evg-status-recent-patches
-        (seq-map 'evg-patch-parse data))
+        (seq-map
+         'evg-patch-parse-graphql-response
+         (gethash "patches" (gethash "patches" (gethash "project" data)))))
        (evg-status-display)))))
 
 (defun evg-status-display ()
@@ -148,15 +150,13 @@
 (defun evg-inspect-patch-at-point ()
   "Open a buffer viewing the results of the version under the point."
   (interactive)
-  (when-let ((patch (get-text-property (point) 'evg-patch)))
-    (if (and (string= (alist-get 'status patch) "created") (eq (alist-get 'activated patch) :json-false))
-        (evg-configure-patch-data patch)
-      (evg-view-patch-data patch)))
-
   (when-let ((patch (get-text-property (point) 'evg-patch-property)))
-    (if (or (evg-patch-is-mainline-commit patch) (evg-patch-activated patch))
-        (evg-view-patch patch)
-      (evg-configure-patch patch))))
+    (if (and
+         (not (evg-patch-is-mainline-commit patch))
+         (string= (evg-patch-status patch) evg-patch-status-created)
+         (eq (evg-patch-activated patch) :json-false))
+        (evg-configure-patch patch)
+      (evg-view-patch patch))))
 
 (defun evg-status-refresh ()
   "Refetch the status of the recent patches for this project and update the status buffer accordingly."
@@ -182,14 +182,38 @@
   fundamental-mode
   "Evergreen"
   "Major mode for evg-status page")
+
+(defconst evg-patch-grapql-query-body
+  "
+  id
+  description
+  status
+  activated
+  githash
+  patchNumber
+  authorDisplayName
+  time {
+    submittedAt
+    started
+    finished
+  }")
   
 (defun evg-list-patches-async (project-name)
   "Fetch list of recent patches associated with the given project."
   (message "fetching %s evergreen status..." project-name)
-  (evg-api-get-async
-   (format "projects/%s/patches" project-name)
-   (evg-status-get-recent-patches-callback (current-buffer))
-   '(("limit" . 10)))
+  (evg-api-graphql-request-async
+   (format
+    "{
+       project(projectIdentifier: %S) {
+         patches(patchesInput: { limit: 10 }) {
+           patches {
+           %s
+           }
+         }
+       }
+     }"
+    project-name evg-patch-grapql-query-body)
+   (evg-status-get-recent-patches-callback (current-buffer)))
   (evg-api-graphql-request-async
    (format
     "{
@@ -216,22 +240,12 @@
        user(userId: %S) {
          patches(patchesInput: { limit: 10 }) {
            patches {
-             id
-             description
-             status
-             githash
-             patchNumber
-             author
-             time {
-               submittedAt
-               started
-               finished
-             }
+           %s
            }
          } 
        }
      }"
-    evg-user)
+    evg-user evg-patch-grapql-query-body)
    (evg-status-get-my-patches-callback (current-buffer))))
 
 (defun evg-get-patch (patch-id handler)
@@ -240,21 +254,10 @@
    (format
     "{
        patch(id: %S) {
-         id
-         description
-         status
-         activated
-         githash
-         patchNumber
-         author
-         time {
-           submittedAt
-           started
-           finished
-         }
+       %s
        }
      }"
-    patch-id)
+    patch-id evg-patch-grapql-query-body)
    (lambda (data)
      (let ((version (gethash "patch" data)))
        (funcall handler (evg-patch-parse-graphql-response version))))))

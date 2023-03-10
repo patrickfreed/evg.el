@@ -27,7 +27,7 @@
      :number (gethash "patchNumber" patch)
      :revision (gethash "githash" patch)
      :status (gethash "status" patch)
-     :author (gethash "author" patch)
+     :author (gethash "authorDisplayName" patch)
      :activated (gethash "activated" patch)
      :create-time (gethash "submittedAt" times)
      :start-time (gethash "started" times)
@@ -46,19 +46,6 @@
      :create-time (gethash "createTime" version)
      :start-time (gethash "startTime" version)
      :finish-time (gethash "finishTime" version)))
-
-(defun evg-patch-parse (data)
-  "Parse a patch entry from a projects/<project>/patches REST API response into an evg-patch."
-  (make-evg-patch
-   :id (alist-get 'patch_id data)
-   :description (alist-get 'description data)
-   :number (alist-get 'patch_number data)
-   :revision nil
-   :status (alist-get 'status data)
-   :author (alist-get 'author data)
-   :create-time (alist-get 'create_time data)
-   :start-time (alist-get 'start_time data)
-   :finish-time (alist-get 'finish_time data)))
 
 (defun evg-patch-is-mainline-commit (patch)
   (not (evg-patch-number patch)))
@@ -139,9 +126,6 @@
            (build-variant (evg-task-info-variant-display-name task)))
       (evg-view-task (evg-task-info-id task) build-variant (evg-patch-title evg-view-patch-patch) (current-buffer)))
   )
-
-(defun evg-view-patch-data (data)
-  (evg-view-patch (evg-patch-parse data) nil nil (current-buffer)))
 
 (defun evg-switch-task-format ()
   (interactive)
