@@ -103,4 +103,7 @@
      items)
     (let ((overlay (make-overlay start (point))))
       (overlay-put overlay 'face 'evg-header))))
+
+(defun evg-ui-pad-or-truncate-string (string length)
+  (string-pad (truncate-string-to-width string length) length))
   
