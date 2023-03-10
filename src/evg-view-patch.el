@@ -248,9 +248,10 @@ results (either 'text or 'grid) and a previous buffer that can be returned to."
   (newline)
 
   ;; restart/abort buttons
-  (insert-button "Reconfigure tasks/variants"
-                 'action (lambda (_) (evg-configure-patch evg-view-patch-patch evg-view-patch-tasks)))
-  (newline)
+  (when (not (evg-patch-is-mainline-commit evg-view-patch-patch))
+    (insert-button "Reconfigure tasks/variants"
+                   'action (lambda (_) (evg-configure-patch evg-view-patch-patch evg-view-patch-tasks)))
+    (newline))
   (let ((is-in-progress (evg-current-patch-is-in-progress)))
     (if is-in-progress
         (progn
