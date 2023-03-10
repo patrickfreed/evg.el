@@ -16,13 +16,14 @@
 (defvar-local evg-view-patch-tasks nil)
 (defvar-local evg-view-patch-task-format nil)
 
-(cl-defstruct evg-patch id description number revision status author activated create-time start-time finish-time)
+(cl-defstruct evg-patch id project-id description number revision status author activated create-time start-time finish-time)
 
 (defun evg-patch-parse-graphql-response (patch)
   "Parse a patch() GrapQL query response into an evg-patch."
   (let ((times (gethash "time" patch)))
     (make-evg-patch
      :id (gethash "id" patch)
+     :project-id (gethash "projectIdentifier" patch)
      :description (gethash "description" patch)
      :number (gethash "patchNumber" patch)
      :revision (gethash "githash" patch)
@@ -37,6 +38,7 @@
   "Parse a version() GraphQL query resposne into an evg-patch."
   (make-evg-patch
      :id (gethash "id" version)
+     :project-id (gethash "projectIdentifier" version)
      :description (gethash "message" version)
      :number (when-let ((patch-data (gethash "patch" version)))
                (gethash "patchNumber" patch-data))

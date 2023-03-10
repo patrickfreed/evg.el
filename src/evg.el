@@ -21,7 +21,7 @@
 (defun evg-submit-patch (project-name description)
   "Submit a patch to the given project with the given description. Returns the patch's ID."
   (let* ((command (format "evergreen patch -p \"%s\" --yes --description \"%s\"" project-name description))
-        (output (shell-command-to-string command)))
+         (output (shell-command-to-string command)))
     (if (string-match "ID : \\([a-f0-9]+\\)" output)
         (match-string 1 output)
       (message "failed: %s" output))))
@@ -75,9 +75,15 @@
      (with-current-buffer status-buffer
        (setq-local
         evg-status-my-patches
-        (seq-map
-         'evg-patch-parse-graphql-response
-         (gethash "patches" (gethash "patches" (gethash "user" data)))))
+        (or
+         (seq-take
+          (seq-filter
+           (lambda (patch) (string= (evg-patch-project-id patch) evg-project-name))
+           (seq-map
+            'evg-patch-parse-graphql-response
+            (gethash "patches" (gethash "patches" (gethash "user" data)))))
+          10)
+         'no-patches))
        (evg-status-display)))))
 
 (defun evg-status-get-recent-patches-callback (status-buffer)
@@ -122,10 +128,11 @@
     (newline)
     (seq-do 'insert-patch evg-status-waterfall-versions)
     (newline)
-    (insert (propertize "My Patches:" 'face '('bold)))
-    (newline)
-    (seq-do 'insert-patch evg-status-my-patches)
-    (newline)
+    (when (not (eq evg-status-my-patches 'no-patches))
+      (insert (propertize "My Patches:" 'face '('bold)))
+      (newline)
+      (seq-do 'insert-patch evg-status-my-patches)
+      (newline))
     (insert (propertize "Recent Patches:" 'face '('bold)))
     (newline)
     (seq-do 'insert-patch evg-status-recent-patches)
@@ -192,6 +199,7 @@
   githash
   patchNumber
   authorDisplayName
+  projectIdentifier
   time {
     submittedAt
     started
@@ -221,6 +229,7 @@
          versions {
            version {
              id
+             projectIdentifier
              status
              message
              revision
@@ -234,11 +243,14 @@
      }"
     project-name)
    (evg-status-get-waterfall-versions-callback (current-buffer)))
+  ;; Use a large limit here since this includes all patches for a given user, not just those
+  ;; associated with this project. The extra patches will be filtered out in the callback and
+  ;; limited to 10 like the other sections.
   (evg-api-graphql-request-async
    (format
     "{
        user(userId: %S) {
-         patches(patchesInput: { limit: 10 }) {
+         patches(patchesInput: { limit: 50 }) {
            patches {
            %s
            }
