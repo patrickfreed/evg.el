@@ -55,50 +55,58 @@
     'evg-task-test test))
   (newline))
 
-(defun evg-task-parse (data)
-  (let ((logs (alist-get 'logs data)))
+(defun evg-task-parse-graphql (data)
+  (let ((logs (gethash "logs" data))
+        (tests (gethash "testResults" (gethash "tests" data))))
     (make-evg-task
-     :id (alist-get 'task_id data)
-     :display-name (alist-get 'display_name data)
-     :start-time (alist-get 'start_time data)
-     :finish-time (alist-get 'finish_time data)
-     :status (alist-get 'display_status data)
-     :execution (alist-get 'execution data)
-     :all-log (alist-get 'all_log logs)
-     :task-log (alist-get 'task_log logs)
-     :agent-log (alist-get 'agent_log logs)
-     :system-log (alist-get 'system_log logs)
-     :event-log (alist-get 'event_log logs)
-     :tests nil
+     :id (gethash "id" data)
+     :display-name (gethash "displayName" data)
+     :start-time (gethash "startTime" data)
+     :finish-time (gethash "finishTime" data)
+     :status (gethash "status" data)
+     :execution (gethash "execution" data)
+     :all-log (gethash "allLogLink" logs)
+     :task-log (gethash "taskLogLink" logs)
+     :agent-log (gethash "agentLogLink" logs)
+     :system-log (gethash "systemLogLink" logs)
+     :event-log (gethash "eventLogLink" logs)
+     :tests (seq-map 'evg-task-test-parse tests)
      )))
 
-(defun evg-get-task-tests (task-id execution)
-  (gethash "testResults" (gethash "taskTests" (evg-api-graphql-request
-   (format
-    "{
-       taskTests(execution: %d, taskId: %S, statuses: []) {
-         testResults {
-           testFile,
-           status,
-           startTime,
-           endTime,
-           logs {
-             urlRaw,
-           }
-         }
-       }
-     }"
-    execution task-id)))))
-
-(defun evg-get-task-async (task-id handler)
-  (evg-api-get-async
-   (format "tasks/%s" task-id)
-   (cl-function
-    (lambda (&key ((:data task-data)) &allow-other-keys)
-      (let* ((task (evg-task-parse task-data))
-             (test-data (evg-get-task-tests task-id (evg-task-execution task))))
-        (setf (evg-task-tests task) (seq-map 'evg-task-test-parse test-data))
-        (funcall handler task))))))
+(defun evg-get-task (task-id)
+  (evg-task-parse-graphql
+   (gethash "task"
+            (evg-api-graphql-request
+             (format
+              "{
+                 task(taskId: %S) {
+                     id,
+                     displayName,
+                     startTime,
+                     finishTime,
+                     status,
+                     execution,
+                     logs {
+                       agentLogLink,
+                       allLogLink,
+                       eventLogLink,
+                       systemLogLink,
+                       taskLogLink,
+                     }
+                     tests {
+                       testResults {
+                         testFile,
+                         status,
+                         startTime,
+                         endTime,
+                         logs {
+                           urlRaw,
+                         }
+                       }
+                     }
+                 }
+               }"
+              task-id)))))
 
 (defface evg-view-task-title
   '((t
@@ -185,58 +193,56 @@
 
 (defun evg-view-task (task-id build-variant patch-title previous-buffer)
   (message "fetching task data")
-  (evg-get-task-async
-   task-id
-   (lambda (task)
-     (message "fetching data done")
-     (let ((full-display-name (format "%s / %s" build-variant (evg-task-display-name task))))
-       (switch-to-buffer (get-buffer-create (format "evg-view-task: %s / %s" patch-title full-display-name)))
-       (evg-view-task-mode)
-       (setq display-line-numbers nil)
-       (read-only-mode -1)
-       (erase-buffer)
-       (setq-local evg-build-variant build-variant)
-       (setq-local evg-current-task task)
-       (setq-local evg-previous-buffer previous-buffer)
-       (setq-local evg-view-task-patch-title patch-title)
+  (let ((task (evg-get-task task-id)))
+    (message "fetching data done")
+    (let ((full-display-name (format "%s / %s" build-variant (evg-task-display-name task))))
+      (switch-to-buffer (get-buffer-create (format "evg-view-task: %s / %s" patch-title full-display-name)))
+      (evg-view-task-mode)
+      (setq display-line-numbers nil)
+      (read-only-mode -1)
+      (erase-buffer)
+      (setq-local evg-build-variant build-variant)
+      (setq-local evg-current-task task)
+      (setq-local evg-previous-buffer previous-buffer)
+      (setq-local evg-view-task-patch-title patch-title)
 
-       (evg-ui-insert-header
-        (list
-         (cons "Task Name" (evg-task-display-name task))
-         (cons "Build Variant" build-variant)
-         (cons "Execution" (format "%d" (1+ (evg-task-execution task))))
-         (cons "Status" (evg-status-text (evg-task-status task)))
-         (cons "Started at" (evg-date-string (evg-task-start-time task)))))
-       (newline)
+      (evg-ui-insert-header
+       (list
+        (cons "Task Name" (evg-task-display-name task))
+        (cons "Build Variant" build-variant)
+        (cons "Execution" (format "%d" (1+ (evg-task-execution task))))
+        (cons "Status" (evg-status-text (evg-task-status task)))
+        (cons "Started at" (evg-date-string (evg-task-start-time task)))))
+      (newline)
 
-       (insert-button "View Task Logs" 'action (lambda (_) (evg-view-current-task-logs)))
-       (when (evg-task-is-in-progress task)
-         (newline)
-         (insert-button "Abort Task" 'action (lambda (_) (evg-current-task-abort))))
-       (when (not (or (evg-task-is-undispatched task) (evg-task-is-in-progress task)))
-         (newline)
-         (insert-button "Restart Task" 'action (lambda (_) (evg-current-task-restart))))
-       (newline 2)
-       (let ((failed-tests
-              (seq-filter
-               (lambda (test) (string= "fail" (evg-task-test-status test)))
-               (evg-task-tests task)))
-             (passed-tests
-              (seq-filter
-               (lambda (test) (string= "pass" (evg-task-test-status test)))
-               (evg-task-tests task))))
-         (if (or failed-tests passed-tests)
-             (progn
-               (insert
-                (format "Test Results (%s, %s):"
-                        (propertize (format "%d passed" (length passed-tests)) 'face '('success . nil))
-                        (propertize (format "%d failed" (length failed-tests)) 'face '('error . nil))))
-               (newline)
-               (seq-do 'evg-task-test-insert failed-tests)
-               (seq-do 'evg-task-test-insert passed-tests))
-           (insert (propertize "No test results to display." 'face 'italic)))))
-       (read-only-mode)
-       (goto-char (point-min)))))
+      (insert-button "View Task Logs" 'action (lambda (_) (evg-view-current-task-logs)))
+      (when (evg-task-is-in-progress task)
+        (newline)
+        (insert-button "Abort Task" 'action (lambda (_) (evg-current-task-abort))))
+      (when (not (or (evg-task-is-undispatched task) (evg-task-is-in-progress task)))
+        (newline)
+        (insert-button "Restart Task" 'action (lambda (_) (evg-current-task-restart))))
+      (newline 2)
+      (let ((failed-tests
+             (seq-filter
+              (lambda (test) (string= "fail" (evg-task-test-status test)))
+              (evg-task-tests task)))
+            (passed-tests
+             (seq-filter
+              (lambda (test) (string= "pass" (evg-task-test-status test)))
+              (evg-task-tests task))))
+        (if (or failed-tests passed-tests)
+            (progn
+              (insert
+               (format "Test Results (%s, %s):"
+                       (propertize (format "%d passed" (length passed-tests)) 'face '('success . nil))
+                       (propertize (format "%d failed" (length failed-tests)) 'face '('error . nil))))
+              (newline)
+              (seq-do 'evg-task-test-insert failed-tests)
+              (seq-do 'evg-task-test-insert passed-tests))
+          (insert (propertize "No test results to display." 'face 'italic)))))
+    (read-only-mode)
+    (goto-char (point-min))))
 
 (defvar evg-view-task-mode-map nil "Keymap for evg-view-task buffers")
 
