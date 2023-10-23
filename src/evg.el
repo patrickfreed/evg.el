@@ -106,7 +106,6 @@
        " "
        (let ((author (evg-patch-author patch)))
          (concat
-          "\""
           (truncate-string-to-width
            (let ((description (car (split-string (evg-patch-description patch) "[\r\n]"))))
              (if (> (length description) 0)
@@ -114,7 +113,6 @@
                "no description"))
            (- (window-width) 20 (length author))
            nil nil t)
-          "\""
           " "
           (propertize (concat "by: " author) 'face '('italic 'shadow)))))
       'evg-patch-property patch))
