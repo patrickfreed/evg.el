@@ -13,6 +13,7 @@
 (cl-defstruct evg-task
   id
   display-name
+  build-variant-display-name
   start-time
   finish-time
   status
@@ -61,6 +62,7 @@
     (make-evg-task
      :id (gethash "id" data)
      :display-name (gethash "displayName" data)
+     :build-variant-display-name (gethash "buildVariantDisplayName" data)
      :start-time (gethash "startTime" data)
      :finish-time (gethash "finishTime" data)
      :status (gethash "status" data)
@@ -82,6 +84,7 @@
                  task(taskId: %S) {
                      id,
                      displayName,
+                     buildVariantDisplayName,
                      startTime,
                      finishTime,
                      status,
@@ -191,6 +194,16 @@
 (defun evg-current-task-full-name ()
   (format "%s / %s"  evg-build-variant (evg-task-display-name evg-current-task)))
 
+(defun evg-insert-task-header (task)
+  (evg-ui-insert-header
+   (list
+    (cons "Task Name" (evg-task-display-name task))
+    (cons "Build Variant" (evg-task-build-variant-display-name task))
+    (cons "Execution" (format "%d" (1+ (evg-task-execution task))))
+    (cons "Status" (evg-status-text (evg-task-status task)))
+    (cons "Started at" (evg-date-string (evg-task-start-time task)))))
+  (newline))
+
 (defun evg-view-task (task-id build-variant patch-title previous-buffer)
   (message "fetching task data")
   (let ((task (evg-get-task task-id)))
@@ -206,16 +219,11 @@
       (setq-local evg-previous-buffer previous-buffer)
       (setq-local evg-view-task-patch-title patch-title)
 
-      (evg-ui-insert-header
-       (list
-        (cons "Task Name" (evg-task-display-name task))
-        (cons "Build Variant" build-variant)
-        (cons "Execution" (format "%d" (1+ (evg-task-execution task))))
-        (cons "Status" (evg-status-text (evg-task-status task)))
-        (cons "Started at" (evg-date-string (evg-task-start-time task)))))
-      (newline)
+      (evg-insert-task-header task)
 
       (insert-button "View Task Logs" 'action (lambda (_) (evg-view-current-task-logs)))
+      (newline)
+      (insert-button "View Failure Details" 'action (lambda (_) (evg-view-failure-details (format "%s / %s" evg-view-task-patch-title (evg-current-task-full-name)) task)))
       (when (evg-task-is-in-progress task)
         (newline)
         (insert-button "Abort Task" 'action (lambda (_) (evg-current-task-abort))))
@@ -290,4 +298,57 @@
     (evg-view-logs-mode)
     (setq-local evg-previous-buffer back-buffer)
     (setq-local header-line-format buffer-name)
+    (goto-char (point-min))))
+
+(cl-defstruct evg-task-failure-details
+  note
+  issues
+  suspected-issues)
+
+(defun evg-task-failure-details-parse (data)
+  (let ((note (gethash "note" data)))
+    (make-evg-task-failure-details
+     :note (gethash "message" note))))
+
+(define-derived-mode
+  evg-failure-details-mode
+  fundamental-mode
+  "Evergreen Task Failure Details"
+  "Major mode for viewing evergreen task failure details")
+
+(defvar evg-failure-details-mode-map nil "Keymap for evg-failure-details buffers")
+
+(progn
+  (setq evg-failure-details-mode-map (make-sparse-keymap))
+
+  (when (require 'evil nil t)
+    (evil-define-key 'normal evg-failure-details-mode-map
+      evg-back-key 'evg-back))
+  (define-key evg-failure-details-mode-map evg-back-key 'evg-back))
+
+(defun evg-view-failure-details (buffer-name task)
+  (let ((back-buffer (current-buffer))
+        (failure-details (evg-task-failure-details-parse
+         (gethash "annotation" (gethash "task"
+                  (evg-api-graphql-request
+                   (format
+                    "{
+                   task(taskId: %S) {
+                     annotation {
+                       note {
+                         message
+                       }
+                     }
+                   }
+                 }"
+                    (evg-task-id task))))))))
+    (switch-to-buffer (get-buffer-create (format "evg-failure-details: %s" buffer-name)))
+    (fundamental-mode)
+    (read-only-mode -1)
+    (erase-buffer)
+    (evg-insert-task-header task)
+    (insert (evg-task-failure-details-note failure-details))
+    (evg-failure-details-mode)
+    (read-only-mode)
+    (setq-local evg-previous-buffer back-buffer)
     (goto-char (point-min))))

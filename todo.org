@@ -221,9 +221,11 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] view patch by id/URL
   - [ ] view revision by hash/id
 
-* TODO BB integrations [0/2]
-  - [ ] investigate new build baron features
-  - [ ] build baron link?
+* TODO BB integrations [0/4]
+- [ ] failure details page
+- [ ] linkify build baron link
+- [ ] known issue tagging
+- [ ] mark suspected issue as known issue?
 
 * TODO perf integration
   - [ ] investigate
