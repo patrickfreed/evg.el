@@ -302,13 +302,33 @@
 
 (cl-defstruct evg-task-failure-details
   note
-  issues
+  known-issues
   suspected-issues)
 
 (defun evg-task-failure-details-parse (data)
-  (let ((note (gethash "note" data)))
+  (let ((note (gethash "note" data))
+        (known-issues (gethash "issues" data))
+        (suspected-issues (gethash "suspectedIssues" data)))
     (make-evg-task-failure-details
-     :note (gethash "message" note))))
+     :note (gethash "message" note)
+     :known-issues (seq-map 'evg-task-failure-details-issue-parse known-issues)
+     :suspected-issues (seq-map 'evg-task-failure-details-issue-parse suspected-issues))))
+
+(cl-defstruct evg-task-failure-details-issue
+  key
+  url
+  summary
+  confidence
+  resolution)
+
+(defun evg-task-failure-details-issue-parse (data)
+  (let ((jira-fields (gethash "fields" (gethash "jiraTicket" data))))
+    (make-evg-task-failure-details-issue
+     :key (gethash "issueKey" data)
+     :url (gethash "url" data)
+     :summary (gethash "summary" jira-fields)
+     :confidence (gethash "confidenceScore" data)
+     :resolution (gethash "resolutionName" jira-fields))))
 
 (define-derived-mode
   evg-failure-details-mode
@@ -335,8 +355,31 @@
                     "{
                    task(taskId: %S) {
                      annotation {
+                       issues {
+                         issueKey,
+                         url,
+                         confidenceScore,
+                         jiraTicket {
+                           fields {
+                             resolutionName,
+                             summary,
+                           }
+                         }
+                       }
+                       suspectedIssues {
+                         issueKey,
+                         url,
+                         confidenceScore,
+                         jiraTicket {
+                           fields {
+                             resolutionName,
+                             summary,
+                           }
+                         }
+                       }
                        note {
                          message
+                         
                        }
                      }
                    }
@@ -348,6 +391,15 @@
     (erase-buffer)
     (evg-insert-task-header task)
     (insert (evg-task-failure-details-note failure-details))
+    (newline)
+    (insert (evg-task-id task))
+    (newline)
+    (insert "known issues")
+    (newline)
+    (seq-do (lambda (x) (insert (evg-task-failure-details-issue-key x))) (evg-task-failure-details-known-issues failure-details))
+    (insert "suspected issues")
+    (newline)
+    (seq-do (lambda (x) (insert (evg-task-failure-details-issue-key x))) (evg-task-failure-details-suspected-issues failure-details))
     (evg-failure-details-mode)
     (read-only-mode)
     (setq-local evg-previous-buffer back-buffer)
