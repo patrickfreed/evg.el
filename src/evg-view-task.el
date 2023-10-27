@@ -42,7 +42,6 @@
   finish-time)
 
 (defun evg-task-test-parse (test-data)
-  (message "parsing " test-data)
   (make-evg-task-test
    :file-name (evg--gethash test-data "testFile")
    :status (evg--gethash test-data "status")
@@ -205,7 +204,6 @@
   (newline))
 
 (defun evg-view-task (task-id &optional patch-title previous-buffer)
-  (interactive)
   (message "fetching task data")
   (let ((task (evg-get-task task-id)))
     (message "fetching data done")

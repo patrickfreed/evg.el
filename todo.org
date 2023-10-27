@@ -139,8 +139,6 @@
 - [ ] goto next link in buffer
 - [ ] indicate if failure is known issue or not
   - [ ] ensure task buffer reflects this
-- [ ] support viewing task results interactively
-  - [ ] fix bug with failure details title when 
 
 * TODO Commit queue [0/2]
   - [ ] Add commit queue to status page
@@ -228,7 +226,7 @@ CLOSED: [2022-06-11 Sat 19:57]
   - [ ] include inactive versions in waterfall
   - [X] use "q" to close buffers instead of "<"
 
-* TODO new interactive commands [0/2]
+* TODO new interactive commands [0/3]
   - [ ] view patch by id/URL
   - [ ] view revision by hash/id
 
