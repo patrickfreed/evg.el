@@ -131,11 +131,16 @@
 
 * ---------------- release ready here ---------------
   
-* TODO BB integrations [3/4]
+* TODO BB integrations [4/7]
 - [X] add button to switch to failure-details buffer for that task
-- [ ] linkify build baron link
+- [X] linkify build baron link
 - [X] linkify issue
 - [X] list known and suspected issues
+- [ ] goto next link in buffer
+- [ ] indicate if failure is known issue or not
+  - [ ] ensure task buffer reflects this
+- [ ] support viewing task results interactively
+  - [ ] fix bug with failure details title when 
 
 * TODO Commit queue [0/2]
   - [ ] Add commit queue to status page

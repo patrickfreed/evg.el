@@ -294,10 +294,10 @@
        (funcall handler (evg-patch-parse-version-graphql-response version))))))
 
 (defun evg--gethash (hash &rest keys)
-  (if (eq keylist nil)
+  (if (eq keys nil)
       nil
-    (let* ((key (pop keylist))
+    (let* ((key (pop keys))
            (value (gethash key hash)))
-      (if (eq keylist nil)
+      (if (eq keys nil)
           value
-        (evg--gethash (gethash key hash) keylist)))))
+        (apply 'evg--gethash value keys)))))

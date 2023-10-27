@@ -126,8 +126,7 @@
   (interactive)
   (if-let ((task (evg-task-at-point))
            (build-variant (evg-task-info-variant-display-name task)))
-      (evg-view-task (evg-task-info-id task) build-variant (evg-patch-title evg-view-patch-patch) (current-buffer)))
-  )
+      (evg-view-task (evg-task-info-id task) (evg-patch-title evg-view-patch-patch) (current-buffer))))
 
 (defun evg-switch-task-format ()
   (interactive)

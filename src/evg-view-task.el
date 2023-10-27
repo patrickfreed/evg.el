@@ -25,6 +25,9 @@
   event-log
   tests)
 
+(defun evg-task-is-failed (task)
+  (string= (evg-task-status task) evg-status-failed))
+
 (defun evg-task-is-in-progress (task)
   (string= (evg-task-status task) evg-status-started))
 
@@ -39,6 +42,7 @@
   finish-time)
 
 (defun evg-task-test-parse (test-data)
+  (message "parsing " test-data)
   (make-evg-task-test
    :file-name (evg--gethash test-data "testFile")
    :status (evg--gethash test-data "status")
@@ -74,39 +78,39 @@
 (defun evg-get-task (task-id)
   (evg-task-parse-graphql
    (evg--gethash
-    "task"
     (evg-api-graphql-request
      (format
       "{
          task(taskId: %S) {
-             id,
-             displayName,
-             buildVariantDisplayName,
-             startTime,
-             finishTime,
-             status,
-             execution,
-             logs {
-               agentLogLink,
-               allLogLink,
-               eventLogLink,
-               systemLogLink,
-               taskLogLink,
-             }
-             tests {
-               testResults {
-                 testFile,
-                 status,
-                 startTime,
-                 endTime,
-                 logs {
-                   urlRaw,
-                 }
+           id,
+           displayName,
+           buildVariantDisplayName,
+           startTime,
+           finishTime,
+           status,
+           execution,
+           logs {
+             agentLogLink,
+             allLogLink,
+             eventLogLink,
+             systemLogLink,
+             taskLogLink,
+           }
+           tests {
+             testResults {
+               testFile,
+               status,
+               startTime,
+               endTime,
+               logs {
+                 urlRaw,
                }
              }
+           }
          }
        }"
-      task-id)))))
+      task-id))
+    "task")))
 
 (defface evg-view-task-title
   '((t
@@ -134,7 +138,6 @@
   (interactive)
   (evg-view-task
    (evg-task-id evg-current-task)
-   evg-build-variant
    evg-view-task-patch-title
    evg-previous-buffer))
 
@@ -201,17 +204,18 @@
     (cons "Started at" (evg-date-string (evg-task-start-time task)))))
   (newline))
 
-(defun evg-view-task (task-id build-variant patch-title previous-buffer)
+(defun evg-view-task (task-id &optional patch-title previous-buffer)
+  (interactive)
   (message "fetching task data")
   (let ((task (evg-get-task task-id)))
     (message "fetching data done")
-    (let ((full-display-name (format "%s / %s" build-variant (evg-task-display-name task))))
-      (switch-to-buffer (get-buffer-create (format "evg-view-task: %s / %s" patch-title full-display-name)))
+    (let ((full-display-name (format "%s / %s" (evg-task-build-variant-display-name task) (evg-task-display-name task)))
+          (prefix (if patch-title (concat patch-title " / ") "")))
+      (switch-to-buffer (get-buffer-create (format "evg-view-task: %s%s" prefix full-display-name)))
       (evg-view-task-mode)
       (setq display-line-numbers nil)
       (read-only-mode -1)
       (erase-buffer)
-      (setq-local evg-build-variant build-variant)
       (setq-local evg-current-task task)
       (setq-local evg-previous-buffer previous-buffer)
       (setq-local evg-view-task-patch-title patch-title)
@@ -220,7 +224,8 @@
 
       (insert-button "View Task Logs" 'action (lambda (_) (evg-view-current-task-logs)))
       (newline)
-      (insert-button "View Failure Details" 'action (lambda (_) (evg-view-failure-details (format "%s / %s" evg-view-task-patch-title (evg-current-task-full-name)) task)))
+      (when (evg-task-is-failed task)
+        (insert-button "View Failure Details" 'action (lambda (_) (evg-view-failure-details (format "%s / %s" evg-view-task-patch-title (evg-current-task-full-name)) task))))
       (when (evg-task-is-in-progress task)
         (newline)
         (insert-button "Abort Task" 'action (lambda (_) (evg-current-task-abort))))
@@ -318,6 +323,7 @@
   url
   summary
   confidence
+  status
   resolution)
 
 (defun evg-issue-parse (data)
@@ -327,6 +333,7 @@
      :url (evg--gethash data "url")
      :confidence (evg--gethash data "confidenceScore")
      :summary (evg--gethash jira-fields "summary")
+     :status (evg--gethash jira-fields "status" "name")
      :resolution (evg--gethash jira-fields "resolutionName"))))
 
 (define-derived-mode
@@ -353,6 +360,9 @@
      fields {
        resolutionName,
        summary,
+       status {
+         name
+       }
      }
    }")
 
@@ -373,58 +383,73 @@
    evg--issue-query-body
    evg--issue-query-body))
 
-(defun evg-issue-insert-link (issue)
-  (insert-button
-   (concat (evg-issue-key issue) ": " (evg-issue-summary issue))
-   'evg-issue-url
-   (evg-issue-url issue)
-   'action
-   (lambda (button)
-     (browse-url (button-get button 'evg-issue-url)))))
+(defun evg-issue-status-text (issue)
+  "Propertize the given status string appropriately according to the value of the status (e.g. green for \"Fixed\")."
+  (let* ((text (or (evg-issue-resolution issue) (evg-issue-status issue)))
+         (face (cond
+                ((string-match-p "Fixed" text) 'success)
+                ((string-match-p "\\(In Progress\\|Waiting\\)" text) 'warning)
+                ((string-match-p "Open" text) 'error)
+                (t 'shadow))))
+    (propertize text 'face face)))
 
 (defun evg-view-failure-details (buffer-name task)
   (let* ((back-buffer (current-buffer))
          (data (evg-api-graphql-request (evg--failure-details-query (evg-task-id task))))
-         (failure-details (evg-failure-details-parse (evg--gethash "task" "annotation"))))
+         (failure-details (evg-failure-details-parse (evg--gethash data "task" "annotation"))))
     (switch-to-buffer (get-buffer-create (format "evg-failure-details: %s" buffer-name)))
     (fundamental-mode)
     (read-only-mode -1)
     (erase-buffer)
 
     (evg-insert-task-header task)
-    (newline)
 
-    (insert (propertize "Note" 'face 'bold))
-    (newline 2)
-    (insert (evg-failure-details-note failure-details))
-    (newline)
+    (defun evg-issue-insert-link (issue)
+      (insert "- ")
+      (insert-button
+       (evg-issue-key issue)
+       'evg-issue-url
+       (evg-issue-url issue)
+       'action
+       (lambda (button)
+         (browse-url (button-get button 'evg-issue-url))))
+      (newline))
+
+    (defun evg-insert-issue-property (key value)
+      (insert (propertize (format "    %s: " key) 'face 'italic) value)
+      (newline))
 
     (insert (propertize "Known Issues" 'face 'bold))
     (newline 2)
     (seq-do
      (lambda (issue)
-       (insert "- ")
        (evg-issue-insert-link issue)
-       (newline)
-       (insert "  Status: " (evg-issue-resolution issue))
-       (newline))
+       (evg-insert-issue-property "Summary" (evg-issue-summary issue))
+       (evg-insert-issue-property "Status" (evg-issue-status-text issue)))
      (evg-failure-details-known-issues failure-details))
+    (when (eq (evg-failure-details-known-issues failure-details) nil)
+      (insert (propertize "No known issues related to this failure." 'face 'italic)))
     (newline)
 
     (insert (propertize "Suspected Issues" 'face 'bold))
     (newline 2)
     (seq-do
      (lambda (issue)
-       (insert "- ")
        (evg-issue-insert-link issue)
-       (newline)
-       (insert "  Status: " (evg-issue-resolution issue))
-       (insert "  Confidence in suggestion: " (* (evg-issue-confidence issue) 100.0) "%")
-       (newline))
+       (evg-insert-issue-property "Summary" (evg-issue-summary issue))
+       (evg-insert-issue-property "Status" (evg-issue-status-text issue))
+       (evg-insert-issue-property "Confidence in suggestion" (format "%.1f%%" (* (evg-issue-confidence issue) 100.0))))
      (evg-failure-details-suspected-issues failure-details))
-    (newline)
+    (when (eq (evg-failure-details-suspected-issues failure-details) nil)
+      (insert (propertize "No suspected issues related to this failure." 'face 'italic)))
+    (newline 2)
+
+    (insert (propertize "Note" 'face 'bold))
+    (newline 2)
+    (insert (evg-failure-details-note failure-details))
 
     (evg-failure-details-mode)
     (read-only-mode)
+    (goto-address-mode)
     (setq-local evg-previous-buffer back-buffer)
     (goto-char (point-min))))

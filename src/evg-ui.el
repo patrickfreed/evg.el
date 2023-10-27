@@ -33,7 +33,7 @@
   :group 'evg)
 
 (defconst evg-status-failed-regex
-  "\\(fail\\|abort\\|timed.out\\)"
+  "\\(fail\\|abort\\|timed.out\\|known-issue\\)"
   "Regular expression matching any task status associated with failure")
 
 (defconst evg-status-undispatched-regex
