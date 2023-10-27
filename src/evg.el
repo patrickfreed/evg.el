@@ -292,3 +292,12 @@
    (lambda (data)
      (let ((version (gethash "version" data)))
        (funcall handler (evg-patch-parse-version-graphql-response version))))))
+
+(defun evg--gethash (hash &rest keys)
+  (if (eq keylist nil)
+      nil
+    (let* ((key (pop keylist))
+           (value (gethash key hash)))
+      (if (eq keylist nil)
+          value
+        (evg--gethash (gethash key hash) keylist)))))

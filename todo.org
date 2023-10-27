@@ -131,6 +131,12 @@
 
 * ---------------- release ready here ---------------
   
+* TODO BB integrations [3/4]
+- [X] add button to switch to failure-details buffer for that task
+- [ ] linkify build baron link
+- [X] linkify issue
+- [X] list known and suspected issues
+
 * TODO Commit queue [0/2]
   - [ ] Add commit queue to status page
   - [ ] separate log buffer for the entire commit queue
@@ -138,9 +144,9 @@
 * TODO task history buffer
   
 * TODO patch failure overview
-  - [ ] filter down to only failures
-  - [ ] include test failures in patch view
-  - [ ] add known failure indicators
+
+This describes a custom, evg.el specific view of all the failures in the patch.
+This way, one can open a patch and quickly see all the individual test failures without having to navigate more deeply.
 
 * TODO add automated testing [0/7]
   - [ ] test status page
@@ -220,12 +226,6 @@ CLOSED: [2022-06-11 Sat 19:57]
 * TODO new interactive commands [0/2]
   - [ ] view patch by id/URL
   - [ ] view revision by hash/id
-
-* TODO BB integrations [0/4]
-- [ ] failure details page
-- [ ] linkify build baron link
-- [ ] known issue tagging
-- [ ] mark suspected issue as known issue?
 
 * TODO perf integration
   - [ ] investigate

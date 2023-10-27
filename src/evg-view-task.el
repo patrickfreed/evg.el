@@ -39,13 +39,12 @@
   finish-time)
 
 (defun evg-task-test-parse (test-data)
-  (let ((logs (gethash "logs" test-data)))
-    (make-evg-task-test
-     :file-name (gethash "testFile" test-data)
-     :status (gethash "status" test-data)
-     :start-time (gethash "startTime" test-data)
-     :finish-time (gethash "endTime" test-data)
-     :log-url (gethash "urlRaw" logs))))
+  (make-evg-task-test
+   :file-name (evg--gethash test-data "testFile")
+   :status (evg--gethash test-data "status")
+   :start-time (evg--gethash test-data "startTime")
+   :finish-time (evg--gethash test-data "endTime")
+   :log-url (evg--gethash test-data "logs" "urlRaw")))
 
 (defun evg-task-test-insert (test)
   (insert
@@ -57,59 +56,57 @@
   (newline))
 
 (defun evg-task-parse-graphql (data)
-  (let ((logs (gethash "logs" data))
-        (tests (gethash "testResults" (gethash "tests" data))))
-    (make-evg-task
-     :id (gethash "id" data)
-     :display-name (gethash "displayName" data)
-     :build-variant-display-name (gethash "buildVariantDisplayName" data)
-     :start-time (gethash "startTime" data)
-     :finish-time (gethash "finishTime" data)
-     :status (gethash "status" data)
-     :execution (gethash "execution" data)
-     :all-log (gethash "allLogLink" logs)
-     :task-log (gethash "taskLogLink" logs)
-     :agent-log (gethash "agentLogLink" logs)
-     :system-log (gethash "systemLogLink" logs)
-     :event-log (gethash "eventLogLink" logs)
-     :tests (seq-map 'evg-task-test-parse tests)
-     )))
+  (make-evg-task
+   :id (evg--gethash data "id")
+   :display-name (evg--gethash data "displayName")
+   :build-variant-display-name (evg--gethash data "buildVariantDisplayName")
+   :start-time (evg--gethash data "startTime")
+   :finish-time (evg--gethash data "finishTime")
+   :status (evg--gethash data "status")
+   :execution (evg--gethash data "execution")
+   :all-log (evg--gethash data "logs" "allLogLink")
+   :task-log (evg--gethash data "logs" "taskLogLink")
+   :agent-log (evg--gethash data "logs" "agentLogLink")
+   :system-log (evg--gethash data "logs" "systemLogLink")
+   :event-log (evg--gethash data "logs" "eventLogLink")
+   :tests (seq-map 'evg-task-test-parse (evg--gethash data "tests" "testResults"))))
 
 (defun evg-get-task (task-id)
   (evg-task-parse-graphql
-   (gethash "task"
-            (evg-api-graphql-request
-             (format
-              "{
-                 task(taskId: %S) {
-                     id,
-                     displayName,
-                     buildVariantDisplayName,
-                     startTime,
-                     finishTime,
-                     status,
-                     execution,
-                     logs {
-                       agentLogLink,
-                       allLogLink,
-                       eventLogLink,
-                       systemLogLink,
-                       taskLogLink,
-                     }
-                     tests {
-                       testResults {
-                         testFile,
-                         status,
-                         startTime,
-                         endTime,
-                         logs {
-                           urlRaw,
-                         }
-                       }
-                     }
+   (evg--gethash
+    "task"
+    (evg-api-graphql-request
+     (format
+      "{
+         task(taskId: %S) {
+             id,
+             displayName,
+             buildVariantDisplayName,
+             startTime,
+             finishTime,
+             status,
+             execution,
+             logs {
+               agentLogLink,
+               allLogLink,
+               eventLogLink,
+               systemLogLink,
+               taskLogLink,
+             }
+             tests {
+               testResults {
+                 testFile,
+                 status,
+                 startTime,
+                 endTime,
+                 logs {
+                   urlRaw,
                  }
-               }"
-              task-id)))))
+               }
+             }
+         }
+       }"
+      task-id)))))
 
 (defface evg-view-task-title
   '((t
@@ -300,35 +297,37 @@
     (setq-local header-line-format buffer-name)
     (goto-char (point-min))))
 
-(cl-defstruct evg-task-failure-details
+(cl-defstruct evg-failure-details
   note
   known-issues
   suspected-issues)
 
-(defun evg-task-failure-details-parse (data)
-  (let ((note (gethash "note" data))
-        (known-issues (gethash "issues" data))
-        (suspected-issues (gethash "suspectedIssues" data)))
-    (make-evg-task-failure-details
-     :note (gethash "message" note)
-     :known-issues (seq-map 'evg-task-failure-details-issue-parse known-issues)
-     :suspected-issues (seq-map 'evg-task-failure-details-issue-parse suspected-issues))))
+(defun evg-failure-details-parse (data)
+  (make-evg-failure-details
+   :note (evg--gethash data "note" "message")
+   :known-issues (seq-map
+                  'evg-issue-parse
+                  (evg--gethash data "issues"))
+   :suspected-issues (seq-map
+                      'evg-issue-parse
+                      (evg--gethash data "suspectedIssues"))))
 
-(cl-defstruct evg-task-failure-details-issue
+(cl-defstruct evg-issue
+  "A jira issue related to a task/test failure."
   key
   url
   summary
   confidence
   resolution)
 
-(defun evg-task-failure-details-issue-parse (data)
-  (let ((jira-fields (gethash "fields" (gethash "jiraTicket" data))))
-    (make-evg-task-failure-details-issue
-     :key (gethash "issueKey" data)
-     :url (gethash "url" data)
-     :summary (gethash "summary" jira-fields)
-     :confidence (gethash "confidenceScore" data)
-     :resolution (gethash "resolutionName" jira-fields))))
+(defun evg-issue-parse (data)
+  (let ((jira-fields (evg--gethash data "jiraTicket" "fields")))
+    (make-evg-issue
+     :key (evg--gethash data "issueKey")
+     :url (evg--gethash data "url")
+     :confidence (evg--gethash data "confidenceScore")
+     :summary (evg--gethash jira-fields "summary")
+     :resolution (evg--gethash jira-fields "resolutionName"))))
 
 (define-derived-mode
   evg-failure-details-mode
@@ -346,60 +345,85 @@
       evg-back-key 'evg-back))
   (define-key evg-failure-details-mode-map evg-back-key 'evg-back))
 
+(defconst evg--issue-query-body
+  "issueKey,
+   url,
+   confidenceScore,
+   jiraTicket {
+     fields {
+       resolutionName,
+       summary,
+     }
+   }")
+
+(defun evg--failure-details-query (task-id)
+  (format
+   "{
+      task(taskId: %S) {
+        annotation {
+          issues { %s }
+          suspectedIssues { %s }
+          note {
+            message
+          }
+        }
+      }
+    }"
+   task-id
+   evg--issue-query-body
+   evg--issue-query-body))
+
+(defun evg-issue-insert-link (issue)
+  (insert-button
+   (concat (evg-issue-key issue) ": " (evg-issue-summary issue))
+   'evg-issue-url
+   (evg-issue-url issue)
+   'action
+   (lambda (button)
+     (browse-url (button-get button 'evg-issue-url)))))
+
 (defun evg-view-failure-details (buffer-name task)
-  (let ((back-buffer (current-buffer))
-        (failure-details (evg-task-failure-details-parse
-         (gethash "annotation" (gethash "task"
-                  (evg-api-graphql-request
-                   (format
-                    "{
-                   task(taskId: %S) {
-                     annotation {
-                       issues {
-                         issueKey,
-                         url,
-                         confidenceScore,
-                         jiraTicket {
-                           fields {
-                             resolutionName,
-                             summary,
-                           }
-                         }
-                       }
-                       suspectedIssues {
-                         issueKey,
-                         url,
-                         confidenceScore,
-                         jiraTicket {
-                           fields {
-                             resolutionName,
-                             summary,
-                           }
-                         }
-                       }
-                       note {
-                         message
-                         
-                       }
-                     }
-                   }
-                 }"
-                    (evg-task-id task))))))))
+  (let* ((back-buffer (current-buffer))
+         (data (evg-api-graphql-request (evg--failure-details-query (evg-task-id task))))
+         (failure-details (evg-failure-details-parse (evg--gethash "task" "annotation"))))
     (switch-to-buffer (get-buffer-create (format "evg-failure-details: %s" buffer-name)))
     (fundamental-mode)
     (read-only-mode -1)
     (erase-buffer)
+
     (evg-insert-task-header task)
-    (insert (evg-task-failure-details-note failure-details))
     (newline)
-    (insert (evg-task-id task))
+
+    (insert (propertize "Note" 'face 'bold))
+    (newline 2)
+    (insert (evg-failure-details-note failure-details))
     (newline)
-    (insert "known issues")
+
+    (insert (propertize "Known Issues" 'face 'bold))
+    (newline 2)
+    (seq-do
+     (lambda (issue)
+       (insert "- ")
+       (evg-issue-insert-link issue)
+       (newline)
+       (insert "  Status: " (evg-issue-resolution issue))
+       (newline))
+     (evg-failure-details-known-issues failure-details))
     (newline)
-    (seq-do (lambda (x) (insert (evg-task-failure-details-issue-key x))) (evg-task-failure-details-known-issues failure-details))
-    (insert "suspected issues")
+
+    (insert (propertize "Suspected Issues" 'face 'bold))
+    (newline 2)
+    (seq-do
+     (lambda (issue)
+       (insert "- ")
+       (evg-issue-insert-link issue)
+       (newline)
+       (insert "  Status: " (evg-issue-resolution issue))
+       (insert "  Confidence in suggestion: " (* (evg-issue-confidence issue) 100.0) "%")
+       (newline))
+     (evg-failure-details-suspected-issues failure-details))
     (newline)
-    (seq-do (lambda (x) (insert (evg-task-failure-details-issue-key x))) (evg-task-failure-details-suspected-issues failure-details))
+
     (evg-failure-details-mode)
     (read-only-mode)
     (setq-local evg-previous-buffer back-buffer)
