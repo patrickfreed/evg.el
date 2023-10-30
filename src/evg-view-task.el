@@ -27,7 +27,7 @@
   tests)
 
 (defun evg-task-is-failed (task)
-  (string= (evg-task-status task) evg-status-failed))
+  (string-match-p evg-status-failed-regex (evg-task-status task)))
 
 (defun evg-task-is-in-progress (task)
   (string= (evg-task-status task) evg-status-started))
@@ -350,8 +350,10 @@
     (evil-define-key 'normal evg-failure-details-mode-map
       evg-back-key 'evg-back
       (kbd "M-j") 'evg-failure-details-goto-next-link
-      (kbd "M-k") 'evg-failure-details-goto-previous-link))
+      (kbd "M-k") 'evg-failure-details-goto-previous-link
+      (kbd "<RET>") 'evg-failure-details-visit-link-at-point))
   (define-key evg-failure-details-mode-map evg-back-key 'evg-back)
+  (define-key evg-failure-details-mode-map (kbd "<RET>") 'evg-failure-details-visit-link-at-point)
   (define-key evg-failure-details-mode-map (kbd "M-n") 'evg-failure-details-goto-next-link)
   (define-key evg-failure-details-mode-map (kbd "M-p") 'evg-failure-details-goto-previous-link))
 
@@ -396,9 +398,15 @@
                 (t 'shadow))))
     (propertize text 'face face)))
 
+(defun evg-failure-details--get-issue-url-at-point ()
+  (get-char-property (point) 'evg-issue-url))
+
+(defun evg-failure-details--has-address-at-point ()
+  (get-char-property (point) 'goto-address))
+
 (defun evg-failure-details--has-link-at-point ()
-  (or (not (eq (get-char-property (point) 'evg-issue-url) nil))
-      (get-char-property (point) 'goto-address)))
+  (or (not (eq (evg-failure-details--get-issue-url-at-point) nil))
+      (evg-failure-details--has-address-at-point)))
 
 (defun evg-failure-details-goto-link (travel-fn)
   ;; First, travel past any link that point is already on.
@@ -418,6 +426,13 @@
   "Move point to the previous link in the failure-details buffer, if any."
   (interactive)
   (evg-failure-details-goto-link 'evg--try-backward-char))
+
+(defun evg-failure-details-visit-link-at-point ()
+  (interactive)
+  (cond
+   ((when-let ((url (evg-failure-details--get-issue-url-at-point)))
+      (browse-url url)))
+   ((evg-failure-details--has-address-at-point) (goto-address-at-point))))
 
 (defun evg-view-failure-details (buffer-name task)
   (let* ((back-buffer (current-buffer))

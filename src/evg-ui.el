@@ -55,7 +55,7 @@
   "Get human-readable string version of the provided iso8601 date string"
   (condition-case nil
       (format-time-string "%b %e, %Y, %r" (encode-time (iso8601-parse date)))
-    (error "n/a")))
+    (error (format "invalid date: %S" date))))
 
 ;; from section-header in magit
 (defface evg-header
