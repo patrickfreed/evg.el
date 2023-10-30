@@ -5,6 +5,7 @@
 (require 'cl-lib)
 
 (require 'evg-ui)
+(require 'evg-util)
 
 (defvar-local evg-build-variant nil)
 (defvar-local evg-current-task nil)
@@ -347,8 +348,12 @@
 
   (when (require 'evil nil t)
     (evil-define-key 'normal evg-failure-details-mode-map
-      evg-back-key 'evg-back))
-  (define-key evg-failure-details-mode-map evg-back-key 'evg-back))
+      evg-back-key 'evg-back
+      (kbd "M-j") 'evg-failure-details-goto-next-link
+      (kbd "M-k") 'evg-failure-details-goto-previous-link))
+  (define-key evg-failure-details-mode-map evg-back-key 'evg-back)
+  (define-key evg-failure-details-mode-map (kbd "M-n") 'evg-failure-details-goto-next-link)
+  (define-key evg-failure-details-mode-map (kbd "M-p") 'evg-failure-details-goto-previous-link))
 
 (defconst evg--issue-query-body
   "issueKey,
@@ -390,6 +395,29 @@
                 ((string-match-p "Open" text) 'error)
                 (t 'shadow))))
     (propertize text 'face face)))
+
+(defun evg-failure-details--has-link-at-point ()
+  (or (not (eq (get-char-property (point) 'evg-issue-url) nil))
+      (get-char-property (point) 'goto-address)))
+
+(defun evg-failure-details-goto-link (travel-fn)
+  ;; First, travel past any link that point is already on.
+  ;; Then try to advance to the next one.
+  (let ((initial-point (point)))
+    (when (evg--advance-until travel-fn (lambda () (not (evg-failure-details--has-link-at-point))))
+      (when (not (evg--advance-until travel-fn 'evg-failure-details--has-link-at-point))
+        (message "No more links")
+        (goto-char initial-point)))))
+
+(defun evg-failure-details-goto-next-link ()
+  "Move point to the next link in the failure-details buffer, if any."
+  (interactive)
+  (evg-failure-details-goto-link 'evg--try-forward-char))
+
+(defun evg-failure-details-goto-previous-link ()
+  "Move point to the previous link in the failure-details buffer, if any."
+  (interactive)
+  (evg-failure-details-goto-link 'evg--try-backward-char))
 
 (defun evg-view-failure-details (buffer-name task)
   (let* ((back-buffer (current-buffer))

@@ -4,6 +4,7 @@
 
 (require 'evg-view-task)
 (require 'evg-ui)
+(require 'evg-util)
 
 (require 'cl-lib)
 
@@ -162,28 +163,23 @@
   "Move the point to the next task failure in the patch."
   (interactive)
   (evg-goto-failure (cond
-                           ((eq evg-view-patch-task-format 'grid) (lambda () (forward-char) t))
+                           ((eq evg-view-patch-task-format 'grid) 'evg--try-forward-char)
                            ((eq evg-view-patch-task-format 'text) (lambda () (= (forward-line) 0))))))
 
 (defun evg-goto-previous-task-failure ()
   "Move the point to the previous task failure in the patch."
   (interactive)
   (evg-goto-failure (cond
-                           ((eq evg-view-patch-task-format 'grid) (lambda () (backward-char) t))
+                           ((eq evg-view-patch-task-format 'grid) 'evg--try-backward-char)
                            ((eq evg-view-patch-task-format 'text) (lambda () (= (forward-line -1) 0))))))
 
 (defun evg-goto-failure (travel-fn)
-  (let ((initial-point (point)))
-    (while (and
-            (condition-case nil (funcall travel-fn) (error nil))
-            (if-let ((task (evg-task-at-point)))
-                (not (string-match-p evg-status-failed-regex (evg-task-info-status task)))
-              t)))
-    (when (not (evg-task-at-point))
-      (goto-char initial-point)
-      (message "No more failures"))
-    )
-  )
+  (when (not (evg--advance-until
+              travel-fn
+              (lambda ()
+                (when-let ((task (evg-task-at-point)))
+                  (string-match-p evg-status-failed-regex (evg-task-info-status task))))))
+    (message "No more failures")))
 
 (defun evg-view-patch-refresh ()
   (interactive)
