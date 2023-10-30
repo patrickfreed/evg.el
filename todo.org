@@ -131,7 +131,7 @@
 
 * ---------------- release ready here ---------------
   
-* TODO BB integrations / failure details [5/7]
+* TODO BB integrations / failure details [5/8]
 - [X] add button to switch to failure-details buffer for that task
 - [X] linkify build baron link
 - [X] linkify issue
@@ -140,6 +140,8 @@
 - [ ] indicate if failure is known issue or not
   - [ ] ensure task buffer reflects this
 - [ ] button to file ticket for failure
+  - [ ] view created tickets, if any
+- [ ] fix date formatting and/or file ticket about inconsistent formats
 
 * TODO Commit queue [0/2]
   - [ ] Add commit queue to status page
